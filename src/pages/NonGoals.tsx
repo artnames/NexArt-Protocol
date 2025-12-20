@@ -90,10 +90,17 @@ const NonGoals = () => {
         <section className="mb-16">
           <h2 className="text-2xl font-serif text-foreground mb-4">Not a Finished Specification</h2>
           <p className="text-body mb-4">
-            Protocol v0.1 is a specification-in-progress. Definitions, mode semantics, and rendering rules are evolving.
+            The protocol is a specification-in-progress. Definitions, mode semantics, and rendering rules are evolving.
           </p>
           <p className="text-body">
             Early adopters should expect changes. The protocol will stabilize through real-world implementation, feedback, and deliberate iteration. Stability is a goal, not a starting condition.
+          </p>
+        </section>
+
+        <section className="mb-16">
+          <h2 className="text-2xl font-serif text-foreground mb-4">Not a Standalone Service</h2>
+          <p className="text-body">
+            The NexArt Protocol is not currently intended to operate as a standalone service or replace the NexArt application.
           </p>
         </section>
 

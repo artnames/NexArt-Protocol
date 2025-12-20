@@ -134,6 +134,15 @@ const Modes = () => {
             <strong>Limitations.</strong> The visual vocabulary is constrained by the mapping configuration. Artnames is generative but not infinitely expressive.
           </p>
 
+          <h2>Enforcement Status</h2>
+          
+          <ul>
+            <li><strong>Shapes</strong> — Hard enforced</li>
+            <li><strong>Artnames</strong> — Hard enforced</li>
+            <li><strong>SoundArt</strong> — Soft enforced (observability phase)</li>
+            <li><strong>Other modes</strong> — Not enforced</li>
+          </ul>
+
           <h2>Mode Parity</h2>
           
           <p>
