@@ -6,6 +6,8 @@ const navItems = [
   { href: "/canonical-unit", label: "Canonical Unit" },
   { href: "/modes", label: "Modes" },
   { href: "/determinism", label: "Determinism" },
+  { href: "/glossary", label: "Glossary" },
+  { href: "/non-goals", label: "Non-Goals" },
   { href: "/builders", label: "Builders" },
   { href: "/governance", label: "Governance" },
 ];

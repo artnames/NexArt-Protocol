@@ -9,6 +9,8 @@ import Protocol from "./pages/Protocol";
 import CanonicalUnit from "./pages/CanonicalUnit";
 import Modes from "./pages/Modes";
 import Determinism from "./pages/Determinism";
+import Glossary from "./pages/Glossary";
+import NonGoals from "./pages/NonGoals";
 import Builders from "./pages/Builders";
 import Governance from "./pages/Governance";
 import NotFound from "./pages/NotFound";
@@ -28,6 +30,8 @@ const App = () => (
             <Route path="/canonical-unit" element={<CanonicalUnit />} />
             <Route path="/modes" element={<Modes />} />
             <Route path="/determinism" element={<Determinism />} />
+            <Route path="/glossary" element={<Glossary />} />
+            <Route path="/non-goals" element={<NonGoals />} />
             <Route path="/builders" element={<Builders />} />
             <Route path="/governance" element={<Governance />} />
             <Route path="*" element={<NotFound />} />
