@@ -21,6 +21,10 @@ const CanonicalUnit = () => {
           <p>
             The canonical unit is the fundamental object of the NexArt protocol. Every piece of work created, stored, or transmitted through NexArt is intended to be represented as a canonical unit. This page defines what it is, what it contains, and what it intentionally excludes.
           </p>
+          
+          <p>
+            NexArt systems are now governed independently of any single application.
+          </p>
 
           <h2>Definition</h2>
           
