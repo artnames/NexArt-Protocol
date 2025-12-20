@@ -39,7 +39,7 @@ const Protocol = () => {
           </p>
           
           <p>
-            The protocol's goal is that when you save work in NexArt, you are saving a system—not just an image. Current implementations often store rendered outputs and metadata alongside system definitions. The protocol is evolving toward storing system definitions and reproducible inputs as the primary record, with rendered outputs treated as derived artifacts.
+            The protocol's goal is that when you save work in NexArt, you are saving a system—not just an image. Current implementations often store rendered outputs and metadata alongside system definitions. The protocol is evolving toward storing system definitions and reproducible inputs as the primary record, with rendered outputs treated as derived artifacts. Some systems are now governed by the protocol rather than the application.
           </p>
           
           <p>

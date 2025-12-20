@@ -61,7 +61,7 @@ const Builders = () => {
           </p>
           
           <p>
-            What matters is that your implementation conforms to the protocol where it applies. If you support Shapes, you support Shapes fully. If you claim determinism, you deliver it.
+            What matters is that your implementation conforms to the protocol where it applies. If you support Shapes, you support Shapes fully. If you claim determinism, you deliver it. Note that enforcement may differ by system type during early versions of the protocol.
           </p>
 
           <h2>Ways to Contribute Now</h2>
