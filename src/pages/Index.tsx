@@ -56,10 +56,10 @@ const Index = () => {
             By defining systems rather than artifacts, NexArt enables reproducibility, variation, and long-term preservation. A system can be run again, modified, or adapted to new contexts. Current implementations often store rendered outputs alongside metadata; the protocol's goal is for system definitions to be sufficient for reproduction.
           </p>
 
-          <h2>Under Active Development</h2>
+          <h2>Specification Status</h2>
           
           <p>
-            This protocol is version 0.1. Many details are incomplete. Some concepts are provisional. Some guarantees are aspirational until implementations are pinned and versioned. The specification will evolve as we learn what works and what does not.
+            The protocol is active in production. Validation is enforced across all modes, and certain modes are now subject to protocol-level enforcement. Many details continue to evolve, and some guarantees remain aspirational until all implementations are fully pinned and versioned.
           </p>
           
           <p>

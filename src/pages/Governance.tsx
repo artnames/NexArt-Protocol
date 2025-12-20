@@ -25,11 +25,17 @@ const Governance = () => {
           <h2>A Protocol in Development</h2>
           
           <p>
-            This is version 0.1. Many aspects of the protocol are provisional. Some concepts may be revised, renamed, or removed. The specification is stable enough to study, but not yet stable enough to build production systems against.
+            Many aspects of the protocol are provisional. Some concepts may be revised, renamed, or removed. The specification is stable enough to study, but not yet stable enough to build production systems against.
           </p>
           
           <p>
             We are being transparent about this status. It would be dishonest to claim maturity before the work is done.
+          </p>
+
+          <h2>Incremental Enforcement</h2>
+          
+          <p>
+            Protocol enforcement is introduced incrementally. Rather than requiring full conformance from all systems at once, the protocol is applied progressively—starting with modes and system types where validation is most straightforward and expanding as implementations mature. This approach allows the protocol to grow in authority without disrupting existing work or rushing decisions that require careful consideration.
           </p>
 
           <h2>Deliberate Change</h2>
