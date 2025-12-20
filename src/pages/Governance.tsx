@@ -35,7 +35,7 @@ const Governance = () => {
           <h2>Incremental Enforcement</h2>
           
           <p>
-            Protocol enforcement is introduced incrementally. Rather than requiring full conformance from all systems at once, the protocol is applied progressively—starting with modes and system types where validation is most straightforward and expanding as implementations mature. This approach allows the protocol to grow in authority without disrupting existing work or rushing decisions that require careful consideration.
+            NexArt introduces protocol constraints incrementally. New system types enter a soft-enforcement phase where incomplete or non-canonical systems are observable but not blocked. Hard enforcement is only enabled once real-world behavior is well understood and stable.
           </p>
 
           <h2>Deliberate Change</h2>

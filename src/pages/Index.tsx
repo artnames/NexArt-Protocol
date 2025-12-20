@@ -59,7 +59,7 @@ const Index = () => {
           <h2>Specification Status</h2>
           
           <p>
-            The protocol is active in production. Validation is enforced across all modes, and certain modes are now subject to protocol-level enforcement. Many details continue to evolve, and some guarantees remain aspirational until all implementations are fully pinned and versioned.
+            The NexArt Protocol is actively enforced in production. Some system types are subject to hard enforcement, while others operate under soft enforcement with observability before constraints are tightened.
           </p>
           
           <p>
