@@ -9,22 +9,22 @@ const Index = () => {
     <PageLayout>
       <Helmet>
         <title>NexArt Protocol - An Open Creative Protocol</title>
-        <meta name="description" content="NexArt is an open protocol for generative and sound-driven art systems. A specification for creative computation." />
+        <meta name="description" content="NexArt is evolving into an open protocol for generative and sound-driven art systems. A specification for creative computation." />
       </Helmet>
       
       <PageHeader 
         title="NexArt Protocol"
-        subtitle="An open protocol for generative and sound-driven art systems."
+        subtitle="Evolving toward an open protocol for generative and sound-driven art systems."
       />
       
       <PageContent>
         <div className="prose-protocol">
           <p>
-            NexArt is becoming a protocol. Not a product, not a platform, but a shared specification for how generative art systems can be described, stored, and reproduced over time.
+            NexArt is evolving from a single creative app into an open protocol. Not a product, not a platform, but a shared specification for how generative art systems can be described, stored, and reproduced over time.
           </p>
           
           <p>
-            The protocol defines primitives for creative computation: what a system is, what it contains, and how it behaves under different conditions. It establishes a common language for artists, engineers, and tools to work together.
+            The protocol intends to define primitives for creative computation: what a system is, what it contains, and how it behaves under different conditions. It aims to establish a common language for artists, engineers, and tools to work together.
           </p>
 
           <h2>Two Things Called NexArt</h2>
@@ -39,11 +39,11 @@ const Index = () => {
             >
               nexart.xyz
             </a>
-            . It is a creative tool for making sound-reactive art. The application is one implementation of the protocol—the first, but not the only.
+            . It is the current primary tool for making generative and sound-driven art. The application is being migrated toward full protocol conformance—it is the first implementation, but not the only one the protocol intends to support.
           </p>
           
           <p>
-            This site documents the protocol itself: the rules and structures that define what a NexArt system is, independent of any specific tool or interface.
+            This site documents the protocol itself: the rules and structures that will define what a NexArt system is, independent of any specific tool or interface.
           </p>
 
           <h2>Systems, Not Images</h2>
@@ -53,17 +53,17 @@ const Index = () => {
           </p>
           
           <p>
-            By defining systems rather than artifacts, NexArt enables reproducibility, variation, and long-term preservation. A system can be run again, modified, or adapted to new contexts.
+            By defining systems rather than artifacts, NexArt enables reproducibility, variation, and long-term preservation. A system can be run again, modified, or adapted to new contexts. Current implementations often store rendered outputs alongside metadata; the protocol's goal is for system definitions to be sufficient for reproduction.
           </p>
 
           <h2>Under Active Development</h2>
           
           <p>
-            This protocol is version 0.1. Many details are incomplete. Some concepts are provisional. The specification will evolve as we learn what works and what does not.
+            This protocol is version 0.1. Many details are incomplete. Some concepts are provisional. Some guarantees are aspirational until implementations are pinned and versioned. The specification will evolve as we learn what works and what does not.
           </p>
           
           <p>
-            What will not change is the commitment to clarity, openness, and long-term thinking. The protocol is designed to be stable enough to build against, even as it grows.
+            What will not change is the commitment to clarity, openness, and long-term thinking. The protocol is designed to be stable enough to study against, even as it grows.
           </p>
 
           <h2>Where to Begin</h2>

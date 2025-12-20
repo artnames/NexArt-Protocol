@@ -25,7 +25,7 @@ const Determinism = () => {
           <h2>What We Guarantee</h2>
           
           <p>
-            For systems marked as deterministic, NexArt guarantees that any conforming implementation will produce identical visual output given identical inputs. "Identical" means pixel-perfect at the specified resolution.
+            For systems marked as deterministic, NexArt intends that conforming implementations produce identical visual output given identical inputs. "Identical" means pixel-perfect at the specified resolution, under specified rendering rules.
           </p>
           
           <p>
@@ -33,11 +33,15 @@ const Determinism = () => {
           </p>
           
           <ul>
-            <li>Shapes systems with fixed parameters</li>
-            <li>Noise systems with specified seeds</li>
-            <li>Artnames systems with fixed text input</li>
+            <li>Shapes systems with fixed parameters, under standardized rasterization</li>
+            <li>Noise systems with specified algorithms and seeds</li>
+            <li>Artnames systems with fixed text input and mapping version</li>
             <li>Any system where all inputs are fully specified and the mode supports determinism</li>
           </ul>
+          
+          <p>
+            Pixel-perfect determinism is achievable for conforming implementations that adhere to the specified rendering rules. These rules are being formalized.
+          </p>
 
           <h2>What We Do Not Guarantee</h2>
           
@@ -72,7 +76,7 @@ const Determinism = () => {
           </p>
           
           <p>
-            When a system is best-effort, the protocol may specify tolerance bounds: how much variation is acceptable before the output is considered non-conforming.
+            When a system is best-effort, the protocol may specify tolerance bounds: how much variation is acceptable before the output is considered non-conforming. Tolerance specifications are being developed.
           </p>
 
           <h2>Versioning</h2>
@@ -82,7 +86,7 @@ const Determinism = () => {
           </p>
           
           <p>
-            Implementations must support all previous versions. When you upgrade your renderer or tool, old systems must continue to work exactly as they did before. New features are additive, not destructive.
+            The protocol is committed to long-term support for previous versions. Backward compatibility is the default. Implementations are expected to maintain compatibility with older versions as new features are added.
           </p>
 
           <h2>Breaking Changes</h2>
@@ -94,12 +98,12 @@ const Determinism = () => {
           <ul>
             <li>A new major version is released</li>
             <li>Existing systems remain pinned to their original version</li>
-            <li>Implementations continue to support the old version indefinitely</li>
+            <li>Implementations are expected to support older versions through an explicit deprecation policy</li>
             <li>Migration tools may be provided, but migration is never forced</li>
           </ul>
           
           <p>
-            A system created in 2024 should render correctly in 2044. This is the commitment.
+            A system created in 2024 should render correctly in 2044. This is the commitment we are working toward.
           </p>
 
           <h2>Clarity Over Perfection</h2>

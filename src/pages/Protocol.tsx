@@ -25,11 +25,11 @@ const Protocol = () => {
           <h2>What Is a NexArt System</h2>
           
           <p>
-            A NexArt system is a complete, self-contained description of a generative artwork. It includes all the information necessary to produce visual output: the mode of generation, the parameters that control it, and any external references it depends on.
+            A NexArt system is intended to be a complete, self-contained description of a generative artwork. It includes all the information necessary to produce visual output: the mode of generation, the parameters that control it, and any external references it depends on.
           </p>
           
           <p>
-            A system is not an image. It is the specification from which images can be derived. The same system, given the same inputs, should produce the same visual result—or, in cases where perfect determinism is not possible, a result within an acceptable range of variation.
+            A system is not an image. It is the specification from which images can be derived. The same system, given the same inputs, should produce the same visual result—or, in cases where perfect determinism is not possible, a result within an acceptable range of variation when tolerances are specified.
           </p>
 
           <h2>System vs. Output</h2>
@@ -39,7 +39,7 @@ const Protocol = () => {
           </p>
           
           <p>
-            When you save work in NexArt, you are not saving an image—you are saving a system. When you share work, you share the ability to reproduce it, not just the result.
+            The protocol's goal is that when you save work in NexArt, you are saving a system—not just an image. Current implementations often store rendered outputs and metadata alongside system definitions. The protocol is evolving toward storing system definitions and reproducible inputs as the primary record, with rendered outputs treated as derived artifacts.
           </p>
           
           <p>
@@ -68,25 +68,25 @@ const Protocol = () => {
           
           <ul>
             <li>
-              <strong>Deterministic systems</strong> — guaranteed identical output across all conforming implementations
+              <strong>Deterministic systems</strong> — intended to produce identical output across all conforming implementations, when specified
             </li>
             <li>
-              <strong>Best-effort systems</strong> — output may vary slightly, but within documented tolerances
+              <strong>Best-effort systems</strong> — output may vary, but within documented tolerances when specified
             </li>
           </ul>
           
           <p>
-            Both are valid. The protocol requires that each system declare which category it belongs to.
+            Both are valid. The protocol requires that each system declare which category it belongs to. Tolerance specifications are evolving and will be formalized in future versions.
           </p>
 
           <h2>Versioning</h2>
           
           <p>
-            Behavior must be stable over time. When the protocol or a rendering engine changes, existing systems must continue to work as they did when created.
+            Behavior must be stable over time. When the protocol or a rendering engine changes, existing systems should continue to work as they did when created.
           </p>
           
           <p>
-            NexArt uses versioning to freeze behavior. Each system records the protocol version it was created against. Implementations must preserve backward compatibility with older versions, even as new features are added.
+            NexArt uses versioning to freeze behavior. Each system records the protocol version it was created against. Implementations are expected to preserve backward compatibility with older versions, even as new features are added.
           </p>
           
           <p>
