@@ -19,7 +19,7 @@ const Modes = () => {
       <PageContent>
         <div className="prose-protocol">
           <p>
-            NexArt supports multiple creation modes. Each mode is a distinct way of authoring generative systems, with its own inputs, behaviors, and guarantees. All modes are first-class: none is more fundamental than another.
+            NexArt supports multiple creation modes. Each mode is a distinct way of authoring generative systems, with its own inputs, behaviors, and guarantees. All modes are intended to be first-class: none is more fundamental than another.
           </p>
           
           <p>
@@ -37,11 +37,11 @@ const Modes = () => {
           </p>
           
           <p>
-            <strong>Guarantees.</strong> Given the same audio file and parameters, a SoundArt system will produce the same visual output. With live audio, the output is reactive and non-deterministic.
+            <strong>Guarantees.</strong> SoundArt systems are best-effort reproducible. With recorded audio, reproducibility depends on pinning the audio analysis version, seed values, time inputs, and background mode. With live audio, output is reactive and inherently non-deterministic.
           </p>
           
           <p>
-            <strong>Limitations.</strong> SoundArt systems depend on audio analysis, which may vary slightly between implementations. The protocol specifies analysis methods to minimize variance.
+            <strong>Limitations.</strong> Audio analysis may vary between implementations. Full reproducibility requires specifying all analysis parameters, which is evolving toward standardization.
           </p>
 
           <h2>Code Mode</h2>
@@ -55,11 +55,11 @@ const Modes = () => {
           </p>
           
           <p>
-            <strong>Guarantees.</strong> Determinism depends on the code itself. The protocol does not guarantee deterministic execution if the code uses non-deterministic operations.
+            <strong>Guarantees.</strong> Determinism depends entirely on the code itself. The protocol does not guarantee deterministic execution if the code uses non-deterministic operations.
           </p>
           
           <p>
-            <strong>Limitations.</strong> Code execution environments may differ between implementations. The protocol will define a sandboxed execution model in future versions.
+            <strong>Limitations.</strong> Code execution environments may differ between implementations. Sandbox environments and dependency pinning are evolving; future versions of the protocol will define a standardized execution model.
           </p>
 
           <h2>Shapes</h2>
@@ -73,11 +73,11 @@ const Modes = () => {
           </p>
           
           <p>
-            <strong>Guarantees.</strong> Shapes systems are fully deterministic. The same parameters produce identical output across all conforming implementations.
+            <strong>Guarantees.</strong> Shapes systems are intended to be fully deterministic. The same parameters should produce identical output across conforming implementations, under standardized primitive definitions and rasterization rules.
           </p>
           
           <p>
-            <strong>Limitations.</strong> Shapes is intentionally constrained. Complex generative behavior requires combining shapes with other modes or using Code Mode.
+            <strong>Limitations.</strong> Shapes is intentionally constrained. Complex generative behavior requires combining shapes with other modes or using Code Mode. Rasterization rules are being standardized.
           </p>
 
           <h2>Fluids</h2>
@@ -91,11 +91,11 @@ const Modes = () => {
           </p>
           
           <p>
-            <strong>Guarantees.</strong> Fluids systems are best-effort deterministic. Small floating-point differences may accumulate over time, leading to divergent outputs on different hardware.
+            <strong>Guarantees.</strong> Fluids systems are best-effort reproducible. Floating-point differences across hardware may cause simulations to diverge over time, even with identical initial conditions.
           </p>
           
           <p>
-            <strong>Limitations.</strong> Long-running simulations may drift. For archival purposes, checkpointing is recommended.
+            <strong>Limitations.</strong> Long-running simulations may drift. Checkpointing for archival purposes is a future consideration and is not currently implemented.
           </p>
 
           <h2>Noise</h2>
@@ -109,11 +109,11 @@ const Modes = () => {
           </p>
           
           <p>
-            <strong>Guarantees.</strong> Noise systems are deterministic when a seed is specified. The same seed produces identical noise across implementations.
+            <strong>Guarantees.</strong> Noise systems are deterministic when algorithm and seed are pinned and specified. The same seed should produce identical noise across conforming implementations.
           </p>
           
           <p>
-            <strong>Limitations.</strong> The protocol specifies exact noise algorithms to ensure consistency. Custom noise functions must be implemented via Code Mode.
+            <strong>Limitations.</strong> The protocol intends to specify exact noise algorithms to ensure consistency. Custom noise functions must be implemented via Code Mode.
           </p>
 
           <h2>Artnames</h2>
@@ -127,7 +127,7 @@ const Modes = () => {
           </p>
           
           <p>
-            <strong>Guarantees.</strong> Artnames systems are fully deterministic. The same string always produces the same visual output.
+            <strong>Guarantees.</strong> Artnames systems are deterministic under the specified mapping version. The same string always produces the same visual output when the mapping is fixed.
           </p>
           
           <p>
@@ -137,7 +137,7 @@ const Modes = () => {
           <h2>Mode Parity</h2>
           
           <p>
-            All modes produce canonical units. All modes are versioned. All modes declare their determinism guarantees. There is no hierarchy among modes—each is a complete and independent way to create NexArt systems.
+            The protocol's goal is that all modes produce canonical units, all modes are versioned, and all modes declare their determinism guarantees. Mode parity—where each mode is a complete and independent way to create NexArt systems—is a protocol goal that implementations are working toward.
           </p>
           
           <p>

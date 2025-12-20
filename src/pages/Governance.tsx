@@ -56,7 +56,7 @@ const Governance = () => {
           </p>
           
           <p>
-            The protocol is designed to outlast any individual product. Even if the current application were to disappear, the protocol and its documentation would remain. Systems created today should be interpretable by future tools.
+            The protocol is designed so that systems remain interpretable and renderable by future tools, even if the current application changes or disappears. This is a goal we are actively working toward—building in the durability that makes the protocol independent of any single product.
           </p>
           
           <p>
@@ -66,7 +66,7 @@ const Governance = () => {
           <h2>Future Stewardship</h2>
           
           <p>
-            Long-term stewardship of the protocol will be handled by the NexArt Foundation—a structure that does not yet exist.
+            Long-term stewardship of the protocol will be handled by the NexArt Foundation—a stewardship structure that is being formed.
           </p>
           
           <p>
@@ -130,7 +130,7 @@ const Governance = () => {
           </p>
           
           <p>
-            For now, the most valuable thing you can do is read carefully, think critically, and wait for the right moment to participate.
+            For now, the most valuable thing you can do is read carefully, think critically, and consider how you might participate.
           </p>
         </div>
       </PageContent>

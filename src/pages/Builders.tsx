@@ -57,12 +57,36 @@ const Builders = () => {
           </p>
           
           <p>
-            You are not required to implement everything. A renderer might support only Shapes mode. A tool might only read systems, not create them. Partial implementations are welcome.
+            You are not required to implement everything. A renderer might support only Shapes mode. A tool might only read systems, not create them. Partial implementations are welcome and encouraged.
           </p>
           
           <p>
             What matters is that your implementation conforms to the protocol where it applies. If you support Shapes, you support Shapes fully. If you claim determinism, you deliver it.
           </p>
+
+          <h2>Ways to Contribute Now</h2>
+          
+          <p>
+            Even at this early stage, there are meaningful ways to participate:
+          </p>
+          
+          <ul>
+            <li>
+              <strong>Build a read-only parser</strong> — Implement a tool that reads and validates canonical units
+            </li>
+            <li>
+              <strong>Prototype a single-mode renderer</strong> — Build a renderer that supports one mode (Shapes or Noise are good starting points)
+            </li>
+            <li>
+              <strong>Create a validator</strong> — Write a tool that checks whether a canonical unit conforms to the specification
+            </li>
+            <li>
+              <strong>Provide feedback</strong> — Read this documentation critically and share what is unclear, missing, or wrong
+            </li>
+            <li>
+              <strong>Submit proposals</strong> — If you see a better way to define something, write it up
+            </li>
+          </ul>
 
           <h2>Lifecycle of a NexArt System</h2>
           
@@ -109,11 +133,15 @@ const Builders = () => {
           <p>
             <span className="text-caption">Repository link: coming soon</span>
           </p>
+          
+          <p>
+            The repository will include the specification, reference implementations as they stabilize, and contribution guidelines.
+          </p>
 
           <h2>How to Get Involved</h2>
           
           <p>
-            For now, the best way to participate is to read this documentation, think about what you might build, and wait for the specification to mature.
+            Read this documentation, think about what you might build, and consider starting a partial implementation or providing feedback.
           </p>
           
           <p>
@@ -121,7 +149,7 @@ const Builders = () => {
           </p>
           
           <p>
-            Building a protocol is slow work. Contributions will be most valuable once the foundation is solid.
+            Building a protocol is slow work. Early contributions—even reading and critique—are valuable.
           </p>
         </div>
       </PageContent>

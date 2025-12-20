@@ -19,13 +19,13 @@ const CanonicalUnit = () => {
       <PageContent>
         <div className="prose-protocol">
           <p>
-            The canonical unit is the fundamental object of the NexArt protocol. Every piece of work created, stored, or transmitted through NexArt is represented as a canonical unit. This page defines what it is, what it contains, and what it intentionally excludes.
+            The canonical unit is the fundamental object of the NexArt protocol. Every piece of work created, stored, or transmitted through NexArt is intended to be represented as a canonical unit. This page defines what it is, what it contains, and what it intentionally excludes.
           </p>
 
           <h2>Definition</h2>
           
           <p>
-            A canonical unit is a complete, portable specification of a generative art system. It contains everything needed to reproduce the visual output of that system, and nothing more.
+            A canonical unit is a complete, portable specification of a generative art system. It is designed to contain everything needed to reproduce the visual output of that system, and nothing more. Reproducibility depends on declared determinism and the availability of external references (audio, code, time-based inputs).
           </p>
           
           <p>
@@ -35,7 +35,7 @@ const CanonicalUnit = () => {
           <h2>What It Contains</h2>
           
           <p>
-            Every canonical unit includes:
+            The protocol requires every canonical unit to include:
           </p>
           
           <ul>
@@ -59,7 +59,7 @@ const CanonicalUnit = () => {
           <h2>What It Does Not Contain</h2>
           
           <p>
-            The canonical unit intentionally excludes:
+            The protocol requires canonical units to exclude:
           </p>
           
           <ul>
@@ -105,11 +105,17 @@ const CanonicalUnit = () => {
           <h2>Mode Conformance</h2>
           
           <p>
-            All creation modes in NexArt produce canonical units. This is a requirement of the protocol, not an optional feature. When you work in SoundArt mode, you are producing a canonical unit. When you work in Code Mode, you are producing a canonical unit.
+            The protocol requires all creation modes in NexArt to produce canonical units. Implementations are being migrated to conform to this requirement. When you work in SoundArt mode, you are producing a canonical unit. When you work in Code Mode, you are producing a canonical unit.
           </p>
           
           <p>
             The modes differ in how systems are authored, but they converge on the same output format. This ensures that systems created in different modes can be stored, shared, and processed uniformly.
+          </p>
+
+          <h2>Current Status</h2>
+          
+          <p>
+            The canonical unit structure described here represents the protocol's requirements. Current implementations are being migrated to fully conform to this specification. Some implementations may store additional data (such as rendered outputs) alongside the canonical unit during the transition period.
           </p>
 
           <h2>Serialization</h2>
