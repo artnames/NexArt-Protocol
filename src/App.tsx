@@ -13,6 +13,7 @@ import Glossary from "./pages/Glossary";
 import NonGoals from "./pages/NonGoals";
 import Builders from "./pages/Builders";
 import Governance from "./pages/Governance";
+import CodeModeV1 from "./pages/CodeModeV1";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/non-goals" element={<NonGoals />} />
             <Route path="/builders" element={<Builders />} />
             <Route path="/governance" element={<Governance />} />
+            <Route path="/code-mode-v1" element={<CodeModeV1 />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
