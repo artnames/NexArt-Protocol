@@ -59,7 +59,18 @@ const Index = () => {
           <h2>Specification Status</h2>
           
           <p>
+            <strong>Current Protocol Version: v0.4</strong>
+          </p>
+          
+          <p>
             The NexArt Protocol is actively enforced in production. Some system types are subject to hard enforcement, while others operate under soft enforcement with observability before constraints are tightened.
+          </p>
+          
+          <p>
+            Code Mode is currently experimental and not governed by the protocol. A proposed protocol specification is available in{" "}
+            <Link to="/code-mode-v1" className="text-link hover:text-link-hover underline underline-offset-2">
+              Code Mode v1 (Draft)
+            </Link>.
           </p>
           
           <p>
