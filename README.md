@@ -149,7 +149,7 @@ These boundaries are intentional.
 
 ## License
 
-Documentation and specifications in this repository are released under a permissive open-documentation license unless otherwise stated.
+This repository is licensed under the [Apache License 2.0](LICENSE).
 
 ---
 
