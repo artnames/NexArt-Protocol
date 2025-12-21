@@ -65,7 +65,7 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       maxWidth: {
-        prose: "680px",
+        prose: "681px",
       },
       spacing: {
         "18": "4.5rem",
