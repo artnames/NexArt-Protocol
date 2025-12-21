@@ -3,9 +3,9 @@ const Footer = () => {
     <footer className="border-t border-border mt-24">
       <div className="max-w-5xl mx-auto px-6 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm text-caption">
-          <p>NexArt Protocol v0.1</p>
+          <p>NexArt Protocol (v0.x) · Current version: v0.4</p>
           <p>
-            Application:{" "}
+            Reference application:{" "}
             <a
               href="https://nexart.xyz"
               target="_blank"
