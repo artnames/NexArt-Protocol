@@ -1,73 +1,156 @@
-# Welcome to your Lovable project
+# NexArt Protocol
 
-## Project info
+**Status:** Active · Production  
+**Current Version:** v0.4  
+**Canonical Docs:** https://nexart.io  
+**Reference App:** https://nexart.xyz
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+---
 
-## How can I edit this code?
+## What Is NexArt?
 
-There are several ways of editing your application.
+NexArt is an open protocol for generative and sound-driven art systems.
 
-**Use Lovable**
+It defines what a generative system is, how it is represented, validated, versioned, and reproduced — independently of any single application, renderer, or interface.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+> Applications may change.  
+> Standards must persist.
 
-Changes made via Lovable will be committed automatically to this repo.
+NexArt separates systems from outputs, enabling generative artworks to remain reproducible, verifiable, and portable over time.
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Protocol vs Application
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+NexArt consists of two distinct layers:
 
-Follow these steps:
+### Protocol Layer (this repository documents)
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+- Canonical system schemas
+- Determinism and reproducibility guarantees
+- Validation and enforcement rules
+- Versioning and backward compatibility
+- Long-term portability
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Application Layer
 
-# Step 3: Install the necessary dependencies.
-npm i
+- Creator-facing tools
+- Editors and interfaces
+- Rendering implementations
+- Publishing and minting UX
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+The primary reference application is nexart.xyz, but the protocol is designed to support multiple future implementations.
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Current Protocol Status (v0.4)
 
-**Use GitHub Codespaces**
+Enforcement is incremental and mode-specific.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Hard-Enforced (Production)
 
-## What technologies are used for this project?
+- **Shapes**
+- **Artnames**
 
-This project is built with:
+These systems are fully validated and governed by the protocol. Invalid systems are rejected.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Soft-Enforced (Production with Observability)
 
-## How can I deploy this project?
+- **SoundArt**
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+SoundArt systems are validated and logged. Invalid systems are not blocked yet, but enforcement readiness is tracked.
 
-## Can I connect a custom domain to my Lovable project?
+### Experimental / Non-Protocol
 
-Yes, you can!
+- **Code Mode v0.x**
+- **Noise**
+- **Fluids**
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+These modes are not protocol-governed and provide no reproducibility guarantees.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+---
+
+## Code Mode Status
+
+### Code Mode v0.x
+
+- Experimental
+- Browser-dependent
+- Best-effort rendering only
+- Not governed by the protocol
+
+### Code Mode v1 (Draft)
+
+A proposed protocol-stable generative system language.
+
+- Deterministic
+- Renderer-agnostic
+- Statically validatable
+- Versioned and portable
+
+**Important:**  
+Code Mode v1 is a design draft only.  
+It is not implemented, not enforced, and provides no guarantees yet.
+
+See: *Code Mode v1 (Draft)* in the documentation.
+
+---
+
+## Determinism & Guarantees
+
+The NexArt Protocol makes explicit, bounded guarantees:
+
+- Deterministic systems produce the same output for the same inputs
+- Best-effort systems may vary across renderers and hardware
+- Backward compatibility is preserved once a schema is frozen
+- New capabilities require new protocol versions
+
+Perfect pixel-level identity across all environments is not claimed where hardware variance applies.
+
+---
+
+## Governance & Evolution
+
+The protocol evolves via:
+
+- Engineering-led stewardship
+- Incremental enforcement
+- Explicit non-goals
+- Conservative versioning
+
+NexArt is not currently governed by a DAO.  
+Token-based governance may be considered in the future, but is not assumed.
+
+---
+
+## Canonical Sources of Truth
+
+- **Human-readable documentation:** https://nexart.io
+- **Reference implementation:** https://nexart.xyz
+- **This repository:** Canonical public mirror of the protocol documentation
+
+If a conflict exists, nexart.io is authoritative.
+
+---
+
+## Non-Goals
+
+The NexArt Protocol is **not**:
+
+- A general-purpose programming language
+- A standalone rendering service
+- A DAO or token-governed system (at present)
+- A finished or static specification
+- A replacement for existing generative art platforms
+
+These boundaries are intentional.
+
+---
+
+## License
+
+Documentation and specifications in this repository are released under a permissive open-documentation license unless otherwise stated.
+
+---
+
+> **NexArt defines systems — not just images.**
