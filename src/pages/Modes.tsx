@@ -46,6 +46,13 @@ const Modes = () => {
 
           <h2>Code Mode</h2>
           
+          <div className="bg-muted/50 border border-border rounded-md p-4 mb-6">
+            <p className="text-sm text-muted-foreground mb-0">
+              <strong>Status:</strong> Experimental (v0.x). Not protocol-governed.<br />
+              See <a href="/code-mode-v1" className="text-link hover:text-link-hover underline underline-offset-2">Code Mode v1 (Draft)</a> for the proposed protocol specification.
+            </p>
+          </div>
+          
           <p>
             <strong>Intent.</strong> Code Mode allows direct specification of generative logic through code. It provides maximum control for technically sophisticated artists.
           </p>
@@ -140,7 +147,9 @@ const Modes = () => {
             <li><strong>Shapes</strong> — Hard enforced</li>
             <li><strong>Artnames</strong> — Hard enforced</li>
             <li><strong>SoundArt</strong> — Soft enforced (observability phase)</li>
-            <li><strong>Other modes</strong> — Not enforced</li>
+            <li><strong>Fluids</strong> — Not enforced</li>
+            <li><strong>Noise</strong> — Not enforced</li>
+            <li><strong>Code Mode</strong> — Experimental (non-protocol)</li>
           </ul>
 
           <h2>Mode Parity</h2>

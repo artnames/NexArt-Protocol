@@ -61,7 +61,12 @@ const Builders = () => {
           </p>
           
           <p>
-            What matters is that your implementation conforms to the protocol where it applies. If you support Shapes, you support Shapes fully. If you claim determinism, you deliver it. Note that enforcement may differ by system type during early versions of the protocol.
+            The specification is stable and enforced for certain system types (Shapes, Artnames). Other modes remain under development. What matters is that your implementation conforms to the protocol where it applies. If you support Shapes, you support Shapes fully. If you claim determinism, you deliver it.
+          </p>
+          
+          <p>
+            Code Mode v0.x is experimental. A protocol-governed Code Mode is defined in the{" "}
+            <a href="/code-mode-v1" className="text-link hover:text-link-hover underline underline-offset-2">Code Mode v1 Draft</a>.
           </p>
 
           <h2>Ways to Contribute Now</h2>
