@@ -145,6 +145,80 @@
   .prose-protocol code {
     @apply text-sm px-1.5 py-0.5 bg-muted rounded text-foreground;
   }
+
+  /* Specification document styles */
+  .prose-spec h2 {
+    @apply text-2xl mt-16 mb-6 text-foreground font-serif;
+  }
+
+  .prose-spec h3 {
+    @apply text-lg mt-10 mb-4 text-foreground font-serif;
+  }
+
+  .prose-spec h4 {
+    @apply text-base mt-8 mb-3 text-foreground font-semibold;
+  }
+
+  .spec-table-wrapper {
+    @apply my-6 overflow-x-auto;
+  }
+
+  .spec-table {
+    @apply w-full text-sm border-collapse;
+  }
+
+  .spec-table th {
+    @apply text-left font-mono text-xs uppercase tracking-wider text-caption py-2 px-3 border-b border-border bg-muted/50;
+  }
+
+  .spec-table td {
+    @apply py-2 px-3 border-b border-border text-body;
+  }
+
+  .spec-table tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .spec-code {
+    @apply my-6 p-4 bg-muted rounded-sm overflow-x-auto text-sm font-mono leading-relaxed;
+  }
+
+  .spec-code code {
+    @apply bg-transparent p-0 text-foreground;
+  }
+
+  .spec-warning {
+    @apply my-8 p-6 bg-destructive/5 border-l-4 border-destructive rounded-r-sm;
+  }
+
+  .spec-warning-title {
+    @apply font-mono text-sm font-semibold text-destructive mb-3 uppercase tracking-wide;
+  }
+
+  .spec-warning p {
+    @apply text-body mb-3;
+  }
+
+  .spec-warning p:last-child {
+    @apply mb-0;
+  }
+
+  .spec-warning ul {
+    @apply list-disc pl-6 mb-3 space-y-1 text-body;
+  }
+
+  .spec-checklist {
+    @apply list-none pl-0 mb-6 space-y-2;
+  }
+
+  .spec-checklist li {
+    @apply text-body pl-6 relative;
+  }
+
+  .spec-checklist li::before {
+    content: "☐";
+    @apply absolute left-0 text-caption;
+  }
 }
 
 @layer utilities {

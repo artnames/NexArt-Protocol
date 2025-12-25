@@ -14,6 +14,7 @@ import NonGoals from "./pages/NonGoals";
 import Builders from "./pages/Builders";
 import Governance from "./pages/Governance";
 import CodeModeV1 from "./pages/CodeModeV1";
+import CodeModeExecution from "./pages/CodeModeExecution";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/builders" element={<Builders />} />
             <Route path="/governance" element={<Governance />} />
             <Route path="/code-mode-v1" element={<CodeModeV1 />} />
+            <Route path="/code-mode-execution" element={<CodeModeExecution />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
