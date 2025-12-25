@@ -16,6 +16,7 @@ import Governance from "./pages/Governance";
 import CodeMode from "./pages/CodeMode";
 import CodeModeV1 from "./pages/CodeModeV1";
 import CodeModeExecution from "./pages/CodeModeExecution";
+import HowCodeModeThinks from "./pages/HowCodeModeThinks";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/code-mode" element={<CodeMode />} />
             <Route path="/code-mode-v1" element={<CodeModeV1 />} />
             <Route path="/code-mode-execution" element={<CodeModeExecution />} />
+            <Route path="/how-code-mode-thinks" element={<HowCodeModeThinks />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -31,6 +31,30 @@ const CodeMode = () => {
       </div>
 
       <PageContent>
+        {/* Conceptual Guide */}
+        <div className="mb-10">
+          <Link
+            to="/how-code-mode-thinks"
+            className="group block border border-border p-6 hover:border-foreground/30 transition-colors"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <h2 className="text-lg font-serif text-foreground group-hover:underline">
+                How Code Mode Thinks
+              </h2>
+              <Badge variant="outline" className="text-xs border-foreground/30 text-caption">
+                GUIDE
+              </Badge>
+            </div>
+            <p className="text-body text-sm mb-0">
+              A conceptual guide for artists. Understand the mental model, predict behavior, avoid common mistakes.
+            </p>
+          </Link>
+        </div>
+
+        <p className="text-xs font-mono text-caption uppercase tracking-wider mb-6">
+          Specifications
+        </p>
+
         <div className="grid gap-8 md:grid-cols-2">
           {/* Runtime Spec Card */}
           <Link
