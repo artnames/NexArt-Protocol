@@ -181,6 +181,52 @@ const Builders = () => {
             <strong>Archiving.</strong> For long-term preservation, the canonical unit is stored with its dependencies and version metadata. Future renderers can reconstruct the original output.
           </p>
 
+          <h2>Reference Runtime (Code Mode)</h2>
+          
+          <p>
+            NexArt currently provides a reference runtime for Code Mode rendering.
+          </p>
+          
+          <p>
+            This runtime is not the protocol itself. It is a practical implementation used by the NexArt app and by third-party tools.
+          </p>
+          
+          <h3>Package</h3>
+          
+          <p>
+            <code className="bg-muted px-2 py-1 rounded text-sm">@nexart/codemode-sdk</code>
+          </p>
+          
+          <h3>What it provides</h3>
+          
+          <ul>
+            <li>Deterministic rendering runtime (static + loop)</li>
+            <li>A p5-compatible drawing surface</li>
+            <li>The execution model used by NexArt Code Mode v0.x</li>
+          </ul>
+          
+          <h3>What it does not do</h3>
+          
+          <ul>
+            <li>It does not define the protocol</li>
+            <li>It does not enforce Shapes or Artnames rules</li>
+            <li>It is not required to build a NexArt renderer</li>
+          </ul>
+          
+          <p>
+            Builders are free to:
+          </p>
+          
+          <ul>
+            <li>Use this runtime directly</li>
+            <li>Reimplement it</li>
+            <li>Replace it entirely</li>
+          </ul>
+          
+          <p>
+            The protocol defines what must be rendered. The runtime is one way to do so.
+          </p>
+
           <h2>Source Code and Repositories</h2>
           
           <p>
