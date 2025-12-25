@@ -20,6 +20,16 @@ const CodeModeV1 = () => {
       />
       
       <PageContent>
+        {/* Prominent Status Banner */}
+        <div className="border-2 border-dashed border-caption bg-muted/50 px-6 py-4 mb-8 -mx-6 sm:-mx-0 sm:mx-0">
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-xs font-bold tracking-wider text-caption">DRAFT · NOT IMPLEMENTED · NOT ENFORCED</span>
+          </div>
+          <p className="text-sm mt-2 mb-0 text-body">
+            This is a <strong>design proposal only</strong>. None of this behavior exists in nexart.xyz today.
+          </p>
+        </div>
+
         <div className="prose-protocol">
           {/* Status Notice */}
           <div className="border-2 border-caption/50 bg-muted/30 p-6 mb-8">

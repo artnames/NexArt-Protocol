@@ -63,6 +63,16 @@ const CodeModeExecution = () => {
       </div>
 
       <PageContent>
+        {/* Prominent Status Banner */}
+        <div className="bg-foreground text-background px-6 py-4 mb-8 -mx-6 sm:-mx-0 sm:mx-0">
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-xs font-bold tracking-wider">CURRENT · IMPLEMENTED · ENFORCED</span>
+          </div>
+          <p className="text-sm mt-2 mb-0 opacity-90">
+            This specification describes runtime behavior that is <strong>live and enforced</strong> in nexart.xyz today.
+          </p>
+        </div>
+
         <div className="prose-protocol prose-spec">
           {/* Section 1 */}
           <h2>1. Overview</h2>
