@@ -15,53 +15,26 @@ const CodeModeV1 = () => {
       
       <PageHeader 
         title="Code Mode v1 — GSL Language Draft"
-        subtitle="Status: Draft · Not Implemented · Not Enforced · No Guarantees Yet"
+        subtitle="Proposed Protocol-Stable Generative Language"
         badge={<Badge variant="outline" className="text-xs border-caption text-caption">DRAFT</Badge>}
       />
       
       <PageContent>
-        {/* Prominent Status Banner */}
+        {/* Single Clear Draft Banner */}
         <div className="border-2 border-dashed border-caption bg-muted/50 px-6 py-4 mb-8 -mx-6 sm:-mx-0 sm:mx-0">
           <div className="flex items-center gap-3">
-            <span className="font-mono text-xs font-bold tracking-wider text-caption">DRAFT · NOT IMPLEMENTED · NOT ENFORCED</span>
+            <span className="font-mono text-xs font-bold tracking-wider text-caption">DRAFT — NOT IMPLEMENTED</span>
           </div>
           <p className="text-sm mt-2 mb-0 text-body">
-            This is a <strong>design proposal only</strong>. None of this behavior exists in nexart.xyz today.
+            This document defines a proposed protocol-stable generative language (GSL).
+            <br />
+            <strong>None of the behavior described here exists in nexart.xyz today.</strong>
           </p>
         </div>
 
         <div className="prose-protocol">
-          {/* Status Notice */}
-          <div className="border-2 border-caption/50 bg-muted/30 p-6 mb-8">
-            <p className="font-medium text-foreground mb-2">Status Notice</p>
-            <p className="text-body text-sm mb-2">
-              This document is a design proposal for a protocol-stable generative language (GSL).
-            </p>
-            <p className="text-body text-sm mb-4">
-              It is <strong>not</strong> implemented in nexart.xyz and provides no runtime guarantees yet.
-            </p>
-            <p className="text-caption text-sm mb-0">
-              Looking for current implemented behavior?{" "}
-              <Link to="/code-mode-execution" className="underline hover:text-foreground">
-                Code Mode Runtime (v0.x) →
-              </Link>
-            </p>
-          </div>
-
-          {/* Callout Box */}
-          <div className="border border-border bg-muted/30 p-6 mb-12">
-            <p className="text-body mb-0">
-              This document defines a proposed protocol-level specification for Code Mode v1 (internally named the NexArt Generative System Language, GSL).
-            </p>
-            <p className="text-body mt-4 mb-0">
-              It is a design proposal only. It is not implemented in nexart.xyz, not enforced by the protocol, and does not provide guarantees yet.
-            </p>
-          </div>
-
           {/* Document Header */}
           <div className="mb-12 text-caption text-sm space-y-1">
-            <p><strong>Status:</strong> DESIGN PROPOSAL</p>
-            <p><strong>Implementation:</strong> Not Implemented · Not Enforced · No Guarantees Yet</p>
             <p><strong>Version:</strong> v1.0-draft</p>
             <p><strong>Internal Name:</strong> NexArt Generative System Language (GSL) v1</p>
           </div>
@@ -99,10 +72,39 @@ const CodeModeV1 = () => {
             <li>This enables validation, determinism, and protocol guarantees</li>
           </ul>
 
+          <div className="border border-border bg-muted/30 p-4 my-6">
+            <p className="text-body mb-0 text-sm">
+              GSL borrows familiar concepts from p5.js to reduce cognitive friction,
+              but compatibility is intentional, partial, and non-goal-driven.
+              <br />
+              <strong>Familiarity does not imply equivalence.</strong>
+            </p>
+          </div>
+
+          {/* Status Reminder before Technical Spec */}
+          <div className="border border-caption/50 bg-muted/30 p-4 mb-8">
+            <p className="text-caption text-sm mb-0">
+              For current implemented behavior, see{" "}
+              <Link to="/code-mode-execution" className="underline hover:text-foreground">
+                Code Mode Runtime (v0.x) →
+              </Link>
+            </p>
+          </div>
+
           {/* 2. Inventory Analysis */}
           <h2>2. Inventory Analysis</h2>
 
           <h3>2.1 Current Code Mode v0.x Surface</h3>
+          
+          {/* Important Warning */}
+          <div className="border-2 border-caption/50 bg-muted/30 p-4 mb-6">
+            <p className="font-medium text-foreground mb-1 text-sm">Important</p>
+            <p className="text-body text-sm mb-0">
+              This inventory describes the current runtime surface in nexart.xyz (v0.x).
+              <br />
+              It does not guarantee availability or inclusion in GSL v1.
+            </p>
+          </div>
           
           <p>
             The current implementation exposes 210+ functions. They fall into three categories.
