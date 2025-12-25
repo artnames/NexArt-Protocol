@@ -31,13 +31,19 @@ const HowCodeModeThinks = () => {
           </p>
         </div>
 
-        {/* Link to Common Mistakes */}
-        <div className="mb-8">
+        {/* Related Links */}
+        <div className="flex flex-wrap gap-x-6 gap-y-2 mb-8 text-sm">
           <Link
             to="/common-code-mode-mistakes"
-            className="inline-flex items-center gap-2 text-sm text-foreground underline underline-offset-2 hover:text-body"
+            className="text-foreground underline underline-offset-2 hover:text-body"
           >
-            See also: Common Code Mode Mistakes (and Why They Happen) →
+            Common Mistakes →
+          </Link>
+          <Link
+            to="/code-mode-quick-reference"
+            className="text-foreground underline underline-offset-2 hover:text-body"
+          >
+            Quick Reference →
           </Link>
         </div>
 

@@ -36,7 +36,7 @@ const CodeMode = () => {
           Guides
         </p>
         
-        <div className="grid gap-4 md:grid-cols-2 mb-10">
+        <div className="grid gap-4 md:grid-cols-3 mb-10">
           <Link
             to="/how-code-mode-thinks"
             className="group block border border-border p-6 hover:border-foreground/30 transition-colors"
@@ -50,7 +50,7 @@ const CodeMode = () => {
               </Badge>
             </div>
             <p className="text-body text-sm mb-0">
-              The conceptual model for artists. Understand execution, predict behavior, write from first principles.
+              The conceptual model for artists.
             </p>
           </Link>
           
@@ -67,7 +67,24 @@ const CodeMode = () => {
               </Badge>
             </div>
             <p className="text-body text-sm mb-0">
-              Diagnose unexpected behavior. Recognize patterns, understand causes, shift your mental model.
+              Diagnose unexpected behavior.
+            </p>
+          </Link>
+          
+          <Link
+            to="/code-mode-quick-reference"
+            className="group block border border-border p-6 hover:border-foreground/30 transition-colors"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <h2 className="text-lg font-serif text-foreground group-hover:underline">
+                Quick Reference
+              </h2>
+              <Badge variant="outline" className="text-xs border-foreground/30 text-caption">
+                PRINT
+              </Badge>
+            </div>
+            <p className="text-body text-sm mb-0">
+              One-page printable cheat sheet.
             </p>
           </Link>
         </div>
