@@ -1,23 +1,43 @@
+import { Link } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
 import { Helmet } from "react-helmet-async";
+import { Badge } from "@/components/ui/badge";
 
 const CodeModeV1 = () => {
   return (
     <PageLayout>
       <Helmet>
-        <title>Code Mode v1 — Draft Specification - NexArt Protocol</title>
+        <title>Code Mode v1 — GSL Language Draft - NexArt Protocol</title>
         <meta name="description" content="Proposed protocol-level specification for Code Mode v1 (NexArt Generative System Language). Design proposal only — not implemented, not enforced." />
       </Helmet>
       
       <PageHeader 
-        title="Code Mode v1 — Draft Specification"
+        title="Code Mode v1 — GSL Language Draft"
         subtitle="Status: Draft · Not Implemented · Not Enforced · No Guarantees Yet"
+        badge={<Badge variant="outline" className="text-xs border-caption text-caption">DRAFT</Badge>}
       />
       
       <PageContent>
         <div className="prose-protocol">
+          {/* Status Notice */}
+          <div className="border-2 border-caption/50 bg-muted/30 p-6 mb-8">
+            <p className="font-medium text-foreground mb-2">Status Notice</p>
+            <p className="text-body text-sm mb-2">
+              This document is a design proposal for a protocol-stable generative language (GSL).
+            </p>
+            <p className="text-body text-sm mb-4">
+              It is <strong>not</strong> implemented in nexart.xyz and provides no runtime guarantees yet.
+            </p>
+            <p className="text-caption text-sm mb-0">
+              Looking for current implemented behavior?{" "}
+              <Link to="/code-mode-execution" className="underline hover:text-foreground">
+                Code Mode Runtime (v0.x) →
+              </Link>
+            </p>
+          </div>
+
           {/* Callout Box */}
           <div className="border border-border bg-muted/30 p-6 mb-12">
             <p className="text-body mb-0">

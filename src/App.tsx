@@ -13,6 +13,7 @@ import Glossary from "./pages/Glossary";
 import NonGoals from "./pages/NonGoals";
 import Builders from "./pages/Builders";
 import Governance from "./pages/Governance";
+import CodeMode from "./pages/CodeMode";
 import CodeModeV1 from "./pages/CodeModeV1";
 import CodeModeExecution from "./pages/CodeModeExecution";
 import NotFound from "./pages/NotFound";
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/non-goals" element={<NonGoals />} />
             <Route path="/builders" element={<Builders />} />
             <Route path="/governance" element={<Governance />} />
+            <Route path="/code-mode" element={<CodeMode />} />
             <Route path="/code-mode-v1" element={<CodeModeV1 />} />
             <Route path="/code-mode-execution" element={<CodeModeExecution />} />
             <Route path="*" element={<NotFound />} />

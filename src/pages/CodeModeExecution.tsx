@@ -39,14 +39,25 @@ const CodeModeExecution = () => {
             </BreadcrumbList>
           </Breadcrumb>
           
-          <p className="text-xs font-mono text-caption uppercase tracking-wider mb-4">
-            Protocol Specification — Code Mode
-          </p>
+          <div className="flex items-center gap-3 mb-4">
+            <p className="text-xs font-mono text-caption uppercase tracking-wider">
+              Protocol Specification — Code Mode
+            </p>
+            <span className="inline-flex items-center px-2 py-0.5 text-xs font-mono bg-foreground text-background">
+              CURRENT
+            </span>
+          </div>
           <h1 className="text-3xl sm:text-4xl font-serif text-foreground mb-4">
-            NexArt Code Mode — Execution Specification
+            NexArt Code Mode — Runtime Execution Specification (v0.x)
           </h1>
-          <p className="text-body text-lg max-w-2xl">
-            Version 1.0 · Status: CURRENT · Last Updated: December 2024
+          <p className="text-body text-lg max-w-2xl mb-6">
+            Version 1.0 · Status: CURRENT · Implemented in nexart.xyz · Enforced by the app · Last Updated: December 2025
+          </p>
+          <p className="text-caption text-sm">
+            Looking for the protocol-stable language design?{" "}
+            <Link to="/code-mode-v1" className="underline hover:text-foreground">
+              Code Mode v1 (GSL Draft) →
+            </Link>
           </p>
         </div>
       </div>
@@ -55,6 +66,24 @@ const CodeModeExecution = () => {
         <div className="prose-protocol prose-spec">
           {/* Section 1 */}
           <h2>1. Overview</h2>
+
+          {/* Scope Clarification Callout */}
+          <div className="border border-border bg-muted/30 p-6 mb-8">
+            <p className="font-medium text-foreground mb-2">Scope Clarification</p>
+            <p className="text-body text-sm mb-2">
+              This document specifies the current Code Mode runtime behavior implemented in nexart.xyz (v0.x), including Static and Loop rendering and minting.
+            </p>
+            <p className="text-body text-sm mb-2">
+              It is <strong>not</strong> the protocol-stable language definition.
+            </p>
+            <p className="text-body text-sm mb-0">
+              For the proposed future language spec, see{" "}
+              <Link to="/code-mode-v1" className="underline hover:text-foreground">
+                Code Mode v1 — GSL Language Draft
+              </Link>.
+            </p>
+          </div>
+
           <p>
             NexArt Code Mode provides a controlled execution environment for generative art creation. It supports both static image generation and looping animations suitable for minting as NFTs.
           </p>
