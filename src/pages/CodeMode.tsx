@@ -31,8 +31,12 @@ const CodeMode = () => {
       </div>
 
       <PageContent>
-        {/* Conceptual Guide */}
-        <div className="mb-10">
+        {/* Guides Section */}
+        <p className="text-xs font-mono text-caption uppercase tracking-wider mb-6">
+          Guides
+        </p>
+        
+        <div className="grid gap-4 md:grid-cols-2 mb-10">
           <Link
             to="/how-code-mode-thinks"
             className="group block border border-border p-6 hover:border-foreground/30 transition-colors"
@@ -46,7 +50,24 @@ const CodeMode = () => {
               </Badge>
             </div>
             <p className="text-body text-sm mb-0">
-              A conceptual guide for artists. Understand the mental model, predict behavior, avoid common mistakes.
+              The conceptual model for artists. Understand execution, predict behavior, write from first principles.
+            </p>
+          </Link>
+          
+          <Link
+            to="/common-code-mode-mistakes"
+            className="group block border border-border p-6 hover:border-foreground/30 transition-colors"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <h2 className="text-lg font-serif text-foreground group-hover:underline">
+                Common Mistakes
+              </h2>
+              <Badge variant="outline" className="text-xs border-foreground/30 text-caption">
+                GUIDE
+              </Badge>
+            </div>
+            <p className="text-body text-sm mb-0">
+              Diagnose unexpected behavior. Recognize patterns, understand causes, shift your mental model.
             </p>
           </Link>
         </div>
