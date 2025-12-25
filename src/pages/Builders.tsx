@@ -19,7 +19,7 @@ const Builders = () => {
       <PageContent>
         <div className="prose-protocol">
           <p>
-            This page is for developers, artists, and researchers who want to build tools, renderers, or applications that work with the NexArt protocol. It is orientation, not onboarding. Detailed documentation will come later.
+            This page is for developers, renderer authors, and researchers who want to build tools or applications that work with the NexArt protocol. It is orientation, not onboarding.
           </p>
 
           <h2>Who This Is For</h2>
@@ -30,63 +30,125 @@ const Builders = () => {
           
           <ul>
             <li>
-              <strong>Creative technologists</strong> building tools for generative art
+              <strong>Renderer implementers</strong> building alternative renderers or embedding NexArt output in other systems
             </li>
             <li>
-              <strong>Renderer implementers</strong> who want to support NexArt systems
+              <strong>Tool developers</strong> creating authoring environments, validators, or converters
             </li>
             <li>
-              <strong>Archive and preservation projects</strong> seeking durable art formats
+              <strong>Archive and preservation projects</strong> seeking durable, self-describing art formats
             </li>
             <li>
-              <strong>Platform developers</strong> integrating generative art into larger systems
+              <strong>Platform developers</strong> integrating generative art into galleries, marketplaces, or exhibition systems
             </li>
             <li>
-              <strong>Artists</strong> who work at the intersection of code and visual art
+              <strong>Researchers</strong> studying determinism, reproducibility, or long-term software preservation
             </li>
           </ul>
           
           <p>
-            You do not need to be an expert in any of these areas. You need curiosity, patience, and a willingness to work with incomplete specifications.
+            You do not need to be an expert. You need clarity about what the protocol guarantees and what it does not.
           </p>
 
           <h2>What It Means to Build Against the Protocol</h2>
           
           <p>
-            Building "against" the protocol means implementing the specification—reading canonical units, rendering systems, and producing conforming output.
+            Building against the protocol means implementing behavior defined by the specification—reading canonical units, rendering systems, and producing conforming output.
           </p>
           
           <p>
-            You are not required to implement everything. A renderer might support only Shapes mode. A tool might only read systems, not create them. Partial implementations are welcome and encouraged.
+            You are not required to implement everything. A renderer might support only Shapes mode. A tool might only validate systems, not render them. Partial implementations are expected and encouraged.
           </p>
           
           <p>
-            The specification is stable and enforced for certain system types (Shapes, Artnames). Other modes remain under development. What matters is that your implementation conforms to the protocol where it applies. If you support Shapes, you support Shapes fully. If you claim determinism, you deliver it.
-          </p>
-          
-          <p>
-            Code Mode v0.x is experimental. A protocol-governed Code Mode is defined in the{" "}
-            <a href="/code-mode-v1" className="text-link hover:text-link-hover underline underline-offset-2">Code Mode v1 Draft</a>.
-          </p>
-
-          <h2>Ways to Contribute Now</h2>
-          
-          <p>
-            Even at this early stage, there are meaningful ways to participate:
+            The protocol distinguishes between what is <strong>enforced</strong> and what is <strong>reference behavior</strong>:
           </p>
           
           <ul>
             <li>
-              <strong>Build a read-only parser</strong> — Implement a tool that reads and validates canonical units
+              <strong>Shapes</strong> and <strong>Artnames</strong> are protocol-enforced and stable. Conforming implementations must match the specification exactly.
             </li>
             <li>
-              <strong>Prototype a single-mode renderer</strong> — Build a renderer that supports one mode (Shapes or Noise are good starting points)
+              <strong>Code Mode v0.x</strong> is runtime-defined and deterministic, but not yet fully protocol-enforced. Implementations should follow the reference renderer.
+            </li>
+          </ul>
+          
+          <p>
+            If you claim conformance to a mode, you must conform fully. If you claim determinism, you must deliver it.
+          </p>
+
+          <h2>Reference Implementation</h2>
+          
+          <p>
+            <strong>nexart.xyz</strong> is the canonical reference implementation of the NexArt protocol. It defines correct rendering behavior for all modes, including those not yet fully specified at the protocol level.
+          </p>
+          
+          <p>
+            For Code Mode v0.x, nexart.xyz is authoritative. If your renderer produces different output for the same system, nexart.xyz is considered correct.
+          </p>
+          
+          <p>
+            For protocol-enforced modes (Shapes, Artnames), the specification is authoritative. nexart.xyz implements the specification; both should agree.
+          </p>
+
+          <h2>Code Mode Status</h2>
+          
+          <p>
+            Code Mode exists in two states:
+          </p>
+          
+          <ul>
+            <li>
+              <strong>Code Mode v0.x</strong> — The current runtime. Deterministic, stable in behavior, but defined by the reference implementation rather than a formal specification. Available now via the NexArt Code Mode Runtime SDK.
             </li>
             <li>
-              <strong>Create a validator</strong> — Write a tool that checks whether a canonical unit conforms to the specification
+              <strong>Code Mode v1 (GSL Draft)</strong> — A proposed protocol-governed language. Not implemented. See the{" "}
+              <a href="/code-mode-v1" className="text-link hover:text-link-hover underline underline-offset-2">GSL v1 Draft</a> for the design direction.
+            </li>
+          </ul>
+          
+          <p>
+            Builders working with Code Mode today should target v0.x and expect future migration guidance when v1 stabilizes.
+          </p>
+
+          <h2>SDKs and Developer Tools</h2>
+          
+          <p>
+            The <strong>NexArt Code Mode Runtime SDK</strong> is published and available via npm. It provides the runtime surface used by nexart.xyz for Code Mode execution.
+          </p>
+          
+          <p>
+            The SDK enables:
+          </p>
+          
+          <ul>
+            <li>Deterministic frame rendering for Static and Loop systems</li>
+            <li>Consistent random number generation</li>
+            <li>Time-normalized animation execution</li>
+          </ul>
+          
+          <p>
+            Additional SDKs for other modes and for canonical unit parsing are under development. Announcements will be made here when they are available.
+          </p>
+
+          <h2>Ways to Contribute Today</h2>
+          
+          <p>
+            There are meaningful ways to participate now:
+          </p>
+          
+          <ul>
+            <li>
+              <strong>Build a single-mode renderer</strong> — Implement Shapes or Artnames rendering and validate against the specification
             </li>
             <li>
-              <strong>Provide feedback</strong> — Read this documentation critically and share what is unclear, missing, or wrong
+              <strong>Create a validator</strong> — Write a tool that checks whether a canonical unit conforms to the protocol
+            </li>
+            <li>
+              <strong>Test the SDK</strong> — Use the Code Mode Runtime SDK and report inconsistencies or unclear behavior
+            </li>
+            <li>
+              <strong>Provide specification feedback</strong> — Read this documentation critically and identify what is unclear, incomplete, or incorrect
             </li>
             <li>
               <strong>Submit proposals</strong> — If you see a better way to define something, write it up
@@ -96,11 +158,11 @@ const Builders = () => {
           <h2>Lifecycle of a NexArt System</h2>
           
           <p>
-            At a high level, a NexArt system moves through these stages:
+            A NexArt system moves through these stages:
           </p>
           
           <p>
-            <strong>Creation.</strong> An artist uses a tool (the NexArt app or a third-party implementation) to author a system. The tool produces a canonical unit.
+            <strong>Creation.</strong> An artist uses a tool (nexart.xyz or a third-party implementation) to author a system. The tool produces a canonical unit.
           </p>
           
           <p>
@@ -119,42 +181,24 @@ const Builders = () => {
             <strong>Archiving.</strong> For long-term preservation, the canonical unit is stored with its dependencies and version metadata. Future renderers can reconstruct the original output.
           </p>
 
-          <h2>SDKs and Tools</h2>
+          <h2>Source Code and Repositories</h2>
           
           <p>
-            Reference implementations, SDKs, and developer tools are planned but not yet available. The current focus is on stabilizing the specification.
+            The NexArt Code Mode Runtime SDK is available on npm. Protocol specifications and additional tooling will be published to public repositories as they stabilize.
           </p>
           
           <p>
-            When tools are ready, they will be announced here and published to a public repository.
-          </p>
-
-          <h2>Source Code</h2>
-          
-          <p>
-            The protocol specification and reference implementations will be open source. A GitHub repository is being prepared.
-          </p>
-          
-          <p>
-            <span className="text-caption">Repository link: coming soon</span>
-          </p>
-          
-          <p>
-            The repository will include the specification, reference implementations as they stabilize, and contribution guidelines.
+            Repository links and contribution guidelines will be posted here when available.
           </p>
 
           <h2>How to Get Involved</h2>
           
           <p>
-            Read this documentation, think about what you might build, and consider starting a partial implementation or providing feedback.
+            Read this documentation. Understand what is stable, what is experimental, and what is proposed. Consider building a partial implementation or providing feedback on the specification.
           </p>
           
           <p>
-            If you have questions, feedback, or proposals, contact channels will be established as the project develops.
-          </p>
-          
-          <p>
-            Building a protocol is slow work. Early contributions—even reading and critique—are valuable.
+            Protocol work is slow and deliberate. Early contributions—including reading, testing, and critique—are valuable.
           </p>
         </div>
       </PageContent>
