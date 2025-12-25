@@ -31,6 +31,16 @@ const HowCodeModeThinks = () => {
           </p>
         </div>
 
+        {/* Link to Common Mistakes */}
+        <div className="mb-8">
+          <Link
+            to="/common-code-mode-mistakes"
+            className="inline-flex items-center gap-2 text-sm text-foreground underline underline-offset-2 hover:text-body"
+          >
+            See also: Common Code Mode Mistakes (and Why They Happen) →
+          </Link>
+        </div>
+
         <div className="prose-protocol">
           {/* Section 1 */}
           <h2>1. What Code Mode Is (and Is Not)</h2>
