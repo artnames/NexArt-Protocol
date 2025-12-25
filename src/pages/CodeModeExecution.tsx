@@ -225,6 +225,7 @@ const CodeModeExecution = () => {
           {/* Section 4 */}
           <h2>4. Loop Mode Specification</h2>
           <p>Loop Mode generates animated content as a sequence of deterministically rendered frames.</p>
+          <p>The runtime clears the canvas before each frame. Artists must call <code>background()</code> inside <code>draw()</code> if a visible background is desired.</p>
 
           <h3>4.1 Configuration</h3>
           <div className="spec-table-wrapper">
