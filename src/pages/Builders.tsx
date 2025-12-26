@@ -22,6 +22,51 @@ const Builders = () => {
             This page is for developers, renderer authors, and researchers who want to build tools or applications that work with the NexArt protocol. It is orientation, not onboarding.
           </p>
 
+          <h2>What Is the NexArt Protocol</h2>
+          
+          <p>
+            The NexArt protocol defines generative systems, not just outputs. A NexArt artwork is a canonical system—a complete, self-describing unit that can be re-rendered in the future with identical results.
+          </p>
+          
+          <p>
+            The protocol guarantees:
+          </p>
+          
+          <ul>
+            <li>
+              <strong>Determinism</strong> — The same input produces the same output, always
+            </li>
+            <li>
+              <strong>Versioning</strong> — Systems declare their runtime version; renderers respect it
+            </li>
+            <li>
+              <strong>Reproducibility</strong> — A canonical unit can be archived, transmitted, and rendered decades later
+            </li>
+          </ul>
+          
+          <p>
+            Interfaces are replaceable. The protocol is not. Renderers may change, tools may evolve, but a conforming system will always produce the same visual output when executed correctly.
+          </p>
+
+          <h2>Canonical vs Exploratory Rendering</h2>
+          
+          <p>
+            Not all renderers are equal. The NexArt protocol explicitly distinguishes between two categories:
+          </p>
+          
+          <ul>
+            <li>
+              <strong>Canonical renderers</strong> — Archival, protocol-enforced. These produce output that can be trusted for long-term preservation and verification. Same input, same output, forever.
+            </li>
+            <li>
+              <strong>Exploratory renderers</strong> — UI-first, non-archival. These are designed for rapid prototyping, education, and creative exploration. Output is deterministic but not canonical.
+            </li>
+          </ul>
+          
+          <p>
+            This distinction is intentional and foundational. Canonical rendering requires controlled execution environments. Exploratory rendering prioritizes accessibility and speed.
+          </p>
+
           <h2>Who This Is For</h2>
           
           <p>
@@ -111,25 +156,116 @@ const Builders = () => {
             Builders working with Code Mode today should target v0.x and expect future migration guidance when v1 stabilizes.
           </p>
 
-          <h2>SDKs and Developer Tools</h2>
+          <h2>Official SDKs</h2>
           
           <p>
-            The <strong>NexArt Code Mode Runtime SDK</strong> is published and available via npm. It provides the runtime surface used by nexart.xyz for Code Mode execution.
+            NexArt provides two official SDKs, each with a distinct role. The split is intentional, not a limitation.
+          </p>
+
+          <h3>@nexart/codemode-sdk — Canonical Runtime (Node.js)</h3>
+          
+          <p>
+            <strong>Purpose:</strong> Canonical, deterministic rendering
           </p>
           
           <p>
-            The SDK enables:
+            <strong>Environment:</strong> Node.js only
+          </p>
+          
+          <p>
+            <strong>Output:</strong> PNG / MP4 buffers
+          </p>
+          
+          <p>
+            This SDK is used in production at nexart.xyz. It is the reference execution environment for the NexArt Protocol.
+          </p>
+          
+          <p>
+            <strong>Guarantees:</strong>
           </p>
           
           <ul>
-            <li>Deterministic frame rendering for Static and Loop systems</li>
-            <li>Consistent random number generation</li>
-            <li>Time-normalized animation execution</li>
+            <li>Same input → same output, forever</li>
+            <li>Archival correctness</li>
+            <li>Protocol enforcement</li>
           </ul>
           
           <p>
-            Additional SDKs for other modes and for canonical unit parsing are under development. Announcements will be made here when they are available.
+            This SDK is not designed for browsers or edge runtimes.
           </p>
+          
+          <p>
+            <strong>Links:</strong>
+          </p>
+          
+          <ul>
+            <li>
+              npm: <a href="https://www.npmjs.com/package/@nexart/codemode-sdk" className="text-link hover:text-link-hover underline underline-offset-2" target="_blank" rel="noopener noreferrer">@nexart/codemode-sdk</a>
+            </li>
+            <li>
+              GitHub: <a href="https://github.com/artnames/nexart-codemode-sdk" className="text-link hover:text-link-hover underline underline-offset-2" target="_blank" rel="noopener noreferrer">artnames/nexart-codemode-sdk</a>
+            </li>
+          </ul>
+          
+          <p className="font-semibold">
+            This SDK is the reference execution environment for the NexArt Protocol.
+          </p>
+
+          <h3>@nexart/ui-renderer — Exploratory Renderer (Browser)</h3>
+          
+          <p>
+            <strong>Purpose:</strong> Exploration, UI, education, rapid prototyping
+          </p>
+          
+          <p>
+            <strong>Environment:</strong> Browser only
+          </p>
+          
+          <p>
+            Uses Canvas and Web APIs. Deterministic but non-canonical. Explicitly not archival.
+          </p>
+          
+          <p>
+            <strong>Ideal for:</strong>
+          </p>
+          
+          <ul>
+            <li>Mini-apps</li>
+            <li>Experiments</li>
+            <li>Learning</li>
+            <li>Creative tools</li>
+          </ul>
+          
+          <p>
+            <strong>Links:</strong>
+          </p>
+          
+          <ul>
+            <li>
+              npm: <a href="https://www.npmjs.com/package/@nexart/ui-renderer" className="text-link hover:text-link-hover underline underline-offset-2" target="_blank" rel="noopener noreferrer">@nexart/ui-renderer</a>
+            </li>
+            <li>
+              GitHub: <a href="https://github.com/artnames/nexart-ui-renderer" className="text-link hover:text-link-hover underline underline-offset-2" target="_blank" rel="noopener noreferrer">artnames/nexart-ui-renderer</a>
+            </li>
+          </ul>
+          
+          <p className="font-semibold">
+            Output from this SDK is non-canonical and must not be used for archival or protocol claims.
+          </p>
+
+          <h2>Which SDK Should I Use?</h2>
+          
+          <ul>
+            <li>
+              <strong>"I want permanent, verifiable artwork"</strong> → @nexart/codemode-sdk
+            </li>
+            <li>
+              <strong>"I want to prototype or build a UI"</strong> → @nexart/ui-renderer
+            </li>
+            <li>
+              <strong>"I want both"</strong> → Use the UI renderer for exploration, canonical SDK for final execution
+            </li>
+          </ul>
 
           <h2>Ways to Contribute Today</h2>
           
@@ -145,7 +281,7 @@ const Builders = () => {
               <strong>Create a validator</strong> — Write a tool that checks whether a canonical unit conforms to the protocol
             </li>
             <li>
-              <strong>Test the SDK</strong> — Use the Code Mode Runtime SDK and report inconsistencies or unclear behavior
+              <strong>Test the SDKs</strong> — Use either SDK and report inconsistencies or unclear behavior
             </li>
             <li>
               <strong>Provide specification feedback</strong> — Read this documentation critically and identify what is unclear, incomplete, or incorrect
@@ -154,6 +290,20 @@ const Builders = () => {
               <strong>Submit proposals</strong> — If you see a better way to define something, write it up
             </li>
           </ul>
+
+          <h2>Built With the NexArt Protocol</h2>
+          
+          <p>
+            The first third-party application built on the NexArt protocol is live:
+          </p>
+          
+          <p>
+            <a href="https://builtwithnexartprotocol.xyz" className="text-link hover:text-link-hover underline underline-offset-2" target="_blank" rel="noopener noreferrer">builtwithnexartprotocol.xyz</a>
+          </p>
+          
+          <p>
+            Early builders help shape the protocol. Experiment, build tools, and share what you create. The protocol evolves through use.
+          </p>
 
           <h2>Lifecycle of a NexArt System</h2>
           
@@ -181,60 +331,23 @@ const Builders = () => {
             <strong>Archiving.</strong> For long-term preservation, the canonical unit is stored with its dependencies and version metadata. Future renderers can reconstruct the original output.
           </p>
 
-          <h2>Reference Runtime (Code Mode)</h2>
-          
-          <p>
-            NexArt currently provides a reference runtime for Code Mode rendering.
-          </p>
-          
-          <p>
-            This runtime is not the protocol itself. It is a practical implementation used by the NexArt app and by third-party tools.
-          </p>
-          
-          <h3>Package</h3>
-          
-          <p>
-            <code className="bg-muted px-2 py-1 rounded text-sm">@nexart/codemode-sdk</code>
-          </p>
-          
-          <h3>What it provides</h3>
-          
-          <ul>
-            <li>Deterministic rendering runtime (static + loop)</li>
-            <li>A p5-compatible drawing surface</li>
-            <li>The execution model used by NexArt Code Mode v0.x</li>
-          </ul>
-          
-          <h3>What it does not do</h3>
-          
-          <ul>
-            <li>It does not define the protocol</li>
-            <li>It does not enforce Shapes or Artnames rules</li>
-            <li>It is not required to build a NexArt renderer</li>
-          </ul>
-          
-          <p>
-            Builders are free to:
-          </p>
-          
-          <ul>
-            <li>Use this runtime directly</li>
-            <li>Reimplement it</li>
-            <li>Replace it entirely</li>
-          </ul>
-          
-          <p>
-            The protocol defines what must be rendered. The runtime is one way to do so.
-          </p>
-
           <h2>Source Code and Repositories</h2>
           
           <p>
-            The NexArt Code Mode Runtime SDK is available on npm. Protocol specifications and additional tooling will be published to public repositories as they stabilize.
+            Official NexArt SDKs are available on npm and GitHub:
           </p>
           
+          <ul>
+            <li>
+              <a href="https://github.com/artnames/nexart-codemode-sdk" className="text-link hover:text-link-hover underline underline-offset-2" target="_blank" rel="noopener noreferrer">nexart-codemode-sdk</a> — Canonical runtime (Node.js)
+            </li>
+            <li>
+              <a href="https://github.com/artnames/nexart-ui-renderer" className="text-link hover:text-link-hover underline underline-offset-2" target="_blank" rel="noopener noreferrer">nexart-ui-renderer</a> — Exploratory renderer (Browser)
+            </li>
+          </ul>
+          
           <p>
-            Repository links and contribution guidelines will be posted here when available.
+            Protocol specifications and additional tooling will be published to public repositories as they stabilize.
           </p>
 
           <h2>How to Get Involved</h2>
