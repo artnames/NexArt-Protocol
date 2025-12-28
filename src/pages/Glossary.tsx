@@ -140,10 +140,23 @@ const Glossary = () => {
             A creation primitive that defines how systems are authored. Each mode—SoundArt, Code Mode, Shapes, Fluids, Noise, Artnames—provides a distinct set of inputs, parameters, and behaviors.
           </p>
           <p className="text-body mb-4">
-            Modes are not plugins or extensions. They are first-class protocol primitives, each with defined semantics and determinism characteristics.
+            Modes are not plugins or extensions. They are first-class protocol primitives, each with defined semantics and determinism characteristics. Protocol-enforced modes (Code Mode, SoundArt, Shapes, Artnames) execute through the shared NexArt runtime with determinism guarantees.
           </p>
           <p className="text-body">
             All modes produce canonical units that conform to the protocol structure, but each mode's internal parameters and rendering requirements differ according to its nature.
+          </p>
+        </section>
+
+        <section className="mb-16">
+          <h2 className="text-2xl font-serif text-foreground mb-4">SoundArt</h2>
+          <p className="text-body mb-4">
+            A protocol-enforced mode for audio-reactive generative systems. SoundArt is now fully protocol-enforced, rendered exclusively via the NexArt Code Mode runtime.
+          </p>
+          <p className="text-body mb-4">
+            Audio input is normalized into a frozen SoundSnapshot and injected into the runtime as read-only parameters. All outputs are deterministic, seeded, and verifiable under the NexArt protocol. There are no Canvas2D or legacy rendering paths.
+          </p>
+          <p className="text-body">
+            Identical audio input and seed always produce identical visual output.
           </p>
         </section>
 

@@ -63,15 +63,20 @@ const Index = () => {
           </p>
           
           <p>
-            The NexArt Protocol is actively enforced in production. Some system types are subject to hard enforcement, while others operate under soft enforcement with observability before constraints are tightened.
+            The NexArt Protocol is actively enforced in production. Code Mode, SoundArt, Shapes, and Artnames are all hard-enforced and execute through the shared NexArt runtime.
           </p>
           
-          <p>
-            Code Mode is currently experimental and not governed by the protocol. A proposed protocol specification is available in{" "}
-            <Link to="/code-mode-v1" className="text-link hover:text-link-hover underline underline-offset-2">
-              Code Mode v1 (Draft)
-            </Link>.
-          </p>
+          <div className="bg-primary/10 border border-primary/30 rounded-md p-4 my-6">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground">
+                Milestone
+              </span>
+              <span className="text-sm font-medium">SoundArt Protocol Enforcement (v1)</span>
+            </div>
+            <p className="text-sm text-muted-foreground mb-0">
+              SoundArt is now fully protocol-enforced. All audio-reactive artworks are deterministic, seeded, and verifiable—rendered exclusively via the NexArt Code Mode runtime with no legacy rendering paths.
+            </p>
+          </div>
           
           <p>
             What will not change is the commitment to clarity, openness, and long-term thinking. The protocol is designed to be stable enough to study against, even as it grows.
