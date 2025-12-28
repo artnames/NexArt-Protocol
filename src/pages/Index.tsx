@@ -63,7 +63,7 @@ const Index = () => {
           </p>
           
           <p>
-            The NexArt Protocol is actively enforced in production. Code Mode, SoundArt, Shapes, and Artnames are all hard-enforced and execute through the shared NexArt runtime.
+            The NexArt Protocol is actively enforced in production. Code Mode, SoundArt, Shapes, Noise, and Artnames are all hard-enforced and execute through the shared NexArt runtime.
           </p>
           
           <div className="bg-primary/10 border border-primary/30 rounded-md p-4 my-6">
@@ -71,10 +71,10 @@ const Index = () => {
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground">
                 Milestone
               </span>
-              <span className="text-sm font-medium">SoundArt Protocol Enforcement (v1)</span>
+              <span className="text-sm font-medium">Protocol Hard Enforcement Complete</span>
             </div>
             <p className="text-sm text-muted-foreground mb-0">
-              SoundArt is now fully protocol-enforced. All audio-reactive artworks are deterministic, seeded, and verifiable—rendered exclusively via the NexArt Code Mode runtime with no legacy rendering paths.
+              SoundArt, Noise, and Shapes are now fully protocol-enforced. All outputs are deterministic, reproducible, and verifiable—rendered exclusively via the NexArt Code Mode runtime with no legacy rendering paths.
             </p>
           </div>
           

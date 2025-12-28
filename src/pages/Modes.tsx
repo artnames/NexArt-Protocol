@@ -114,6 +114,17 @@ const Modes = () => {
 
           <h2>Shapes</h2>
           
+          <div className="bg-primary/10 border border-primary/30 rounded-md p-4 mb-6">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground">
+                Protocol Enforced
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground mb-0">
+              Shapes is a fully protocol-enforced mode, rendered exclusively via the NexArt Code Mode runtime. All parametric geometric systems are deterministic, reproducible, and verifiable under the NexArt protocol.
+            </p>
+          </div>
+          
           <p>
             <strong>Intent.</strong> Shapes provides geometric primitives for visual composition. Systems are built from circles, rectangles, lines, and other basic forms.
           </p>
@@ -123,11 +134,11 @@ const Modes = () => {
           </p>
           
           <p>
-            <strong>Guarantees.</strong> Shapes systems are intended to be fully deterministic. The same parameters should produce identical output across conforming implementations, under standardized primitive definitions and rasterization rules.
+            <strong>Guarantees.</strong> Shapes systems are fully deterministic. The same parameters produce identical output across conforming implementations. All rendering is executed through the NexArt Code Mode runtime with no Canvas2D or legacy rendering paths.
           </p>
           
           <p>
-            <strong>Limitations.</strong> Shapes is intentionally constrained. Complex generative behavior requires combining shapes with other modes or using Code Mode. Rasterization rules are being standardized.
+            <strong>Execution.</strong> Shape definitions are processed by the Code Mode runtime using standardized primitive definitions and rasterization rules. Every output is reproducible, verifiable, and protocol-native.
           </p>
 
           <h2>Fluids</h2>
@@ -150,6 +161,17 @@ const Modes = () => {
 
           <h2>Noise</h2>
           
+          <div className="bg-primary/10 border border-primary/30 rounded-md p-4 mb-6">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground">
+                Protocol Enforced
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground mb-0">
+              Noise is a fully protocol-enforced mode, rendered exclusively via the NexArt Code Mode runtime. All fractal, flow, and cellular noise systems are deterministic, reproducible, and verifiable under the NexArt protocol.
+            </p>
+          </div>
+          
           <p>
             <strong>Intent.</strong> Noise generates textures and patterns using procedural noise functions: Perlin, Simplex, Worley, and others.
           </p>
@@ -159,11 +181,11 @@ const Modes = () => {
           </p>
           
           <p>
-            <strong>Guarantees.</strong> Noise systems are deterministic when algorithm and seed are pinned and specified. The same seed should produce identical noise across conforming implementations.
+            <strong>Guarantees.</strong> Noise systems are fully deterministic. The same algorithm, parameters, and seed produce identical output across conforming implementations. All rendering is executed through the NexArt Code Mode runtime with no Canvas2D or legacy rendering paths.
           </p>
           
           <p>
-            <strong>Limitations.</strong> The protocol intends to specify exact noise algorithms to ensure consistency. Custom noise functions must be implemented via Code Mode.
+            <strong>Execution.</strong> Noise parameters are processed by the Code Mode runtime using specified algorithms and seeded randomness. Every output is reproducible, verifiable, and protocol-native.
           </p>
 
           <h2>Artnames</h2>
@@ -244,11 +266,11 @@ const Modes = () => {
                 <tr>
                   <td className="py-2 pr-4">Noise</td>
                   <td className="py-2 pr-4">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
-                      Not enforced
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/20 text-primary">
+                      Protocol Enforced
                     </span>
                   </td>
-                  <td className="py-2">—</td>
+                  <td className="py-2">NexArt Runtime</td>
                 </tr>
               </tbody>
             </table>
