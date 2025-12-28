@@ -36,6 +36,7 @@ const Determinism = () => {
             <li>Shapes systems with fixed parameters, under standardized rasterization</li>
             <li>Noise systems with specified algorithms and seeds</li>
             <li>Artnames systems with fixed text input and mapping version</li>
+            <li>SoundArt systems with frozen audio snapshots and fixed seeds</li>
             <li>Any system where all inputs are fully specified and the mode supports determinism</li>
           </ul>
           
@@ -54,11 +55,7 @@ const Determinism = () => {
           </p>
           
           <p>
-            <strong>Audio analysis differences.</strong> SoundArt systems depend on frequency analysis. Different FFT implementations may produce slightly different values, leading to visual variation.
-          </p>
-          
-          <p>
-            <strong>Timing dependencies.</strong> Systems that respond to real-time input (live audio, user interaction) are inherently non-deterministic.
+            <strong>Timing dependencies.</strong> Systems that respond to real-time input (user interaction) are inherently non-deterministic.
           </p>
           
           <p>
