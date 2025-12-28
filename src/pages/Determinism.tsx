@@ -33,15 +33,15 @@ const Determinism = () => {
           </p>
           
           <ul>
-            <li>Shapes systems with fixed parameters, under standardized rasterization</li>
-            <li>Noise systems with specified algorithms and seeds</li>
-            <li>Artnames systems with fixed text input and mapping version</li>
-            <li>SoundArt systems with frozen audio snapshots and fixed seeds</li>
-            <li>Any system where all inputs are fully specified and the mode supports determinism</li>
+            <li><strong>Shapes</strong> — parametric geometric systems with fixed parameters (protocol-enforced)</li>
+            <li><strong>Noise</strong> — fractal, flow, and cellular noise systems with specified algorithms and seeds (protocol-enforced)</li>
+            <li><strong>SoundArt</strong> — audio-reactive systems with frozen audio snapshots and fixed seeds (protocol-enforced)</li>
+            <li><strong>Artnames</strong> — text-derived systems with fixed input and mapping version (protocol-enforced)</li>
+            <li><strong>Code Mode</strong> — arbitrary generative systems with fully specified inputs (protocol-enforced)</li>
           </ul>
           
           <p>
-            Pixel-perfect determinism is achievable for conforming implementations that adhere to the specified rendering rules. These rules are being formalized.
+            All protocol-enforced modes are rendered exclusively via the NexArt Code Mode runtime. There are no Canvas2D, legacy, or fallback rendering paths. Pixel-perfect determinism is guaranteed for conforming implementations.
           </p>
 
           <h2>What We Do Not Guarantee</h2>

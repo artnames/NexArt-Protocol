@@ -49,19 +49,19 @@ Enforcement is incremental and mode-specific.
 
 ### Hard-Enforced (Production)
 
-- **Shapes**
-- **Artnames**
-- **SoundArt**
 - **Code Mode**
+- **SoundArt**
+- **Shapes**
+- **Noise**
+- **Artnames**
 
-These systems are fully validated and governed by the protocol. Invalid systems are rejected. All hard-enforced modes are executed exclusively via the NexArt Runtime.
+These systems are fully validated and governed by the protocol. Invalid systems are rejected. All hard-enforced modes are executed exclusively via the NexArt Code Mode runtime with no Canvas2D or legacy rendering paths.
 
 ### Experimental / Non-Protocol
 
-- **Noise**
 - **Fluids**
 
-These modes are not protocol-governed and provide no reproducibility guarantees.
+Fluids remains non-protocol and provides no reproducibility guarantees.
 
 ---
 
