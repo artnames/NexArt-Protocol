@@ -28,20 +28,33 @@ const Modes = () => {
 
           <h2>SoundArt</h2>
           
+          <div className="bg-muted/50 border border-border rounded-md p-4 mb-6">
+            <p className="text-sm text-muted-foreground mb-0">
+              <strong>Protocol Enforcement:</strong> Hard<br />
+              SoundArt is executed exclusively via the NexArt Code Mode engine. No fallback renderers or alternative execution paths are permitted.
+            </p>
+          </div>
+          
           <p>
-            <strong>Intent.</strong> SoundArt creates visual systems driven by audio input. The artwork responds to frequency, amplitude, rhythm, and other properties of sound.
+            SoundArt is a protocol-enforced NexArt mode for audio-reactive generative systems.
           </p>
           
           <p>
-            <strong>Inputs.</strong> An audio source (live or recorded), a visual template, and parameters that map audio features to visual properties.
+            All SoundArt works are executed through the NexArt Code Mode runtime, using deterministic system generation, seeded randomness, and immutable audio snapshots.
           </p>
           
           <p>
-            <strong>Guarantees.</strong> SoundArt systems are best-effort reproducible. With recorded audio, reproducibility depends on pinning the audio analysis version, seed values, time inputs, and background mode. With live audio, output is reactive and inherently non-deterministic.
+            SoundArt no longer relies on custom Canvas renderers or legacy pipelines. Every output is reproducible, verifiable, and protocol-native.
+          </p>
+
+          <h3>Determinism & Verifiability</h3>
+          
+          <p>
+            SoundArt systems are generated deterministically from audio analysis inputs. Audio features are normalized into a frozen SoundSnapshot, injected into the runtime as read-only parameters, and rendered using seeded randomness and deterministic noise functions.
           </p>
           
           <p>
-            <strong>Limitations.</strong> Audio analysis may vary between implementations. Full reproducibility requires specifying all analysis parameters, which is evolving toward standardization.
+            Identical audio input and seed always produce identical visual output.
           </p>
 
           <h2>Code Mode</h2>
@@ -143,14 +156,49 @@ const Modes = () => {
 
           <h2>Enforcement Status</h2>
           
-          <ul>
-            <li><strong>Shapes</strong> — Hard enforced</li>
-            <li><strong>Artnames</strong> — Hard enforced</li>
-            <li><strong>SoundArt</strong> — Soft enforced (observability phase)</li>
-            <li><strong>Fluids</strong> — Not enforced</li>
-            <li><strong>Noise</strong> — Not enforced</li>
-            <li><strong>Code Mode</strong> — Experimental (non-protocol)</li>
-          </ul>
+          <div className="overflow-x-auto mb-6">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-2 pr-4 font-medium">Mode</th>
+                  <th className="text-left py-2 pr-4 font-medium">Protocol Enforcement</th>
+                  <th className="text-left py-2 font-medium">Runtime</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-border/50">
+                  <td className="py-2 pr-4">Code Mode</td>
+                  <td className="py-2 pr-4">Hard</td>
+                  <td className="py-2">NexArt Runtime</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2 pr-4">SoundArt</td>
+                  <td className="py-2 pr-4">Hard</td>
+                  <td className="py-2">NexArt Runtime</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2 pr-4">Shapes</td>
+                  <td className="py-2 pr-4">Hard</td>
+                  <td className="py-2">NexArt Runtime</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2 pr-4">Artnames</td>
+                  <td className="py-2 pr-4">Hard</td>
+                  <td className="py-2">NexArt Runtime</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2 pr-4">Fluids</td>
+                  <td className="py-2 pr-4">Not enforced</td>
+                  <td className="py-2">—</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4">Noise</td>
+                  <td className="py-2 pr-4">Not enforced</td>
+                  <td className="py-2">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
           <h2>Mode Parity</h2>
           

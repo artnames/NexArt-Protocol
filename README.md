@@ -51,18 +51,13 @@ Enforcement is incremental and mode-specific.
 
 - **Shapes**
 - **Artnames**
-
-These systems are fully validated and governed by the protocol. Invalid systems are rejected.
-
-### Soft-Enforced (Production with Observability)
-
 - **SoundArt**
+- **Code Mode**
 
-SoundArt systems are validated and logged. Invalid systems are not blocked yet, but enforcement readiness is tracked.
+These systems are fully validated and governed by the protocol. Invalid systems are rejected. All hard-enforced modes are executed exclusively via the NexArt Runtime.
 
 ### Experimental / Non-Protocol
 
-- **Code Mode v0.x**
 - **Noise**
 - **Fluids**
 
