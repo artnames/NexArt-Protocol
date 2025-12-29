@@ -59,22 +59,22 @@ const Index = () => {
           <h2>Specification Status</h2>
           
           <p>
-            <strong>Current Protocol Version: v0.4</strong>
+            <strong>Current Protocol Version: v1.0.0</strong>
           </p>
           
           <p>
-            The NexArt Protocol is actively enforced in production. Code Mode, SoundArt, Shapes, Noise, and Artnames are all hard-enforced and execute through the shared NexArt runtime.
+            The NexArt Protocol is actively enforced in production. Shapes, Noise, SoundArt, and Code Mode are HARD enforced and execute exclusively through the NexArt Code Mode runtime.
           </p>
           
           <div className="bg-primary/10 border border-primary/30 rounded-md p-4 my-6">
             <div className="flex items-center gap-2 mb-2">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground">
-                Milestone
+                Protocol v1.0.0
               </span>
-              <span className="text-sm font-medium">Protocol Hard Enforcement Complete</span>
+              <span className="text-sm font-medium">Hard Enforcement Active</span>
             </div>
             <p className="text-sm text-muted-foreground mb-0">
-              SoundArt, Noise, and Shapes are now fully protocol-enforced. All outputs are deterministic, reproducible, and verifiable—rendered exclusively via the NexArt Code Mode runtime with no legacy rendering paths.
+              Shapes, Noise, SoundArt, and Code Mode are now fully protocol-enforced. All outputs are deterministic, reproducible, and verifiable—rendered exclusively via the NexArt Code Mode runtime with no legacy rendering paths.
             </p>
           </div>
           

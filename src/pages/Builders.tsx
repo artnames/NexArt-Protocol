@@ -41,7 +41,7 @@ const Builders = () => {
             No prior NexArt knowledge is required.
           </p>
 
-          <h2>The Two Official SDKs</h2>
+          <h2>The Official SDK</h2>
 
           <h3>@nexart/codemode-sdk — Canonical Runtime</h3>
           
@@ -66,62 +66,36 @@ const Builders = () => {
             <li>You are rendering for minting or storage</li>
             <li>You are building a backend renderer</li>
           </ul>
-          
-          <pre><code>npm install @nexart/codemode-sdk</code></pre>
 
-          <h3>@nexart/ui-renderer — Browser-First Builder SDK</h3>
+          <h2>Developer Tooling (Preview)</h2>
+
+          <h3>@nexart/ui-renderer</h3>
           
           <p>
             <strong>Purpose:</strong> Exploration, prototyping, UI tools<br />
-            <strong>Environment:</strong> Browser (Canvas, Vite, Lovable, etc.)
+            <strong>Environment:</strong> Browser
           </p>
-          
-          <ul>
-            <li>Declarative system authoring (no raw canvas drawing)</li>
-            <li>AI-friendly API with capability discovery</li>
-            <li>Lets builders create many visual styles without modifying the engine</li>
-            <li>Explicitly non-canonical and non-archival</li>
-          </ul>
           
           <p>
-            <strong>Use this when:</strong>
+            The UI Renderer SDK mirrors NexArt's protocol-enforced behavior for preview and tooling purposes. It is intended for builders, AI tools, and prototyping environments.
           </p>
           
           <ul>
-            <li>You are building a web app or mini-app</li>
-            <li>You want artists or AI to define systems visually</li>
-            <li>You want fast iteration without protocol risk</li>
+            <li>Declarative system authoring</li>
+            <li>AI-friendly API with capability discovery</li>
+            <li>Fast iteration for exploratory work</li>
           </ul>
           
-          <pre><code>npm install @nexart/ui-renderer</code></pre>
-
-          <h2>Example (UI Renderer)</h2>
-          
-          <pre><code>{`import { createSystem, previewSystem } from '@nexart/ui-renderer';
-
-const system = createSystem({
-  seed: 29445825,
-  background: { color: 'blue', texture: 'noise' },
-  elements: [
-    { type: 'waves', axis: 'x', amplitude: 0.4, frequency: 0.7 },
-    { type: 'dots', distribution: 'radial', count: 400 }
-  ],
-  motion: { source: 'time', speed: 0.2 }
-});
-
-previewSystem(system, canvas, { mode: 'loop' }).start();`}</code></pre>
+          <div className="bg-muted/50 border border-border rounded-md p-4 my-6">
+            <p className="text-sm text-muted-foreground mb-0">
+              <strong>Important:</strong> The UI Renderer SDK is not the canonical protocol implementation. It must not be used for archival or minting. All canonical execution occurs server-side via @nexart/codemode-sdk.
+            </p>
+          </div>
 
           <h2>Capability Discovery</h2>
           
           <p>
-            The UI SDK exposes its full feature set programmatically so AI tools and builders know exactly what is supported.
-          </p>
-          
-          <pre><code>{`import { getCapabilities } from '@nexart/ui-renderer';
-const caps = getCapabilities();`}</code></pre>
-          
-          <p>
-            This returns available primitives, parameter ranges, limits, and metadata.
+            The UI SDK exposes its full feature set programmatically so AI tools and builders know exactly what is supported. This returns available primitives, parameter ranges, limits, and metadata.
           </p>
 
           <h2>Canonical vs Exploratory</h2>
@@ -149,8 +123,7 @@ const caps = getCapabilities();`}</code></pre>
           </table>
           
           <p>
-            Exploratory tools do not compromise the protocol.
-            Canonical execution is always preserved server-side.
+            Exploratory tools do not compromise the protocol. Canonical execution is always preserved server-side.
           </p>
 
           <h2>First App Built on the Protocol</h2>

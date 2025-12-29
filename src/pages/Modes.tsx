@@ -88,11 +88,14 @@ const Modes = () => {
           <div className="bg-primary/10 border border-primary/30 rounded-md p-4 mb-6">
             <div className="flex items-center gap-2 mb-2">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground">
-                Protocol Enforced
+                HARD Enforced
+              </span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-foreground/10 text-foreground">
+                Protocol v1.0.0
               </span>
             </div>
             <p className="text-sm text-muted-foreground mb-0">
-              Code Mode is the canonical runtime for the NexArt Protocol. All hard-enforced modes execute through this engine.
+              Code Mode is a protocol-enforced execution surface under NexArt Protocol v1.0.0. Sketches are executed deterministically within a restricted, standardized runtime.
             </p>
           </div>
           
@@ -101,15 +104,15 @@ const Modes = () => {
           </p>
           
           <p>
-            <strong>Inputs.</strong> A code definition in a supported language or DSL, along with any external dependencies.
+            <strong>Inputs.</strong> A code definition conforming to the protocol specification, along with seed values and parameters.
           </p>
           
           <p>
-            <strong>Guarantees.</strong> Determinism depends entirely on the code itself. The protocol enforces deterministic execution through seeded randomness and controlled noise functions. Non-deterministic operations are disallowed in protocol-enforced mode.
+            <strong>Guarantees.</strong> Code Mode execution is deterministic. The protocol enforces deterministic execution through seeded randomness and controlled noise functions. Non-deterministic operations are disallowed. The execution surface is frozen under Protocol v1.0.0.
           </p>
           
           <p>
-            <strong>Runtime.</strong> Code Mode is the shared execution environment for all protocol-enforced modes. SoundArt, Shapes, and Artnames all compile to Code Mode for final execution.
+            <strong>Runtime.</strong> Code Mode is the shared execution environment for all protocol-enforced modes. SoundArt, Shapes, Noise, and Artnames all execute through the Code Mode runtime.
           </p>
 
           <h2>Shapes</h2>
@@ -208,53 +211,66 @@ const Modes = () => {
 
           <h2>Enforcement Status</h2>
           
+          <p>
+            These modes are enforced by the NexArt Protocol and executed exclusively through the Code Mode runtime. No arbitrary rendering logic is permitted.
+          </p>
+          
           <div className="overflow-x-auto mb-6">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">
                   <th className="text-left py-2 pr-4 font-medium">Mode</th>
-                  <th className="text-left py-2 pr-4 font-medium">Status</th>
-                  <th className="text-left py-2 font-medium">Runtime</th>
+                  <th className="text-left py-2 pr-4 font-medium">Enforcement</th>
+                  <th className="text-left py-2 font-medium">Execution</th>
                 </tr>
               </thead>
               <tbody>
                 <tr className="border-b border-border/50">
-                  <td className="py-2 pr-4">Code Mode</td>
+                  <td className="py-2 pr-4">Shapes</td>
                   <td className="py-2 pr-4">
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/20 text-primary">
-                      Protocol Enforced
+                      HARD
                     </span>
                   </td>
-                  <td className="py-2">NexArt Runtime</td>
+                  <td className="py-2">Code Mode runtime</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2 pr-4">Noise</td>
+                  <td className="py-2 pr-4">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/20 text-primary">
+                      HARD
+                    </span>
+                  </td>
+                  <td className="py-2">Code Mode runtime</td>
                 </tr>
                 <tr className="border-b border-border/50">
                   <td className="py-2 pr-4">SoundArt</td>
                   <td className="py-2 pr-4">
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/20 text-primary">
-                      Protocol Enforced
+                      HARD
                     </span>
                   </td>
-                  <td className="py-2">NexArt Runtime</td>
+                  <td className="py-2">Code Mode runtime</td>
                 </tr>
                 <tr className="border-b border-border/50">
-                  <td className="py-2 pr-4">Shapes</td>
+                  <td className="py-2 pr-4">Code Mode</td>
                   <td className="py-2 pr-4">
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/20 text-primary">
-                      Protocol Enforced
+                      HARD
                     </span>
                   </td>
-                  <td className="py-2">NexArt Runtime</td>
+                  <td className="py-2">Protocol v1.0.0</td>
                 </tr>
                 <tr className="border-b border-border/50">
                   <td className="py-2 pr-4">Artnames</td>
                   <td className="py-2 pr-4">
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/20 text-primary">
-                      Protocol Enforced
+                      HARD
                     </span>
                   </td>
-                  <td className="py-2">NexArt Runtime</td>
+                  <td className="py-2">Code Mode runtime</td>
                 </tr>
-                <tr className="border-b border-border/50">
+                <tr>
                   <td className="py-2 pr-4">Fluids</td>
                   <td className="py-2 pr-4">
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
@@ -262,15 +278,6 @@ const Modes = () => {
                     </span>
                   </td>
                   <td className="py-2">—</td>
-                </tr>
-                <tr>
-                  <td className="py-2 pr-4">Noise</td>
-                  <td className="py-2 pr-4">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/20 text-primary">
-                      Protocol Enforced
-                    </span>
-                  </td>
-                  <td className="py-2">NexArt Runtime</td>
                 </tr>
               </tbody>
             </table>
