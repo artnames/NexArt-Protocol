@@ -29,19 +29,18 @@ const Determinism = () => {
           </p>
           
           <p>
-            This guarantee applies to:
+            The following modes are HARD enforced under the NexArt Protocol:
           </p>
           
           <ul>
-            <li><strong>Shapes</strong> — parametric geometric systems with fixed parameters (protocol-enforced)</li>
-            <li><strong>Noise</strong> — fractal, flow, and cellular noise systems with specified algorithms and seeds (protocol-enforced)</li>
-            <li><strong>SoundArt</strong> — audio-reactive systems with frozen audio snapshots and fixed seeds (protocol-enforced)</li>
-            <li><strong>Artnames</strong> — text-derived systems with fixed input and mapping version (protocol-enforced)</li>
-            <li><strong>Code Mode</strong> — arbitrary generative systems with fully specified inputs (protocol-enforced)</li>
+            <li><strong>Shapes</strong> — parametric geometric systems (HARD enforced, Code Mode runtime)</li>
+            <li><strong>Noise</strong> — fractal, flow, and cellular noise systems (HARD enforced, Code Mode runtime)</li>
+            <li><strong>SoundArt</strong> — audio-reactive systems with frozen audio snapshots (HARD enforced, Code Mode runtime)</li>
+            <li><strong>Code Mode</strong> — generative systems under Protocol v1.0.0 (HARD enforced)</li>
           </ul>
           
           <p>
-            All protocol-enforced modes are rendered exclusively via the NexArt Code Mode runtime. There are no Canvas2D, legacy, or fallback rendering paths. Pixel-perfect determinism is guaranteed for conforming implementations.
+            These modes are enforced by the NexArt Protocol and executed exclusively through the Code Mode runtime. No arbitrary rendering logic is permitted. There are no Canvas2D, legacy, or fallback rendering paths.
           </p>
 
           <h2>What We Do Not Guarantee</h2>

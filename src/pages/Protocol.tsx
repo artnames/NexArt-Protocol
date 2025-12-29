@@ -82,23 +82,26 @@ const Protocol = () => {
           <h2>Unified Runtime</h2>
           
           <p>
-            All protocol-enforced modes execute through the same NexArt Code Mode runtime. This unification ensures consistent determinism guarantees regardless of input type:
+            All protocol-enforced modes execute through the same NexArt Code Mode runtime under Protocol v1.0.0. This unification ensures consistent determinism guarantees regardless of input type:
           </p>
           
           <ul>
             <li>
-              <strong>Visual input</strong> → Code Mode runtime
+              <strong>Shapes</strong> → Code Mode runtime (HARD enforced)
             </li>
             <li>
-              <strong>Audio input</strong> → Code Mode runtime
+              <strong>Noise</strong> → Code Mode runtime (HARD enforced)
             </li>
             <li>
-              <strong>Text input</strong> → Code Mode runtime
+              <strong>SoundArt</strong> → Code Mode runtime (HARD enforced)
+            </li>
+            <li>
+              <strong>Code Mode</strong> → Protocol v1.0.0 (HARD enforced)
             </li>
           </ul>
           
           <p>
-            The runtime is shared. The determinism guarantees are shared. The protocol enforcement is uniform across all input types.</p>
+            These modes are enforced by the NexArt Protocol and executed exclusively through the Code Mode runtime. No arbitrary rendering logic is permitted. The runtime is shared, the determinism guarantees are shared, and the protocol enforcement is uniform.</p>
 
           <h2>Versioning</h2>
           

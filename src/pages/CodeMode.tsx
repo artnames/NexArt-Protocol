@@ -11,7 +11,7 @@ const CodeMode = () => {
         <title>Code Mode | NexArt Protocol</title>
         <meta
           name="description"
-          content="NexArt Code Mode documentation. Two layers: current runtime behavior (v0.x) and future protocol language proposal (v1 GSL)."
+          content="Code Mode is a protocol-enforced execution surface under NexArt Protocol v1.0.0. Deterministic, standardized runtime for generative art."
         />
       </Helmet>
 
@@ -24,8 +24,16 @@ const CodeMode = () => {
           <h1 className="text-3xl sm:text-4xl font-serif text-foreground mb-4">
             Code Mode
           </h1>
+          <div className="flex items-center gap-3 mb-4">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground">
+              HARD Enforced
+            </span>
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-foreground/10 text-foreground">
+              Protocol v1.0.0
+            </span>
+          </div>
           <p className="text-body text-lg max-w-2xl">
-            Two layers: current runtime behavior vs future protocol language.
+            Code Mode is a protocol-enforced execution surface under NexArt Protocol v1.0.0. Sketches are executed deterministically within a restricted, standardized runtime.
           </p>
         </div>
       </div>
@@ -101,17 +109,17 @@ const CodeMode = () => {
           >
             <div className="flex items-start justify-between mb-4">
               <h2 className="text-xl font-serif text-foreground group-hover:underline">
-                Code Mode Runtime (v0.x)
+                Code Mode Runtime Specification
               </h2>
               <Badge variant="default" className="bg-foreground text-background text-xs">
-                CURRENT
+                v1.0.0
               </Badge>
             </div>
             <p className="text-body text-sm mb-4">
-              Defines how Code Mode executes today, including Static and Loop rendering and NFT minting.
+              Defines how Code Mode executes under Protocol v1.0.0, including Static and Loop rendering, determinism guarantees, and NFT minting.
             </p>
             <p className="text-caption text-xs">
-              Implemented in: nexart.xyz
+              Execution surface: frozen
             </p>
             <p className="text-foreground text-sm mt-6 font-mono">
               → Runtime Execution Specification
