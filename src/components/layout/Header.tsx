@@ -9,6 +9,7 @@ const navItems = [
   { href: "/glossary", label: "Glossary" },
   { href: "/non-goals", label: "Non-Goals" },
   { href: "/builders", label: "Builders" },
+  { href: "/canonical-renderer", label: "Canonical Renderer" },
   { href: "/governance", label: "Governance" },
   { href: "/code-mode", label: "Code Mode" },
 ];
