@@ -19,6 +19,7 @@ import CodeModeExecution from "./pages/CodeModeExecution";
 import HowCodeModeThinks from "./pages/HowCodeModeThinks";
 import CommonCodeModeMistakes from "./pages/CommonCodeModeMistakes";
 import CodeModeQuickReference from "./pages/CodeModeQuickReference";
+import CanonicalRenderer from "./pages/CanonicalRenderer";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/how-code-mode-thinks" element={<HowCodeModeThinks />} />
             <Route path="/common-code-mode-mistakes" element={<CommonCodeModeMistakes />} />
             <Route path="/code-mode-quick-reference" element={<CodeModeQuickReference />} />
+            <Route path="/canonical-renderer" element={<CanonicalRenderer />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
