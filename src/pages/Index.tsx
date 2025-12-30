@@ -3,84 +3,118 @@ import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
 import { Helmet } from "react-helmet-async";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   return (
     <PageLayout>
       <Helmet>
-        <title>NexArt Protocol - An Open Creative Protocol</title>
-        <meta name="description" content="NexArt is evolving into an open protocol for generative and sound-driven art systems. A specification for creative computation." />
+        <title>NexArt Protocol - A Generative Art Protocol</title>
+        <meta name="description" content="NexArt is a generative art protocol. Build, preview, and mint deterministic generative systems with open SDKs for creators, builders, and AI tools." />
       </Helmet>
       
       <PageHeader 
-        title="NexArt Protocol"
-        subtitle="Evolving toward an open protocol for generative and sound-driven art systems."
+        title="NexArt is a Generative Art Protocol"
+        subtitle="Build, preview, and mint deterministic generative systems — on NexArt or anywhere else."
       />
       
       <PageContent>
         <div className="prose-protocol">
-          <p>
-            NexArt is evolving from a single creative app into an open protocol. Not a product, not a platform, but a shared specification for how generative art systems can be described, stored, and reproduced over time.
-          </p>
-          
-          <p>
-            The protocol intends to define primitives for creative computation: what a system is, what it contains, and how it behaves under different conditions. It aims to establish a common language for artists, engineers, and tools to work together.
+          <p className="text-lg text-muted-foreground">
+            NexArt defines a canonical execution layer for generative art, with open SDKs for creators, builders, and AI tools.
           </p>
 
-          <h2>Two Things Called NexArt</h2>
+          <h2>The NexArt Stack</h2>
           
-          <p>
-            There is an application at{" "}
-            <a 
-              href="https://nexart.xyz" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-link hover:text-link-hover underline underline-offset-2"
-            >
-              nexart.xyz
-            </a>
-            . It is the current primary tool for making generative and sound-driven art. The application is being migrated toward full protocol conformance—it is the first implementation, but not the only one the protocol intends to support.
-          </p>
+          <div className="grid gap-6 md:grid-cols-2 my-6">
+            <div className="border border-border rounded-md p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground">
+                  Canonical
+                </span>
+                <span className="text-sm font-medium">Code Mode Protocol</span>
+              </div>
+              <ul className="text-sm text-muted-foreground space-y-2 mb-3">
+                <li>Deterministic, archival-safe execution</li>
+                <li>Used for minting NFTs and permanent outputs</li>
+                <li>Locked Protocol v1.0.0</li>
+                <li>Implemented via <code className="text-xs bg-muted px-1 py-0.5 rounded">@nexart/codemode-sdk</code></li>
+              </ul>
+            </div>
+            
+            <div className="border border-border rounded-md p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground">
+                  Non-canonical
+                </span>
+                <span className="text-sm font-medium">UI Renderer</span>
+              </div>
+              <ul className="text-sm text-muted-foreground space-y-2 mb-3">
+                <li>Live previews and exploration</li>
+                <li>Declarative primitives and AI-friendly APIs</li>
+                <li>Compiles to Code Mode, but never replaces it</li>
+                <li>Implemented via <code className="text-xs bg-muted px-1 py-0.5 rounded">@nexart/ui-renderer</code></li>
+              </ul>
+            </div>
+          </div>
           
-          <p>
-            This site documents the protocol itself: the rules and structures that will define what a NexArt system is, independent of any specific tool or interface.
+          <p className="text-sm text-muted-foreground italic">
+            Same protocol. Different tools. No lock-in.
           </p>
 
-          <h2>Systems, Not Images</h2>
+          <h2>Build on NexArt</h2>
           
-          <p>
-            Traditional generative art often focuses on outputs: images, videos, files. NexArt focuses on systems—the rules and parameters that produce outputs. An image is a moment; a system is a process.
-          </p>
+          <ul>
+            <li>Build your own generative art apps using NexArt SDKs</li>
+            <li>Use the same protocol as{" "}
+              <a 
+                href="https://nexart.xyz" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-link hover:text-link-hover underline underline-offset-2"
+              >
+                nexart.xyz
+              </a>
+            </li>
+            <li>No requirement to use NexArt UI</li>
+            <li>Supports static, animated, and parameterized systems</li>
+            <li>Designed for AI-assisted creation</li>
+          </ul>
           
-          <p>
-            By defining systems rather than artifacts, NexArt enables reproducibility, variation, and long-term preservation. A system can be run again, modified, or adapted to new contexts. Current implementations often store rendered outputs alongside metadata; the protocol's goal is for system definitions to be sufficient for reproduction.
-          </p>
+          <div className="flex flex-wrap gap-3 my-6">
+            <Button asChild variant="outline">
+              <Link to="/builders">View SDKs</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/protocol">Read Protocol Docs</Link>
+            </Button>
+          </div>
 
-          <h2>Specification Status</h2>
+          <h2>ByX — Generative Collections</h2>
           
           <p>
-            <strong>Current Protocol Version: v1.0.0</strong>
+            ByX lets artists publish generative systems instead of single artworks. Collectors mint their own outputs inside artist-defined rules.
           </p>
           
-          <p>
-            The NexArt Protocol is actively enforced in production. Shapes, Noise, SoundArt, and Code Mode are HARD enforced and execute exclusively through the NexArt Code Mode runtime.
-          </p>
+          <div className="my-4">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground">
+              Coming soon
+            </span>
+          </div>
+
+          <h2>Protocol Status</h2>
           
           <div className="bg-primary/10 border border-primary/30 rounded-md p-4 my-6">
             <div className="flex items-center gap-2 mb-2">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground">
                 Protocol v1.0.0
               </span>
-              <span className="text-sm font-medium">Hard Enforcement Active</span>
+              <span className="text-sm font-medium">Locked & Stable</span>
             </div>
             <p className="text-sm text-muted-foreground mb-0">
-              Shapes, Noise, SoundArt, and Code Mode are now fully protocol-enforced. All outputs are deterministic, reproducible, and verifiable—rendered exclusively via the NexArt Code Mode runtime with no legacy rendering paths.
+              Shapes, Noise, SoundArt, and Code Mode are fully protocol-enforced. All outputs are deterministic, reproducible, and verifiable — rendered exclusively via the NexArt Code Mode runtime.
             </p>
           </div>
-          
-          <p>
-            What will not change is the commitment to clarity, openness, and long-term thinking. The protocol is designed to be stable enough to study against, even as it grows.
-          </p>
 
           <h2>Where to Begin</h2>
           
