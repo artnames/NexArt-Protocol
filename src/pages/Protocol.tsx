@@ -2,130 +2,187 @@ import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 
 const Protocol = () => {
   return (
     <PageLayout>
       <Helmet>
-        <title>Protocol Overview - NexArt Protocol</title>
-        <meta name="description" content="The conceptual foundation of the NexArt protocol. Understanding systems, outputs, determinism, and versioning." />
+        <title>NexArt Protocol - Generative Art Standard</title>
+        <meta name="description" content="NexArt Protocol defines a canonical execution layer for generative art. Deterministic, verifiable, and open to third-party builders." />
       </Helmet>
       
       <PageHeader 
-        title="Protocol Overview"
-        subtitle="The mental model behind NexArt systems."
+        title="NexArt Protocol"
+        subtitle="A canonical standard for generative art systems."
       />
       
       <PageContent>
         <div className="prose-protocol">
           <p>
-            This page defines the conceptual framework of the NexArt protocol. It explains what we mean when we talk about systems, why we distinguish them from outputs, and how we think about reproducibility.
+            NexArt is both a creative application and a generative art protocol. This page explains what the protocol is, why it exists, and how it enables a new class of verifiable, permanent generative artwork.
           </p>
 
-          <h2>What Is a NexArt System</h2>
-          
-          <p>
-            A NexArt system is intended to be a complete, self-contained description of a generative artwork. It includes all the information necessary to produce visual output: the mode of generation, the parameters that control it, and any external references it depends on.
-          </p>
-          
-          <p>
-            A system is not an image. It is the specification from which images can be derived. The same system, given the same inputs, should produce the same visual result—or, in cases where perfect determinism is not possible, a result within an acceptable range of variation when tolerances are specified.
-          </p>
+          <section className="mt-12">
+            <h2>What Is the NexArt Protocol</h2>
+            
+            <p>
+              The NexArt Protocol is a specification for creating, executing, and verifying generative art systems. It defines how generative code should be structured, what execution guarantees it provides, and how outputs can be independently verified.
+            </p>
+            
+            <p>
+              Unlike traditional generative art tools, NexArt separates the <em>system</em> (the generative rules) from the <em>output</em> (the rendered image or animation). This separation enables:
+            </p>
+            
+            <ul>
+              <li><strong>Reproducibility</strong> — The same system always produces the same output</li>
+              <li><strong>Verification</strong> — Any party can re-execute and confirm authenticity</li>
+              <li><strong>Permanence</strong> — Systems remain executable across time and platforms</li>
+              <li><strong>Interoperability</strong> — Third-party apps can implement the protocol</li>
+            </ul>
+          </section>
 
-          <h2>System vs. Output</h2>
-          
-          <p>
-            The distinction between system and output is fundamental to NexArt. An output is a static artifact: an image, a video frame, a rendered moment. A system is dynamic: a set of rules that can be executed, paused, modified, and resumed.
-          </p>
-          
-          <p>
-            The protocol's goal is that when you save work in NexArt, you are saving a system—not just an image. Current implementations often store rendered outputs and metadata alongside system definitions. The protocol is evolving toward storing system definitions and reproducible inputs as the primary record, with rendered outputs treated as derived artifacts. Some systems are now governed by the protocol rather than the application.
-          </p>
-          
-          <p>
-            This has implications for preservation, ownership, and collaboration. A system can be verified, studied, and extended in ways that a static image cannot.
-          </p>
+          <section className="mt-12">
+            <h2>What Is Code Mode</h2>
+            
+            <p>
+              Code Mode is the execution layer of the NexArt Protocol. It is a restricted, deterministic runtime for generative art—similar to p5.js in syntax, but constrained to ensure reproducibility.
+            </p>
+            
+            <p>
+              Code Mode is defined by the <code className="text-caption">@nexart/codemode-sdk</code> and enforces:
+            </p>
+            
+            <ul>
+              <li><strong>Seeded randomness</strong> — All random values derive from a deterministic seed</li>
+              <li><strong>No external dependencies</strong> — No network calls, no filesystem access</li>
+              <li><strong>Fixed execution environment</strong> — Canvas size, frame rate, and timing are standardized</li>
+              <li><strong>Restricted API surface</strong> — Only protocol-approved functions are available</li>
+            </ul>
+            
+            <p>
+              This makes Code Mode suitable for NFT minting, long-term archival, and independent verification.
+            </p>
+          </section>
 
-          <h2>Why Systems Matter</h2>
-          
-          <p>
-            Traditional digital art is fragile. File formats become obsolete. Rendering engines change. Dependencies disappear. An image saved today may not open tomorrow.
-          </p>
-          
-          <p>
-            NexArt systems are designed for durability. By defining art as executable specifications rather than static files, we create artifacts that can be re-rendered, ported to new platforms, and preserved across technological generations.
-          </p>
+          <section className="mt-12">
+            <h2>Why Determinism Matters</h2>
+            
+            <p>
+              For generative art to be collectible, it must be trustworthy. Collectors need assurance that the artwork they purchase will look the same tomorrow, next year, and decades from now.
+            </p>
+            
+            <p>
+              Determinism provides this guarantee. When a NexArt system is minted:
+            </p>
+            
+            <ul>
+              <li>The generative code is stored permanently</li>
+              <li>The seed and parameters are recorded</li>
+              <li>Anyone can re-execute the system and verify the output</li>
+              <li>The output hash confirms authenticity</li>
+            </ul>
+            
+            <p>
+              This is fundamentally different from storing a rendered image. The artwork exists as executable logic, not just pixels.
+            </p>
+          </section>
 
-          <h2>Determinism</h2>
-          
-          <p>
-            A fully deterministic system produces identical output given identical input. This is the ideal, but not always achievable. Some generative processes depend on floating-point precision, hardware-specific rendering, or other factors that vary between environments.
-          </p>
-          
-          <p>
-            NexArt distinguishes between two categories:
-          </p>
-          
-          <ul>
-            <li>
-              <strong>Deterministic systems</strong> — intended to produce identical output across all conforming implementations, when specified
-            </li>
-            <li>
-              <strong>Best-effort systems</strong> — output may vary, but within documented tolerances when specified
-            </li>
-          </ul>
-          
-          <p>
-            Both are valid. The protocol requires that each system declare which category it belongs to. Tolerance specifications are evolving and will be formalized in future versions.
-          </p>
+          <section className="mt-12">
+            <h2>The Canonical Renderer</h2>
+            
+            <p>
+              The Canonical Renderer is the authoritative execution environment for NexArt systems. It is a Node.js-based runtime that produces cryptographically verified outputs.
+            </p>
+            
+            <p>
+              When a system is minted through a protocol-compliant application:
+            </p>
+            
+            <ol>
+              <li>The system code and parameters are submitted to the Canonical Renderer</li>
+              <li>The renderer executes the code in a controlled environment</li>
+              <li>The output (PNG or MP4) is generated</li>
+              <li>A cryptographic hash of the output is recorded</li>
+              <li>This hash becomes the permanent proof of authenticity</li>
+            </ol>
+            
+            <p>
+              Any party can later re-execute the same system and compare hashes. If they match, the output is verified as authentic.
+            </p>
+          </section>
 
-          <h2>Unified Runtime</h2>
-          
-          <p>
-            All protocol-enforced modes execute through the same NexArt Code Mode runtime under Protocol v1.0.0. This unification ensures consistent determinism guarantees regardless of input type:
-          </p>
-          
-          <ul>
-            <li>
-              <strong>Shapes</strong> → Code Mode runtime (HARD enforced)
-            </li>
-            <li>
-              <strong>Noise</strong> → Code Mode runtime (HARD enforced)
-            </li>
-            <li>
-              <strong>SoundArt</strong> → Code Mode runtime (HARD enforced)
-            </li>
-            <li>
-              <strong>Code Mode</strong> → Protocol v1.0.0 (HARD enforced)
-            </li>
-          </ul>
-          
-          <p>
-            These modes are enforced by the NexArt Protocol and executed exclusively through the Code Mode runtime. No arbitrary rendering logic is permitted. The runtime is shared, the determinism guarantees are shared, and the protocol enforcement is uniform.</p>
+          <section className="mt-12">
+            <h2>Protocol Architecture</h2>
+            
+            <div className="mt-6 space-y-6">
+              <div className="border border-border p-6 rounded-sm">
+                <h3 className="text-base font-medium text-foreground mb-3">Code Mode SDK</h3>
+                <p className="text-caption text-sm mb-2">
+                  The language definition and execution primitives.
+                </p>
+                <p className="text-caption text-sm">
+                  Defines what Code Mode <em>is</em> — the syntax, available functions, and execution rules.
+                </p>
+              </div>
+              
+              <div className="border border-border p-6 rounded-sm">
+                <h3 className="text-base font-medium text-foreground mb-3">Canonical Renderer</h3>
+                <p className="text-caption text-sm mb-2">
+                  The authoritative execution environment.
+                </p>
+                <p className="text-caption text-sm">
+                  Produces verified outputs with cryptographic proofs. Required for minting.
+                </p>
+              </div>
+              
+              <div className="border border-border p-6 rounded-sm">
+                <h3 className="text-base font-medium text-foreground mb-3">Protocol-Compliant Apps</h3>
+                <p className="text-caption text-sm mb-2">
+                  Applications that implement the protocol correctly.
+                </p>
+                <p className="text-caption text-sm">
+                  Can create, preview, and mint NexArt systems using the SDK and Canonical Renderer.
+                </p>
+              </div>
+            </div>
+          </section>
 
-          <h2>Versioning</h2>
-          
-          <p>
-            Behavior must be stable over time. When the protocol or a rendering engine changes, existing systems should continue to work as they did when created.
-          </p>
-          
-          <p>
-            NexArt uses versioning to freeze behavior. Each system records the protocol version it was created against. Implementations are expected to preserve backward compatibility with older versions, even as new features are added.
-          </p>
-          
-          <p>
-            Breaking changes are avoided. When they are unavoidable, they are introduced as new versions, leaving existing systems unaffected.
-          </p>
+          <section className="mt-12">
+            <h2>What This Means</h2>
+            
+            <div className="space-y-4 mt-4">
+              <div>
+                <h3 className="text-base font-medium text-foreground">For Artists</h3>
+                <p className="text-caption">
+                  Your generative systems are permanent and verifiable. The code you write is the artwork—not just the output it produces. Your work can be independently verified and will remain executable indefinitely.
+                </p>
+              </div>
+              
+              <div>
+                <h3 className="text-base font-medium text-foreground">For Developers</h3>
+                <p className="text-caption">
+                  You can build applications that create and mint NexArt systems. The protocol is open, and compliance is achievable by integrating the SDK and Canonical Renderer.
+                </p>
+              </div>
+              
+              <div>
+                <h3 className="text-base font-medium text-foreground">For Collectors</h3>
+                <p className="text-caption">
+                  You can trust that the artwork you collect is authentic and permanent. The cryptographic hash proves the output matches the original system, and anyone can verify this independently.
+                </p>
+              </div>
+            </div>
+          </section>
 
-          <h2>What This Means for Builders</h2>
-          
-          <p>
-            If you are building tools, renderers, or applications that work with NexArt systems, you are committing to honor these principles: systems over outputs, explicit determinism guarantees, and stable versioning.
-          </p>
-          
-          <p>
-            The protocol does not dictate implementation details. How you render a system is up to you, as long as the output conforms to the specification.
-          </p>
+          <section className="mt-12 pt-8 border-t border-border">
+            <p className="text-caption">
+              For details on protocol compliance levels and third-party integration, see{" "}
+              <Link to="/protocol-compliance" className="text-body underline underline-offset-2 hover:text-foreground">
+                Protocol Compliance
+              </Link>.
+            </p>
+          </section>
         </div>
       </PageContent>
     </PageLayout>

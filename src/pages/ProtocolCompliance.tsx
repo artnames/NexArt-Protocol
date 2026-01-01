@@ -1,0 +1,200 @@
+import PageLayout from "@/components/layout/PageLayout";
+import PageHeader from "@/components/layout/PageHeader";
+import PageContent from "@/components/layout/PageContent";
+import { Helmet } from "react-helmet-async";
+
+const ProtocolCompliance = () => {
+  return (
+    <PageLayout>
+      <Helmet>
+        <title>Protocol Compliance - NexArt Protocol</title>
+        <meta name="description" content="What it means to be NexArt Protocol compliant. Compliance levels, requirements, and examples of protocol-compliant applications." />
+      </Helmet>
+      
+      <PageHeader 
+        title="Protocol Compliance"
+        subtitle="Standards for protocol-compliant applications."
+      />
+      
+      <PageContent>
+        <div className="prose-protocol">
+          <p>
+            Third-party applications can implement the NexArt Protocol to create, preview, and mint generative art systems. This page defines what compliance means and the different levels of integration.
+          </p>
+
+          <section className="mt-12">
+            <h2>What Is Protocol Compliance</h2>
+            
+            <p>
+              A protocol-compliant application correctly implements the NexArt Protocol specification. This means:
+            </p>
+            
+            <ul>
+              <li>Code Mode systems execute identically to the reference implementation</li>
+              <li>Determinism guarantees are preserved</li>
+              <li>Output can be independently verified</li>
+              <li>Systems created in one compliant app work in all others</li>
+            </ul>
+            
+            <p>
+              Compliance is not about branding or affiliation. It is a technical standard that any application can meet by implementing the protocol correctly.
+            </p>
+          </section>
+
+          <section className="mt-12">
+            <h2>Compliance Levels</h2>
+            
+            <p>
+              There are two levels of protocol compliance, depending on which components an application integrates.
+            </p>
+            
+            <div className="mt-6 space-y-6">
+              <div className="border border-border p-6 rounded-sm">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-xs font-mono px-2 py-1 bg-muted text-muted-foreground rounded-sm">LEVEL 1</span>
+                  <h3 className="text-base font-medium text-foreground">SDK Integration</h3>
+                </div>
+                <p className="text-caption text-sm mb-4">
+                  The application uses <code className="text-caption">@nexart/codemode-sdk</code> or <code className="text-caption">@nexart/ui-renderer</code> for preview and creation.
+                </p>
+                <div className="text-sm">
+                  <p className="text-foreground font-medium mb-2">Enables:</p>
+                  <ul className="text-caption space-y-1 list-disc list-inside">
+                    <li>Creating valid Code Mode systems</li>
+                    <li>Live preview during creation</li>
+                    <li>Exporting system definitions</li>
+                    <li>Interoperability with other compliant apps</li>
+                  </ul>
+                </div>
+                <div className="mt-4 text-sm">
+                  <p className="text-foreground font-medium mb-2">Limitations:</p>
+                  <ul className="text-caption space-y-1 list-disc list-inside">
+                    <li>Previews are non-canonical (not suitable for minting)</li>
+                    <li>No cryptographic verification of outputs</li>
+                    <li>Cannot produce archival-grade renders</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="border border-border p-6 rounded-sm">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-xs font-mono px-2 py-1 bg-foreground text-background rounded-sm">LEVEL 2</span>
+                  <h3 className="text-base font-medium text-foreground">SDK + Canonical Renderer</h3>
+                </div>
+                <p className="text-caption text-sm mb-4">
+                  The application uses the SDK for creation and the Canonical Renderer for final output.
+                </p>
+                <div className="text-sm">
+                  <p className="text-foreground font-medium mb-2">Enables:</p>
+                  <ul className="text-caption space-y-1 list-disc list-inside">
+                    <li>Everything in Level 1</li>
+                    <li>Canonical, archival-grade rendering</li>
+                    <li>Cryptographic output verification</li>
+                    <li>NFT minting with proof of authenticity</li>
+                    <li>Full protocol guarantees</li>
+                  </ul>
+                </div>
+                <div className="mt-4 text-sm">
+                  <p className="text-foreground font-medium mb-2">Requirements:</p>
+                  <ul className="text-caption space-y-1 list-disc list-inside">
+                    <li>Integration with NexArt Canonical Renderer API</li>
+                    <li>Proper handling of output hashes</li>
+                    <li>Compliance with minting standards</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="mt-12">
+            <h2>Why Canonical Minting Matters</h2>
+            
+            <p>
+              Level 1 compliance is sufficient for creation and exploration, but Level 2 is required for minting because:
+            </p>
+            
+            <ul>
+              <li><strong>Determinism verification</strong> — Only the Canonical Renderer produces outputs that can be independently verified</li>
+              <li><strong>Hash permanence</strong> — The output hash becomes the permanent proof of authenticity</li>
+              <li><strong>Collector trust</strong> — Collectors can verify that the NFT matches the original system</li>
+              <li><strong>Long-term archival</strong> — Canonical outputs are the authoritative record</li>
+            </ul>
+            
+            <p>
+              A preview rendered in the browser may look identical, but it lacks the cryptographic proof that makes verification possible.
+            </p>
+          </section>
+
+          <section className="mt-12">
+            <h2>Protocol-Compliant Applications</h2>
+            
+            <p>
+              The following applications implement the NexArt Protocol:
+            </p>
+            
+            <div className="mt-6 space-y-4">
+              <div className="border border-border p-6 rounded-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-base font-medium text-foreground">NexArt</h3>
+                  <span className="text-xs font-mono px-2 py-1 bg-foreground text-background rounded-sm">LEVEL 2</span>
+                </div>
+                <p className="text-caption text-sm mb-2">
+                  The official NexArt application. Full protocol implementation with SDK and Canonical Renderer integration.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  <a href="https://nexart.xyz" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-caption">
+                    nexart.xyz
+                  </a>
+                </p>
+              </div>
+              
+              <div className="border border-border p-6 rounded-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-base font-medium text-foreground">ByX</h3>
+                  <span className="text-xs font-mono px-2 py-1 bg-foreground text-background rounded-sm">LEVEL 2</span>
+                </div>
+                <p className="text-caption text-sm mb-2">
+                  A protocol-compliant platform for generative collections. Artists define systems, collectors mint unique outputs.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Coming soon
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className="mt-12">
+            <h2>Becoming Compliant</h2>
+            
+            <p>
+              If you are building an application that creates or displays NexArt systems, you can achieve compliance by:
+            </p>
+            
+            <ol>
+              <li>Integrating the Code Mode SDK for system creation and preview</li>
+              <li>Optionally integrating the Canonical Renderer for minting capabilities</li>
+              <li>Following the protocol specification for system structure and metadata</li>
+              <li>Preserving determinism guarantees in your implementation</li>
+            </ol>
+            
+            <p>
+              There is no certification process. Compliance is self-declared and verifiable—if your outputs match the Canonical Renderer's outputs, you are compliant.
+            </p>
+          </section>
+
+          <section className="mt-12 pt-8 border-t border-border">
+            <p className="text-caption">
+              For technical details on SDK integration, see the{" "}
+              <a href="/builders" className="text-body underline underline-offset-2 hover:text-foreground">
+                Builders
+              </a>{" "}
+              page.
+            </p>
+          </section>
+        </div>
+      </PageContent>
+    </PageLayout>
+  );
+};
+
+export default ProtocolCompliance;
