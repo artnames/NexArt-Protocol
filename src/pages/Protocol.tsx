@@ -14,7 +14,7 @@ const Protocol = () => {
       
       <PageHeader 
         title="NexArt Protocol"
-        subtitle="A canonical standard for generative art systems."
+        subtitle="A canonical execution standard for generative art systems."
       />
       
       <PageContent>
@@ -40,17 +40,21 @@ const Protocol = () => {
               <li><strong>Permanence</strong> — Systems remain executable across time and platforms</li>
               <li><strong>Interoperability</strong> — Third-party apps can implement the protocol</li>
             </ul>
+            
+            <p>
+              The protocol defines execution semantics, not artistic style or aesthetics.
+            </p>
           </section>
 
           <section className="mt-12">
             <h2>What Is Code Mode</h2>
             
             <p>
-              Code Mode is the execution layer of the NexArt Protocol. It is a restricted, deterministic runtime for generative art—similar to p5.js in syntax, but constrained to ensure reproducibility.
+              Code Mode is defined exclusively by the <code className="text-caption">@nexart/codemode-sdk</code>, which is the single source of truth for deterministic execution semantics. It is a restricted, deterministic runtime for generative art—similar to p5.js in syntax, but constrained to ensure reproducibility.
             </p>
             
             <p>
-              Code Mode is defined by the <code className="text-caption">@nexart/codemode-sdk</code> and enforces:
+              Code Mode enforces:
             </p>
             
             <ul>
@@ -84,6 +88,10 @@ const Protocol = () => {
             </ul>
             
             <p>
+              Any deviation in execution, environment, or semantics will produce a different hash and fail verification.
+            </p>
+            
+            <p>
               This is fundamentally different from storing a rendered image. The artwork exists as executable logic, not just pixels.
             </p>
           </section>
@@ -108,14 +116,16 @@ const Protocol = () => {
             </ol>
             
             <p>
-              Any party can later re-execute the same system and compare hashes. If they match, the output is verified as authentic.
+              Any party can later re-execute the same system using a protocol-compliant renderer and compare hashes. If they match, the output is verified as authentic.
             </p>
           </section>
 
           <section className="mt-12">
             <h2>Protocol Architecture</h2>
             
-            <div className="mt-6 space-y-6">
+            <h3 className="text-sm font-mono text-caption mt-6 mb-4 tracking-wide uppercase">Authority Chain</h3>
+            
+            <div className="space-y-6">
               <div className="border border-border p-6 rounded-sm">
                 <h3 className="text-base font-medium text-foreground mb-3">Code Mode SDK</h3>
                 <p className="text-caption text-sm mb-2">
@@ -139,7 +149,7 @@ const Protocol = () => {
               <div className="border border-border p-6 rounded-sm">
                 <h3 className="text-base font-medium text-foreground mb-3">Protocol-Compliant Apps</h3>
                 <p className="text-caption text-sm mb-2">
-                  Applications that implement the protocol correctly.
+                  Applications that implement the protocol correctly. Protocol-compliant apps must not alter execution semantics or introduce fallback rendering paths.
                 </p>
                 <p className="text-caption text-sm">
                   Can create, preview, and mint NexArt systems using the SDK and Canonical Renderer.
