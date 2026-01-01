@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 const navItems = [
   { href: "/", label: "Home" },
   { href: "/protocol", label: "Protocol" },
+  { href: "/protocol-compliance", label: "Compliance" },
   { href: "/canonical-unit", label: "Canonical Unit" },
   { href: "/modes", label: "Modes" },
   { href: "/determinism", label: "Determinism" },

@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
 import Protocol from "./pages/Protocol";
+import ProtocolCompliance from "./pages/ProtocolCompliance";
 import CanonicalUnit from "./pages/CanonicalUnit";
 import Modes from "./pages/Modes";
 import Determinism from "./pages/Determinism";
@@ -34,6 +35,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/protocol" element={<Protocol />} />
+            <Route path="/protocol-compliance" element={<ProtocolCompliance />} />
             <Route path="/canonical-unit" element={<CanonicalUnit />} />
             <Route path="/modes" element={<Modes />} />
             <Route path="/determinism" element={<Determinism />} />
