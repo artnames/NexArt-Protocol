@@ -37,8 +37,8 @@ const Index = () => {
               <ul className="text-sm text-muted-foreground space-y-2 mb-3">
                 <li>Deterministic, archival-safe execution</li>
                 <li>Used for minting NFTs and permanent outputs</li>
-                <li>Locked Protocol v1.0.0</li>
-                <li>Implemented via <code className="text-xs bg-muted px-1 py-0.5 rounded">@nexart/codemode-sdk</code></li>
+                <li>Locked Protocol v1.2.0</li>
+                <li>Implemented via <code className="text-xs bg-muted px-1 py-0.5 rounded">@nexart/codemode-sdk v1.5.0</code></li>
               </ul>
             </div>
             
@@ -107,7 +107,7 @@ const Index = () => {
           <div className="bg-primary/10 border border-primary/30 rounded-md p-4 my-6">
             <div className="flex items-center gap-2 mb-2">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground">
-                Protocol v1.0.0
+                Protocol v1.2.0
               </span>
               <span className="text-sm font-medium">Locked & Stable</span>
             </div>

@@ -1,7 +1,8 @@
 # NexArt Protocol
 
 **Status:** Active · Production  
-**Current Version:** v0.4  
+**Current Version:** v1.2.0  
+**SDK Version:** @nexart/codemode-sdk v1.5.0  
 **Canonical Docs:** https://nexart.io  
 **Reference App:** https://nexart.xyz
 
@@ -43,7 +44,7 @@ The primary reference application is nexart.xyz, but the protocol is designed to
 
 ---
 
-## Current Protocol Status (v0.4)
+## Current Protocol Status (v1.2.0)
 
 Enforcement is incremental and mode-specific.
 
@@ -67,27 +68,19 @@ Fluids remains non-protocol and provides no reproducibility guarantees.
 
 ## Code Mode Status
 
-### Code Mode v0.x
+### Code Mode v1.x (Current)
 
-- Experimental
-- Browser-dependent
-- Best-effort rendering only
-- Not governed by the protocol
-
-### Code Mode v1 (Draft)
-
-A proposed protocol-stable generative system language.
-
-- Deterministic
-- Renderer-agnostic
-- Statically validatable
+- Protocol-stable, production-ready
+- Deterministic execution via @nexart/codemode-sdk v1.5.0
+- Fully governed by Protocol v1.2.0
+- Renderer-agnostic, statically validatable
 - Versioned and portable
 
-**Important:**  
-Code Mode v1 is a design draft only.  
-It is not implemented, not enforced, and provides no guarantees yet.
+**Current:**  
+Code Mode is production-stable under Protocol v1.2.0.  
+All execution is deterministic and verified.
 
-See: *Code Mode v1 (Draft)* in the documentation.
+See: *Code Mode Creator's Guide* in the documentation.
 
 ---
 

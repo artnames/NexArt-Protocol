@@ -90,12 +90,12 @@ const Modes = () => {
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground">
                 HARD Enforced
               </span>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-foreground/10 text-foreground">
-                Protocol v1.0.0
-              </span>
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-foreground/10 text-foreground">
+              Protocol v1.2.0
+            </span>
             </div>
             <p className="text-sm text-muted-foreground mb-0">
-              Code Mode is a protocol-enforced execution surface under NexArt Protocol v1.0.0. Sketches are executed deterministically within a restricted, standardized runtime.
+              Code Mode is a protocol-enforced execution surface under NexArt Protocol v1.2.0. Sketches are executed deterministically within a restricted, standardized runtime.
             </p>
           </div>
           
@@ -108,7 +108,7 @@ const Modes = () => {
           </p>
           
           <p>
-            <strong>Guarantees.</strong> Code Mode execution is deterministic. The protocol enforces deterministic execution through seeded randomness and controlled noise functions. Non-deterministic operations are disallowed. The execution surface is frozen under Protocol v1.0.0.
+            <strong>Guarantees.</strong> Code Mode execution is deterministic. The protocol enforces deterministic execution through seeded randomness and controlled noise functions. Non-deterministic operations are disallowed. The execution surface is frozen under Protocol v1.2.0.
           </p>
           
           <p>
@@ -259,7 +259,7 @@ const Modes = () => {
                       HARD
                     </span>
                   </td>
-                  <td className="py-2">Protocol v1.0.0</td>
+                  <td className="py-2">Protocol v1.2.0</td>
                 </tr>
                 <tr className="border-b border-border/50">
                   <td className="py-2 pr-4">Artnames</td>

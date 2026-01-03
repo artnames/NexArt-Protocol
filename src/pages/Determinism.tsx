@@ -36,7 +36,7 @@ const Determinism = () => {
             <li><strong>Shapes</strong> — parametric geometric systems (HARD enforced, Code Mode runtime)</li>
             <li><strong>Noise</strong> — fractal, flow, and cellular noise systems (HARD enforced, Code Mode runtime)</li>
             <li><strong>SoundArt</strong> — audio-reactive systems with frozen audio snapshots (HARD enforced, Code Mode runtime)</li>
-            <li><strong>Code Mode</strong> — generative systems under Protocol v1.0.0 (HARD enforced)</li>
+            <li><strong>Code Mode</strong> — generative systems under Protocol v1.2.0 (HARD enforced)</li>
           </ul>
           
           <p>

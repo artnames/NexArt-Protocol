@@ -65,7 +65,7 @@ const Glossary = () => {
             Determinism in NexArt is conditional. It depends on renderer conformance, specified rendering rules, and the stability of external references. A system's determinism declaration is a contract, not an automatic property.
           </p>
           <p className="text-body">
-            HARD enforced modes—Shapes, Noise, SoundArt, and Code Mode—are fully deterministic and rendered exclusively via the NexArt Code Mode runtime under Protocol v1.0.0. No arbitrary rendering logic is permitted.
+            HARD enforced modes—Shapes, Noise, SoundArt, and Code Mode—are fully deterministic and rendered exclusively via the NexArt Code Mode runtime under Protocol v1.2.0. No arbitrary rendering logic is permitted.
           </p>
         </section>
 
@@ -140,7 +140,7 @@ const Glossary = () => {
             A creation primitive that defines how systems are authored. Each mode—SoundArt, Code Mode, Shapes, Fluids, Noise, Artnames—provides a distinct set of inputs, parameters, and behaviors.
           </p>
           <p className="text-body mb-4">
-            Modes are not plugins or extensions. They are first-class protocol primitives, each with defined semantics and determinism characteristics. HARD enforced modes (Shapes, Noise, SoundArt, Code Mode) execute through the shared NexArt Code Mode runtime under Protocol v1.0.0.
+            Modes are not plugins or extensions. They are first-class protocol primitives, each with defined semantics and determinism characteristics. HARD enforced modes (Shapes, Noise, SoundArt, Code Mode) execute through the shared NexArt Code Mode runtime under Protocol v1.2.0.
           </p>
           <p className="text-body">
             All modes produce canonical units that conform to the protocol structure, but each mode's internal parameters and rendering requirements differ according to its nature.
