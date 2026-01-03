@@ -11,7 +11,7 @@ const CodeMode = () => {
         <title>Code Mode | NexArt Protocol</title>
         <meta
           name="description"
-          content="Code Mode is a protocol-enforced execution surface under NexArt Protocol v1.0.0. Deterministic, standardized runtime for generative art."
+          content="Code Mode is a protocol-enforced execution surface under NexArt Protocol v1.2.0. Deterministic, standardized runtime for generative art."
         />
       </Helmet>
 
@@ -29,11 +29,11 @@ const CodeMode = () => {
               HARD Enforced
             </span>
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-foreground/10 text-foreground">
-              Protocol v1.0.0
+              Protocol v1.2.0
             </span>
           </div>
           <p className="text-body text-lg max-w-2xl">
-            Code Mode is a protocol-enforced execution surface under NexArt Protocol v1.0.0. Sketches are executed deterministically within a restricted, standardized runtime.
+            Code Mode is a protocol-enforced execution surface under NexArt Protocol v1.2.0. Sketches are executed deterministically within a restricted, standardized runtime.
           </p>
         </div>
       </div>
@@ -112,11 +112,11 @@ const CodeMode = () => {
                 Code Mode Runtime Specification
               </h2>
               <Badge variant="default" className="bg-foreground text-background text-xs">
-                v1.0.0
+                v1.5.0
               </Badge>
             </div>
             <p className="text-body text-sm mb-4">
-              Defines how Code Mode executes under Protocol v1.0.0, including Static and Loop rendering, determinism guarantees, and NFT minting.
+              Defines how Code Mode executes under Protocol v1.2.0, including Static and Loop rendering, determinism guarantees, and NFT minting.
             </p>
             <p className="text-caption text-xs">
               Execution surface: frozen

@@ -4,7 +4,13 @@ All notable changes to the NexArt Protocol are documented in this file.
 
 ---
 
-## v0.4 — Production
+## v1.2.0 — Current (January 2026)
+
+### Protocol
+
+- Protocol version locked at v1.2.0
+- SDK version: @nexart/codemode-sdk v1.5.0
+- UI Renderer SDK: @nexart/ui-renderer v0.6.0
 
 ### Hard Enforcement
 
@@ -24,6 +30,18 @@ All hard-enforced modes are executed exclusively via the NexArt Code Mode runtim
 ### Experimental
 
 - Fluids remains non-protocol and provides no reproducibility guarantees.
+
+---
+
+## v1.0.0 — Protocol Freeze (December 2025)
+
+- Initial protocol freeze
+- Code Mode execution surface locked
+- Determinism guarantees established
+
+---
+
+## v0.4 — Production
 
 ---
 
