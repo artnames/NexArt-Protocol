@@ -16,6 +16,7 @@ import Builders from "./pages/Builders";
 import Governance from "./pages/Governance";
 import CodeMode from "./pages/CodeMode";
 import BuilderRewards from "./pages/BuilderRewards";
+import BuilderManifest from "./pages/BuilderManifest";
 import CodeModeV1 from "./pages/CodeModeV1";
 import CodeModeExecution from "./pages/CodeModeExecution";
 import HowCodeModeThinks from "./pages/HowCodeModeThinks";
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/governance" element={<Governance />} />
             <Route path="/code-mode" element={<CodeMode />} />
             <Route path="/builder-rewards" element={<BuilderRewards />} />
+            <Route path="/builder-manifest" element={<BuilderManifest />} />
             <Route path="/code-mode-v1" element={<CodeModeV1 />} />
             <Route path="/code-mode-execution" element={<CodeModeExecution />} />
             <Route path="/how-code-mode-thinks" element={<HowCodeModeThinks />} />

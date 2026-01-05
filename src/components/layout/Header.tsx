@@ -14,6 +14,7 @@ const navItems = [
   { href: "/governance", label: "Governance" },
   { href: "/code-mode", label: "Code Mode" },
   { href: "/builder-rewards", label: "Builder Rewards" },
+  { href: "/builder-manifest", label: "Builder Manifest" },
 ];
 
 const Header = () => {

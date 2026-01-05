@@ -47,6 +47,11 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/builder-manifest" className="text-caption hover:text-foreground transition-colors">
+                  Builder Manifest
+                </Link>
+              </li>
+              <li>
                 <Link to="/glossary" className="text-caption hover:text-foreground transition-colors">
                   Glossary
                 </Link>
