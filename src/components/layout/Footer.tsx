@@ -29,6 +29,11 @@ const Footer = () => {
                   Canonical Renderer
                 </Link>
               </li>
+              <li>
+                <Link to="/builder-rewards" className="text-caption hover:text-foreground transition-colors">
+                  Builder Rewards
+                </Link>
+              </li>
             </ul>
           </div>
 
