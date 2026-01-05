@@ -13,6 +13,7 @@ const navItems = [
   { href: "/canonical-renderer", label: "Canonical Renderer" },
   { href: "/governance", label: "Governance" },
   { href: "/code-mode", label: "Code Mode" },
+  { href: "/builder-rewards", label: "Builder Rewards" },
 ];
 
 const Header = () => {
