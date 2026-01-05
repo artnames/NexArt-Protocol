@@ -1,20 +1,42 @@
 import { Link, useLocation } from "react-router-dom";
 
-const navItems = [
-  { href: "/", label: "Home" },
-  { href: "/protocol", label: "Protocol" },
-  { href: "/protocol-compliance", label: "Compliance" },
-  { href: "/canonical-unit", label: "Canonical Unit" },
-  { href: "/modes", label: "Modes" },
-  { href: "/determinism", label: "Determinism" },
-  { href: "/glossary", label: "Glossary" },
-  { href: "/non-goals", label: "Non-Goals" },
-  { href: "/builders", label: "Builders" },
-  { href: "/canonical-renderer", label: "Canonical Renderer" },
-  { href: "/governance", label: "Governance" },
-  { href: "/code-mode", label: "Code Mode" },
-  { href: "/builder-rewards", label: "Builder Rewards" },
-  { href: "/builder-manifest", label: "Builder Manifest" },
+// Navigation grouped by conceptual layers:
+// Core Protocol → Execution & Compliance → Builders → Governance
+const navGroups = [
+  // Core Protocol
+  {
+    items: [
+      { href: "/", label: "Home" },
+      { href: "/protocol", label: "Protocol" },
+      { href: "/canonical-unit", label: "Canonical Unit" },
+      { href: "/modes", label: "Modes" },
+      { href: "/determinism", label: "Determinism" },
+      { href: "/non-goals", label: "Non-Goals" },
+      { href: "/glossary", label: "Glossary" },
+    ],
+  },
+  // Execution & Compliance
+  {
+    items: [
+      { href: "/protocol-compliance", label: "Compliance" },
+      { href: "/canonical-renderer", label: "Canonical Renderer" },
+      { href: "/code-mode", label: "Code Mode" },
+    ],
+  },
+  // Builders
+  {
+    items: [
+      { href: "/builders", label: "Builders" },
+      { href: "/builder-manifest", label: "Builder Manifest" },
+      { href: "/builder-rewards", label: "Builder Rewards" },
+    ],
+  },
+  // Governance
+  {
+    items: [
+      { href: "/governance", label: "Governance" },
+    ],
+  },
 ];
 
 const Header = () => {
@@ -28,19 +50,28 @@ const Header = () => {
             nexart.io
           </Link>
           
-          <nav className="flex flex-wrap gap-x-6 gap-y-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                to={item.href}
-                className={`text-sm transition-colors ${
-                  location.pathname === item.href
-                    ? "text-foreground"
-                    : "text-caption hover:text-body"
-                }`}
-              >
-                {item.label}
-              </Link>
+          <nav className="flex flex-wrap items-center gap-y-2">
+            {navGroups.map((group, groupIndex) => (
+              <div key={groupIndex} className="flex items-center">
+                {groupIndex > 0 && (
+                  <span className="mx-3 h-3 w-px bg-border" aria-hidden="true" />
+                )}
+                <div className="flex flex-wrap gap-x-4">
+                  {group.items.map((item) => (
+                    <Link
+                      key={item.href}
+                      to={item.href}
+                      className={`text-sm transition-colors ${
+                        location.pathname === item.href
+                          ? "text-foreground"
+                          : "text-caption hover:text-body"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             ))}
           </nav>
         </div>
