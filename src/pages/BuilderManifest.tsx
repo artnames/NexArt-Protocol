@@ -121,15 +121,17 @@ const BuilderManifest = () => {
 
   "renderer": {
     "package": "@nexart/ui-renderer",
-    "version": "^0.6.0",
-    "mode": "preview"
+    "version": "^0.8.8",
+    "mode": "preview",
+    "optional": true
   },
 
   "features": {
     "codeMode": true,
     "soundArt": false,
     "staticOnly": false,
-    "loopMode": true
+    "loopMode": true,
+    "experimental": []
   },
 
   "declaration": {
@@ -172,7 +174,7 @@ const BuilderManifest = () => {
             </div>
             <div className="border-b border-border pb-3">
               <code className="font-mono text-foreground">features</code>
-              <p className="text-caption mt-1">Declares which protocol features the app supports.</p>
+              <p className="text-caption mt-1">Declares which protocol features the app supports. Includes <code className="text-xs bg-muted px-1 py-0.5 rounded font-mono">experimental</code> array for future extensibility.</p>
             </div>
             <div className="border-b border-border pb-3">
               <code className="font-mono text-foreground">declaration</code>
@@ -185,13 +187,13 @@ const BuilderManifest = () => {
           </div>
         </section>
 
-        {/* Validation Rules */}
+        {/* Syntactic Validation Rules */}
         <section className="mb-14">
           <h2 className="text-sm font-mono text-foreground mb-4 tracking-wide">
-            Validation Rules (Draft)
+            Syntactic Validation Rules (Draft)
           </h2>
           <div className="space-y-4 text-body leading-relaxed">
-            <p>A manifest is considered valid if:</p>
+            <p>A manifest is considered syntactically valid if:</p>
             <ul className="space-y-2 ml-4">
               <li>• JSON parses correctly</li>
               <li>• <code className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">protocol === "nexart"</code></li>
@@ -220,6 +222,9 @@ const BuilderManifest = () => {
               <li>• Foundation grants</li>
               <li>• SDK diagnostics (opt-in)</li>
             </ul>
+            <p className="text-caption text-sm mt-4">
+              Manifests may be discovered by NexArt tools, third-party platforms, or the NexArt Foundation, but discovery implies no endorsement or approval.
+            </p>
           </div>
         </section>
 
