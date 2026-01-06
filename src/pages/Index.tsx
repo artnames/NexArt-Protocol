@@ -9,97 +9,114 @@ const Index = () => {
   return (
     <PageLayout>
       <Helmet>
-        <title>NexArt Protocol - A Generative Art Protocol</title>
-        <meta name="description" content="NexArt is a generative art protocol. Build, preview, and mint deterministic generative systems with open SDKs for creators, builders, and AI tools." />
+        <title>NexArt Protocol — Deterministic Generative Media Infrastructure</title>
+        <meta name="description" content="NexArt is a protocol and SDK for reproducible, verifiable generative output — on-chain or off-chain. Same input. Same output. Everywhere." />
       </Helmet>
       
       <PageHeader 
-        title="NexArt is a Generative Art Protocol"
-        subtitle="Build, preview, and mint deterministic generative systems — on NexArt or anywhere else."
+        title="Deterministic Generative Media Infrastructure"
+        subtitle="NexArt is a protocol and SDK for reproducible, verifiable generative output — on-chain or off-chain."
       />
       
       <PageContent>
         <div className="prose-protocol">
-          <p className="text-lg text-muted-foreground">
-            NexArt defines a canonical execution layer for generative art, with open SDKs for creators, builders, and AI tools.
+          <p className="text-lg text-muted-foreground italic">
+            Same input. Same output. Everywhere.
           </p>
 
-          <h2>The NexArt Stack</h2>
+          <h2>What Problem Does This Solve?</h2>
+          
+          <p>
+            Non-deterministic generation breaks reproducibility. Outputs drift across devices, runtimes, and time. A generative system that produces different results on different machines is not verifiable, archivable, or trustworthy.
+          </p>
+          
+          <p>
+            This becomes a problem for:
+          </p>
+          
+          <ul>
+            <li><strong>Applications</strong> — that need consistent rendering across environments</li>
+            <li><strong>Archives</strong> — that require outputs to remain stable over decades</li>
+            <li><strong>Institutions</strong> — that depend on verifiable, reproducible media</li>
+          </ul>
+          
+          <p>
+            NexArt solves this by enforcing deterministic execution at the protocol level. The same seed, parameters, and code will always produce the same output — regardless of where or when it is rendered.
+          </p>
+
+          <div className="bg-muted/50 border border-border rounded-md p-5 my-8">
+            <div className="flex flex-col gap-3">
+              <span className="text-sm font-medium">Determinism Reference</span>
+              <p className="text-sm text-muted-foreground mb-3">
+                Public, executable proof of NexArt's deterministic execution guarantees.
+              </p>
+              <Button asChild variant="outline" className="w-fit">
+                <a 
+                  href="https://determinism.nexart.io" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                >
+                  determinism.nexart.io
+                </a>
+              </Button>
+            </div>
+          </div>
+
+          <h2>Protocol vs. Applications</h2>
+          
+          <p>
+            NexArt separates the protocol layer from the application layer.
+          </p>
           
           <div className="grid gap-6 md:grid-cols-2 my-6">
             <div className="border border-border rounded-md p-5">
               <div className="flex items-center gap-2 mb-3">
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground">
-                  Canonical
+                  Protocol
                 </span>
-                <span className="text-sm font-medium">Code Mode Protocol</span>
               </div>
-              <ul className="text-sm text-muted-foreground space-y-2 mb-3">
-                <li>Deterministic, archival-safe execution</li>
-                <li>Used for minting NFTs and permanent outputs</li>
-                <li>Locked Protocol v1.2.0</li>
-                <li>Implemented via <code className="text-xs bg-muted px-1 py-0.5 rounded">@nexart/codemode-sdk v1.5.1</code></li>
+              <p className="text-sm font-medium mb-2">NexArt Protocol & SDK</p>
+              <ul className="text-sm text-muted-foreground space-y-2 mb-0">
+                <li>Canonical execution semantics</li>
+                <li>Deterministic, reproducible output</li>
+                <li>Enforced via <code className="text-xs bg-muted px-1 py-0.5 rounded">@nexart/codemode-sdk v1.5.1</code></li>
+                <li>Protocol v1.2.0 — Locked & Stable</li>
               </ul>
             </div>
             
             <div className="border border-border rounded-md p-5">
               <div className="flex items-center gap-2 mb-3">
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground">
-                  Non-canonical
+                  Applications
                 </span>
-                <span className="text-sm font-medium">UI Renderer</span>
               </div>
-              <ul className="text-sm text-muted-foreground space-y-2 mb-3">
-                <li>Live previews and exploration</li>
-                <li>Declarative primitives and AI-friendly APIs</li>
-                <li>Compiles to Code Mode, but never replaces it</li>
-                <li>Implemented via <code className="text-xs bg-muted px-1 py-0.5 rounded">@nexart/ui-renderer</code></li>
+              <p className="text-sm font-medium mb-2">Apps Built on NexArt</p>
+              <ul className="text-sm text-muted-foreground space-y-2 mb-0">
+                <li>NexArt (reference application)</li>
+                <li>ByX (generative collections)</li>
+                <li>Third-party implementations</li>
+                <li>Custom builder integrations</li>
               </ul>
             </div>
           </div>
           
           <p className="text-sm text-muted-foreground italic">
-            Same protocol. Different tools. No lock-in.
+            Applications are replaceable. The protocol is the product.
           </p>
 
-          <h2>Build on NexArt</h2>
+          <h2>For Builders</h2>
           
-          <ul>
-            <li>Build your own generative art apps using NexArt SDKs</li>
-            <li>Use the same protocol as{" "}
-              <a 
-                href="https://nexart.xyz" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-link hover:text-link-hover underline underline-offset-2"
-              >
-                nexart.xyz
-              </a>
-            </li>
-            <li>No requirement to use NexArt UI</li>
-            <li>Supports static, animated, and parameterized systems</li>
-            <li>Designed for AI-assisted creation</li>
-          </ul>
+          <p>
+            The NexArt SDK provides a deterministic runtime for generative systems. Free for experimentation. Designed for production use.
+          </p>
           
           <div className="flex flex-wrap gap-3 my-6">
             <Button asChild variant="outline">
-              <Link to="/builders">View SDKs</Link>
+              <Link to="/builders">SDK Documentation</Link>
             </Button>
             <Button asChild variant="outline">
-              <Link to="/protocol">Read Protocol Docs</Link>
+              <Link to="/protocol">Protocol Reference</Link>
             </Button>
-          </div>
-
-          <h2>ByX — Generative Collections</h2>
-          
-          <p>
-            ByX lets artists publish generative systems instead of single artworks. Collectors mint their own outputs inside artist-defined rules.
-          </p>
-          
-          <div className="my-4">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground">
-              Coming soon
-            </span>
           </div>
 
           <h2>Protocol Status</h2>
@@ -116,7 +133,7 @@ const Index = () => {
             </p>
           </div>
 
-          <h2>Where to Begin</h2>
+          <h2>Reference</h2>
           
           <ul>
             <li>
@@ -132,16 +149,16 @@ const Index = () => {
               {" "}— The core protocol object
             </li>
             <li>
+              <Link to="/determinism" className="text-link hover:text-link-hover underline underline-offset-2">
+                Determinism & Versioning
+              </Link>
+              {" "}— Guarantees and constraints
+            </li>
+            <li>
               <Link to="/modes" className="text-link hover:text-link-hover underline underline-offset-2">
                 Modes
               </Link>
               {" "}— The creation primitives
-            </li>
-            <li>
-              <Link to="/builders" className="text-link hover:text-link-hover underline underline-offset-2">
-                Builders
-              </Link>
-              {" "}— For those who want to contribute
             </li>
           </ul>
         </div>
