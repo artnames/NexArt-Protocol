@@ -43,7 +43,7 @@ const Builders = () => {
 
           <h2>The Official SDK</h2>
 
-          <h3>@nexart/codemode-sdk v1.5.0 — Canonical Runtime</h3>
+          <h3>@nexart/codemode-sdk v1.5.1 — Canonical Runtime</h3>
           
           <p>
             <strong>Purpose:</strong> Archival, deterministic execution<br />
@@ -70,7 +70,7 @@ const Builders = () => {
 
           <h2>Developer Tooling (Preview)</h2>
 
-          <h3>@nexart/ui-renderer v0.6.0</h3>
+          <h3>@nexart/ui-renderer v0.8.8</h3>
           
           <p>
             <strong>Purpose:</strong> Exploration, prototyping, UI tools<br />

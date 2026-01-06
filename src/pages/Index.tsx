@@ -38,7 +38,7 @@ const Index = () => {
                 <li>Deterministic, archival-safe execution</li>
                 <li>Used for minting NFTs and permanent outputs</li>
                 <li>Locked Protocol v1.2.0</li>
-                <li>Implemented via <code className="text-xs bg-muted px-1 py-0.5 rounded">@nexart/codemode-sdk v1.5.0</code></li>
+                <li>Implemented via <code className="text-xs bg-muted px-1 py-0.5 rounded">@nexart/codemode-sdk v1.5.1</code></li>
               </ul>
             </div>
             

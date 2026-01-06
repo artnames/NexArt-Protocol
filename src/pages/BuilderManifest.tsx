@@ -28,6 +28,9 @@ const BuilderManifest = () => {
             <span className="text-xs font-mono px-2 py-0.5 bg-muted text-muted-foreground rounded">
               Enforcement: None
             </span>
+            <span className="text-xs font-mono px-2 py-0.5 bg-muted text-muted-foreground rounded">
+              Runtime Impact: None
+            </span>
           </div>
           <h1 className="text-3xl md:text-4xl font-light text-foreground mb-4 tracking-tight">
             NexArt Builder Manifest
@@ -80,6 +83,28 @@ const BuilderManifest = () => {
           </div>
         </section>
 
+        {/* What Changed in SDK v1.5.1 */}
+        <section className="mb-14">
+          <h2 className="text-sm font-mono text-foreground mb-4 tracking-wide">
+            What Changed in SDK v1.5.1
+          </h2>
+          <div className="space-y-4 text-body leading-relaxed">
+            <p>SDK v1.5.1 introduces optional, passive support for Builder Manifest registration:</p>
+            <ul className="space-y-2 ml-4">
+              <li>• SDK now allows optional registration of a Builder Manifest</li>
+              <li>• Manifest is write-only</li>
+              <li>• SDK does not read, expose, validate, or transmit the manifest</li>
+              <li>• Execution, determinism, and outputs are identical with or without a manifest</li>
+            </ul>
+            <div className="border-l-2 border-border pl-4 my-6">
+              <p className="text-sm text-foreground font-medium">Safety Note:</p>
+              <p className="mt-2 text-sm text-body">
+                Registering a Builder Manifest does not enable rewards, tracking, approval, or attribution. It is a declaration of intent only.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Design Principles */}
         <section className="mb-14">
           <h2 className="text-sm font-mono text-foreground mb-4 tracking-wide">
@@ -115,7 +140,7 @@ const BuilderManifest = () => {
 
   "sdk": {
     "package": "@nexart/codemode-sdk",
-    "version": "^1.5.0",
+    "version": "^1.5.1",
     "execution": "deterministic"
   },
 
