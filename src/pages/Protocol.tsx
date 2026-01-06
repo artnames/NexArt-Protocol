@@ -67,6 +67,10 @@ const Protocol = () => {
             <p>
               This makes Code Mode suitable for NFT minting, long-term archival, and independent verification.
             </p>
+
+            <p className="text-caption text-sm">
+              SDK v1.5.1 supports optional passive builder identity via manifest registration, without affecting execution or determinism.
+            </p>
           </section>
 
           <section className="mt-12">

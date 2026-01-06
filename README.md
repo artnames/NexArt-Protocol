@@ -2,7 +2,7 @@
 
 **Status:** Active · Production  
 **Current Version:** v1.2.0  
-**SDK Version:** @nexart/codemode-sdk v1.5.0  
+**SDK Version:** @nexart/codemode-sdk v1.5.1  
 **Canonical Docs:** https://nexart.io  
 **Reference App:** https://nexart.xyz
 
@@ -71,7 +71,7 @@ Fluids remains non-protocol and provides no reproducibility guarantees.
 ### Code Mode v1.x (Current)
 
 - Protocol-stable, production-ready
-- Deterministic execution via @nexart/codemode-sdk v1.5.0
+- Deterministic execution via @nexart/codemode-sdk v1.5.1
 - Fully governed by Protocol v1.2.0
 - Renderer-agnostic, statically validatable
 - Versioned and portable
