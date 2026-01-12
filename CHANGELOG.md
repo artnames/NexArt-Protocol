@@ -9,7 +9,7 @@ All notable changes to the NexArt Protocol are documented in this file.
 ### Protocol
 
 - Protocol version locked at v1.2.0
-- SDK version: @nexart/codemode-sdk v1.5.1
+- SDK version: @nexart/codemode-sdk v1.6.0
 - UI Renderer SDK: @nexart/ui-renderer v0.8.8
 
 ### Hard Enforcement
