@@ -18,7 +18,7 @@ const CodeModeExecution = () => {
         <title>NexArt Code Mode — Creator's Guide | NexArt Protocol</title>
         <meta
           name="description"
-          content="The canonical guide for artists, builders, and AI systems writing NexArt Code Mode sketches. Protocol v1.2.0 · SDK v1.5.1 — LOCKED & STABLE."
+          content="The canonical guide for artists, builders, and AI systems writing NexArt Code Mode sketches. Protocol v1.2.0 · SDK v1.6.0 — LOCKED & STABLE."
         />
       </Helmet>
 
@@ -53,7 +53,7 @@ const CodeModeExecution = () => {
           <div className="text-body text-sm max-w-2xl mb-6 space-y-1">
             <p className="mb-1">Version: 1.2</p>
             <p className="mb-1">Protocol: NexArt Code Mode Protocol v1.2.0 (LOCKED)</p>
-            <p className="mb-1">SDK: @nexart/codemode-sdk v1.5.1</p>
+            <p className="mb-1">SDK: @nexart/codemode-sdk v1.6.0</p>
             <p className="mb-1">Status: CURRENT · IMPLEMENTED · ENFORCED</p>
             <p className="mb-1">Reference App: nexart.xyz</p>
             <p className="mb-0">Last Updated: January 2026</p>
