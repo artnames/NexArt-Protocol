@@ -79,7 +79,7 @@ const Index = () => {
               <ul className="text-sm text-muted-foreground space-y-2 mb-0">
                 <li>Canonical execution semantics</li>
                 <li>Deterministic, reproducible output</li>
-                <li>Enforced via <code className="text-xs bg-muted px-1 py-0.5 rounded">@nexart/codemode-sdk v1.6.0</code></li>
+                <li>Enforced via <code className="text-xs bg-muted px-1 py-0.5 rounded">@nexart/codemode-sdk v1.8.1</code></li>
                 <li>Protocol v1.2.0 — Locked & Stable</li>
               </ul>
             </div>
