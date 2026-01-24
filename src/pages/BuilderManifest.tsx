@@ -86,10 +86,10 @@ const BuilderManifest = () => {
         {/* What Changed in SDK v1.6.0 */}
         <section className="mb-14">
           <h2 className="text-sm font-mono text-foreground mb-4 tracking-wide">
-            What Changed in SDK v1.8.1
+            What Changed in SDK v1.8.2
           </h2>
           <div className="space-y-4 text-body leading-relaxed">
-            <p>SDK v1.8.1 continues optional, passive support for Builder Manifest registration:</p>
+            <p>SDK v1.8.2 continues optional, passive support for Builder Manifest registration:</p>
             <ul className="space-y-2 ml-4">
               <li>• SDK now allows optional registration of a Builder Manifest</li>
               <li>• Manifest is write-only</li>
@@ -140,7 +140,7 @@ const BuilderManifest = () => {
 
   "sdk": {
     "package": "@nexart/codemode-sdk",
-    "version": "^1.8.1",
+    "version": "^1.8.2",
     "execution": "deterministic"
   },
 
