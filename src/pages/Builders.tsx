@@ -43,7 +43,7 @@ const Builders = () => {
 
           <h2>The Official SDK</h2>
 
-          <h3>@nexart/codemode-sdk v1.8.1 — Canonical Runtime</h3>
+          <h3>@nexart/codemode-sdk v1.8.2 — Canonical Runtime</h3>
           
           <p>
             <strong>Purpose:</strong> Archival, deterministic execution<br />

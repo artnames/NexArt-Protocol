@@ -120,7 +120,7 @@ const Footer = () => {
         {/* Bottom bar */}
         <div className="pt-8 border-t border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs text-muted-foreground">
           <div className="font-mono">
-            <p>Code Mode Protocol v1.2.0 · SDK v1.8.1 — Locked & Stable</p>
+            <p>Code Mode Protocol v1.2.0 · SDK v1.8.2 — Locked & Stable</p>
             <p className="text-muted-foreground/70 mt-1">Changes require a protocol version increment.</p>
           </div>
           <p>© {new Date().getFullYear()} NexArt Foundation</p>
