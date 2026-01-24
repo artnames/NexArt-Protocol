@@ -112,7 +112,7 @@ const CodeMode = () => {
                 Code Mode Runtime Specification
               </h2>
               <Badge variant="default" className="bg-foreground text-background text-xs">
-                v1.6.0
+                v1.8.1
               </Badge>
             </div>
             <p className="text-body text-sm mb-4">

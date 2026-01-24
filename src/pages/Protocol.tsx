@@ -69,7 +69,7 @@ const Protocol = () => {
             </p>
 
             <p className="text-caption text-sm">
-              SDK v1.6.0 supports optional passive builder identity via manifest registration, without affecting execution or determinism.
+              SDK v1.8.1 supports optional passive builder identity via manifest registration, without affecting execution or determinism.
             </p>
           </section>
 
