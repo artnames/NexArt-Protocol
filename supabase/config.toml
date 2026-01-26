@@ -1,1 +1,19 @@
 project_id = "tnvckrssolgjrtcfhnwm"
+
+[functions.provision-key]
+verify_jwt = false
+
+[functions.list-keys]
+verify_jwt = false
+
+[functions.rotate-key]
+verify_jwt = false
+
+[functions.revoke-key]
+verify_jwt = false
+
+[functions.usage-summary]
+verify_jwt = false
+
+[functions.usage-recent]
+verify_jwt = false
