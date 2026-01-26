@@ -47,6 +47,7 @@ const navGroups = [
     label: "Builders",
     items: [
       { href: "/builders", label: "SDKs" },
+      { href: "/builders/cli", label: "CLI" },
       { href: "/builder-manifest", label: "Manifest" },
       { href: "/builder-rewards", label: "Rewards" },
     ],
@@ -59,6 +60,11 @@ const navGroups = [
       { href: "/governance", label: "Governance" },
     ],
   },
+];
+
+// Standalone nav items (not in dropdowns)
+const standaloneItems = [
+  { href: "/pricing", label: "Pricing" },
 ];
 
 const Header = () => {
@@ -119,6 +125,19 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ))}
+            {standaloneItems.map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={`px-3 py-1.5 text-sm rounded transition-colors ${
+                  location.pathname === item.href
+                    ? "text-foreground font-medium"
+                    : "text-caption hover:text-foreground"
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
 
           {/* Mobile Burger Menu */}
@@ -159,6 +178,28 @@ const Header = () => {
                     </div>
                   </div>
                 ))}
+                {/* Standalone items in mobile */}
+                <div>
+                  <p className="text-xs font-mono text-caption uppercase tracking-wider mb-2">
+                    More
+                  </p>
+                  <div className="space-y-1">
+                    {standaloneItems.map((item) => (
+                      <Link
+                        key={item.href}
+                        to={item.href}
+                        onClick={() => setMenuOpen(false)}
+                        className={`block px-3 py-2 text-sm rounded transition-colors ${
+                          location.pathname === item.href
+                            ? "text-foreground bg-muted font-medium"
+                            : "text-caption hover:text-foreground hover:bg-muted/50"
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               </nav>
             </SheetContent>
           </Sheet>
