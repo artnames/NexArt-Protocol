@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Protocol from "./pages/Protocol";
 import ProtocolCompliance from "./pages/ProtocolCompliance";
@@ -30,46 +31,58 @@ import BuildersCLI from "./pages/builders/CLI";
 import Pricing from "./pages/Pricing";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
+import Dashboard from "./pages/dashboard/Dashboard";
+import ApiKeys from "./pages/dashboard/ApiKeys";
+import Usage from "./pages/dashboard/Usage";
+import Billing from "./pages/dashboard/Billing";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/protocol" element={<Protocol />} />
-            <Route path="/protocol-compliance" element={<ProtocolCompliance />} />
-            <Route path="/canonical-unit" element={<CanonicalUnit />} />
-            <Route path="/modes" element={<Modes />} />
-            <Route path="/determinism" element={<Determinism />} />
-            <Route path="/glossary" element={<Glossary />} />
-            <Route path="/non-goals" element={<NonGoals />} />
-            <Route path="/builders" element={<Builders />} />
-            <Route path="/governance" element={<Governance />} />
-            <Route path="/code-mode" element={<CodeMode />} />
-            <Route path="/builder-rewards" element={<BuilderRewards />} />
-            <Route path="/builder-manifest" element={<BuilderManifest />} />
-            <Route path="/code-mode-v1" element={<CodeModeV1 />} />
-            <Route path="/code-mode-execution" element={<CodeModeExecution />} />
-            <Route path="/how-code-mode-thinks" element={<HowCodeModeThinks />} />
-            <Route path="/common-code-mode-mistakes" element={<CommonCodeModeMistakes />} />
-            <Route path="/code-mode-quick-reference" element={<CodeModeQuickReference />} />
-            <Route path="/canonical-renderer" element={<CanonicalRenderer />} />
-            <Route path="/docs/get-started" element={<GetStarted />} />
-            <Route path="/docs/cli" element={<CLI />} />
-            <Route path="/docs/renderer-api" element={<RendererAPI />} />
-            <Route path="/builders/cli" element={<BuildersCLI />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/protocol" element={<Protocol />} />
+              <Route path="/protocol-compliance" element={<ProtocolCompliance />} />
+              <Route path="/canonical-unit" element={<CanonicalUnit />} />
+              <Route path="/modes" element={<Modes />} />
+              <Route path="/determinism" element={<Determinism />} />
+              <Route path="/glossary" element={<Glossary />} />
+              <Route path="/non-goals" element={<NonGoals />} />
+              <Route path="/builders" element={<Builders />} />
+              <Route path="/governance" element={<Governance />} />
+              <Route path="/code-mode" element={<CodeMode />} />
+              <Route path="/builder-rewards" element={<BuilderRewards />} />
+              <Route path="/builder-manifest" element={<BuilderManifest />} />
+              <Route path="/code-mode-v1" element={<CodeModeV1 />} />
+              <Route path="/code-mode-execution" element={<CodeModeExecution />} />
+              <Route path="/how-code-mode-thinks" element={<HowCodeModeThinks />} />
+              <Route path="/common-code-mode-mistakes" element={<CommonCodeModeMistakes />} />
+              <Route path="/code-mode-quick-reference" element={<CodeModeQuickReference />} />
+              <Route path="/canonical-renderer" element={<CanonicalRenderer />} />
+              <Route path="/docs/get-started" element={<GetStarted />} />
+              <Route path="/docs/cli" element={<CLI />} />
+              <Route path="/docs/renderer-api" element={<RendererAPI />} />
+              <Route path="/builders/cli" element={<BuildersCLI />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboard/api-keys" element={<ApiKeys />} />
+              <Route path="/dashboard/usage" element={<Usage />} />
+              <Route path="/dashboard/billing" element={<Billing />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   </HelmetProvider>
 );
