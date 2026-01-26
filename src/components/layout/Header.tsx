@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu } from "lucide-react";
+import { Menu, ChevronDown } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -8,6 +8,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Grouped navigation
 const navGroups = [
@@ -59,6 +65,11 @@ const Header = () => {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Check if current path is within a group
+  const isGroupActive = (items: { href: string }[]) => {
+    return items.some((item) => location.pathname === item.href);
+  };
+
   return (
     <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur-sm z-50">
       <div className="max-w-5xl mx-auto px-6 py-3">
@@ -71,11 +82,50 @@ const Header = () => {
             nexart.io
           </Link>
           
-          {/* Burger Menu */}
+          {/* Desktop Navigation with Dropdowns */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navGroups.map((group) => (
+              <DropdownMenu key={group.label}>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded transition-colors ${
+                      isGroupActive(group.items)
+                        ? "text-foreground font-medium"
+                        : "text-caption hover:text-foreground"
+                    }`}
+                  >
+                    {group.label}
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent 
+                  align="start" 
+                  className="z-50 min-w-[160px] bg-background border border-border shadow-lg"
+                >
+                  {group.items.map((item) => (
+                    <DropdownMenuItem key={item.href} asChild>
+                      <Link
+                        to={item.href}
+                        className={`w-full cursor-pointer ${
+                          location.pathname === item.href
+                            ? "bg-muted font-medium"
+                            : ""
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ))}
+          </nav>
+
+          {/* Mobile Burger Menu */}
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>
               <button
-                className="p-2 -mr-2 text-caption hover:text-foreground transition-colors"
+                className="md:hidden p-2 -mr-2 text-caption hover:text-foreground transition-colors"
                 aria-label="Open menu"
               >
                 <Menu className="h-5 w-5" />
