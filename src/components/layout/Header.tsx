@@ -12,6 +12,14 @@ import {
 // Grouped navigation
 const navGroups = [
   {
+    label: "Docs",
+    items: [
+      { href: "/docs/get-started", label: "Get Started" },
+      { href: "/docs/cli", label: "CLI" },
+      { href: "/docs/renderer-api", label: "Renderer API" },
+    ],
+  },
+  {
     label: "Protocol",
     items: [
       { href: "/", label: "Home" },
