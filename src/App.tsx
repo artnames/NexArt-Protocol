@@ -26,6 +26,9 @@ import CanonicalRenderer from "./pages/CanonicalRenderer";
 import GetStarted from "./pages/docs/GetStarted";
 import CLI from "./pages/docs/CLI";
 import RendererAPI from "./pages/docs/RendererAPI";
+import BuildersCLI from "./pages/builders/CLI";
+import Pricing from "./pages/Pricing";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -60,6 +63,9 @@ const App = () => (
             <Route path="/docs/get-started" element={<GetStarted />} />
             <Route path="/docs/cli" element={<CLI />} />
             <Route path="/docs/renderer-api" element={<RendererAPI />} />
+            <Route path="/builders/cli" element={<BuildersCLI />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
