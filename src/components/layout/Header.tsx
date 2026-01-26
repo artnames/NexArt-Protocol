@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -9,25 +9,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-// Flat navigation for desktop - essential pages only
-const navItems = [
-  { href: "/", label: "Home" },
-  { href: "/protocol", label: "Overview" },
-  { href: "/canonical-unit", label: "Canonical Unit" },
-  { href: "/modes", label: "Modes" },
-  { href: "/determinism", label: "Determinism" },
-  { href: "/code-mode", label: "Code Mode" },
-  { href: "/canonical-renderer", label: "Renderer" },
-  { href: "/protocol-compliance", label: "Compliance" },
-  { href: "/builders", label: "SDKs" },
-  { href: "/builder-manifest", label: "Manifest" },
-  { href: "/builder-rewards", label: "Rewards" },
-  { href: "/glossary", label: "Glossary" },
-  { href: "/non-goals", label: "Non-Goals" },
-  { href: "/governance", label: "Governance" },
-];
-
-// Grouped navigation for mobile
+// Grouped navigation
 const navGroups = [
   {
     label: "Protocol",
@@ -67,7 +49,7 @@ const navGroups = [
 
 const Header = () => {
   const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur-sm z-50">
@@ -76,35 +58,16 @@ const Header = () => {
           {/* Logo */}
           <Link 
             to="/" 
-            className="font-mono text-sm font-medium tracking-wide text-foreground hover:text-caption transition-colors shrink-0"
+            className="font-mono text-sm font-medium tracking-wide text-foreground hover:text-caption transition-colors"
           >
             nexart.io
           </Link>
           
-          {/* Desktop Navigation - Scrollable */}
-          <nav className="hidden md:flex items-center ml-8 overflow-x-auto">
-            <div className="flex items-center gap-0.5">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={`px-2 py-1 text-xs whitespace-nowrap rounded transition-colors ${
-                    location.pathname === item.href
-                      ? "text-foreground bg-muted font-medium"
-                      : "text-caption hover:text-foreground hover:bg-muted/50"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </nav>
-
-          {/* Mobile Menu */}
-          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          {/* Burger Menu */}
+          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>
               <button
-                className="md:hidden p-2 -mr-2 text-caption hover:text-foreground transition-colors"
+                className="p-2 -mr-2 text-caption hover:text-foreground transition-colors"
                 aria-label="Open menu"
               >
                 <Menu className="h-5 w-5" />
@@ -125,7 +88,7 @@ const Header = () => {
                         <Link
                           key={item.href}
                           to={item.href}
-                          onClick={() => setMobileMenuOpen(false)}
+                          onClick={() => setMenuOpen(false)}
                           className={`block px-3 py-2 text-sm rounded transition-colors ${
                             location.pathname === item.href
                               ? "text-foreground bg-muted font-medium"
