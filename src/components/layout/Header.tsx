@@ -46,10 +46,10 @@ const navGroups = [
   {
     label: "Builders",
     items: [
-      { href: "/builders", label: "SDKs" },
+      { href: "/builders/quickstart", label: "Quickstart" },
       { href: "/builders/cli", label: "CLI" },
-      { href: "/builder-manifest", label: "Manifest" },
-      { href: "/builder-rewards", label: "Rewards" },
+      { href: "/builders/certification", label: "Certification" },
+      { href: "/builders", label: "SDKs" },
     ],
   },
   {

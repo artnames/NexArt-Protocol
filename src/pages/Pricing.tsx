@@ -1,10 +1,11 @@
 import { Helmet } from "react-helmet-async";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 
 const plans = [
@@ -15,74 +16,67 @@ const plans = [
     priceDetail: "",
     limit: "100 certified runs / month",
     features: [
-      "Full SDK & CLI access",
       "Shared canonical node",
-      "Hard cap enforced",
+      "Hard cap",
       "No SLA",
     ],
+    note: "Not intended for production.",
     cta: "Start Free",
-    ctaVariant: "outline" as const,
     ctaAction: "dashboard",
+    highlight: false,
   },
   {
     name: "Pro",
-    tagline: "Indie & Early Commercial",
-    price: "$3,600",
+    tagline: "Serious Indie & Startups",
+    price: "$6,000",
     priceDetail: "/ year",
-    limit: "10,000 certified runs / month",
+    limit: "~5,000 certified runs / month",
     features: [
-      "Commercial usage licensed",
-      "Priority node access",
+      "Commercial CodeMode usage",
+      "Priority access to canonical node",
       "Email support",
     ],
+    note: null,
     cta: "Contact",
-    ctaVariant: "default" as const,
     ctaAction: "contact",
+    highlight: false,
   },
   {
     name: "Pro+ / Team",
-    tagline: "Scaling Teams",
-    price: "$12,000",
+    tagline: "Cushion Tier",
+    price: "$18,000",
     priceDetail: "/ year",
-    limit: "50,000 certified runs / month",
+    limit: "~50,000 certified runs / month",
     features: [
       "Multiple environments",
       "Priority queue",
-      "Team management",
     ],
+    note: null,
     cta: "Contact",
-    ctaVariant: "default" as const,
     ctaAction: "contact",
+    highlight: true,
   },
   {
     name: "Enterprise",
-    tagline: "Organization-wide",
+    tagline: "Infrastructure Dependency",
     price: "From $50,000",
     priceDetail: "/ year",
-    limit: "Contract scope",
+    limit: "Unlimited (by contract scope)",
     features: [
-      "Dedicated or private node",
+      "Private or dedicated node option",
       "Audit retention",
-      "Custom SLAs",
-      "Org-wide license",
+      "Version guarantees",
+      "SLAs",
     ],
+    note: null,
     cta: "Talk to Sales",
-    ctaVariant: "default" as const,
     ctaAction: "contact",
+    highlight: false,
   },
 ];
 
 const Pricing = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
-
-  const handleCta = (action: string) => {
-    if (action === "dashboard") {
-      navigate(user ? "/dashboard/api-keys" : "/auth");
-    } else if (action === "contact") {
-      navigate("/contact");
-    }
-  };
 
   return (
     <PageLayout>
@@ -102,16 +96,19 @@ const Pricing = () => {
       <PageContent>
         {/* Hero Section */}
         <section className="mb-16">
+          <p className="text-lg text-body max-w-3xl mb-4">
+            Run deterministic systems locally using the SDK and CLI at no cost.
+          </p>
           <p className="text-lg text-body max-w-3xl mb-8">
-            Run locally with the SDK + CLI for free. Use the canonical renderer when you need verifiable, 
-            auditable, reproducible proof.
+            When you need verifiable, auditable, reproducible guarantees, certification is provided 
+            via the canonical renderer.
           </p>
           <div className="flex gap-3 flex-wrap">
             <Button asChild size="lg">
               <Link to={user ? "/dashboard/api-keys" : "/auth"}>Get an API Key</Link>
             </Button>
             <Button variant="outline" size="lg" asChild>
-              <Link to="/builders/cli">CLI Quickstart</Link>
+              <Link to="/builders/quickstart">CLI Quickstart</Link>
             </Button>
           </div>
         </section>
@@ -125,12 +122,12 @@ const Pricing = () => {
           <ul className="list-disc list-inside text-body space-y-1 mb-6">
             <li>Canonical execution proof</li>
             <li>Reproducibility guarantees</li>
-            <li>Auditability (snapshot + hashes)</li>
+            <li>Audit-ready snapshots and hashes</li>
           </ul>
           <div className="bg-muted/50 border border-border rounded-md p-4">
             <p className="text-sm text-foreground">
-              <strong>A certified run</strong> = one canonical renderer execution that returns an output PNG 
-              plus a signed, verifiable snapshot JSON.
+              <strong>A certified run</strong> is one canonical renderer execution that returns a 
+              deterministic PNG and a verifiable snapshot (<code>.snapshot.json</code>).
             </p>
           </div>
         </section>
@@ -140,9 +137,17 @@ const Pricing = () => {
           <h2 className="text-2xl font-serif text-foreground mb-6">Plans</h2>
           <div className="grid gap-6 md:grid-cols-2">
             {plans.map((plan) => (
-              <Card key={plan.name} className="flex flex-col">
+              <Card 
+                key={plan.name} 
+                className={`flex flex-col ${plan.highlight ? 'border-primary ring-1 ring-primary/20' : ''}`}
+              >
                 <CardHeader>
-                  <CardTitle className="text-xl">{plan.name}</CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xl">{plan.name}</CardTitle>
+                    {plan.highlight && (
+                      <Badge variant="default" className="text-xs">Most Popular</Badge>
+                    )}
+                  </div>
                   <CardDescription>{plan.tagline}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col">
@@ -163,12 +168,17 @@ const Pricing = () => {
                       </li>
                     ))}
                   </ul>
+                  {plan.note && (
+                    <p className="text-xs text-caption italic mt-4">{plan.note}</p>
+                  )}
                   <Button 
-                    variant={plan.ctaVariant}
+                    variant={plan.ctaAction === "dashboard" ? "outline" : "default"}
                     className="w-full mt-6"
-                    onClick={() => handleCta(plan.ctaAction)}
+                    asChild
                   >
-                    {plan.cta}
+                    <Link to={plan.ctaAction === "dashboard" ? (user ? "/dashboard/api-keys" : "/auth") : "/contact"}>
+                      {plan.cta}
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -179,22 +189,24 @@ const Pricing = () => {
         {/* Metering Rules */}
         <section className="mb-16">
           <h2 className="text-2xl font-serif text-foreground mb-4">Metering rules</h2>
-          <p className="text-body mb-2">
-            Metering protects shared infrastructure. Caps are explicit. No surprise bills.
+          <p className="text-body mb-4">
+            Metering exists to protect shared infrastructure — not to maximize revenue.
           </p>
-          <p className="text-body">
-            Enterprise usage is governed by contract scope.
-          </p>
+          <ul className="list-disc list-inside text-body space-y-1">
+            <li>Explicit caps for Free / Pro / Pro+</li>
+            <li>No surprise bills</li>
+            <li>Enterprise usage governed by contract</li>
+          </ul>
         </section>
 
         {/* What we never charge for */}
         <section className="mb-16">
           <h2 className="text-2xl font-serif text-foreground mb-4">What we never charge for</h2>
           <ul className="list-disc list-inside text-body space-y-1">
-            <li>SDK download</li>
-            <li>CLI usage</li>
-            <li>Local runs</li>
-            <li>Deterministic execution itself</li>
+            <li>SDK</li>
+            <li>CLI</li>
+            <li>Local execution</li>
+            <li>Deterministic computation itself</li>
             <li>Recānon verification</li>
           </ul>
         </section>
@@ -202,9 +214,11 @@ const Pricing = () => {
         {/* Upgrade Philosophy */}
         <section className="mb-8">
           <h2 className="text-2xl font-serif text-foreground mb-4">Upgrade philosophy</h2>
+          <p className="text-body mb-2">
+            Same SDK. Same CLI. Same code.
+          </p>
           <p className="text-body">
-            Same SDK. Same CLI. Same code. Paid plans unlock assurance, not features. 
-            No refactor required to upgrade.
+            Paid plans unlock assurance, not features. No refactor required.
           </p>
         </section>
 
@@ -215,7 +229,7 @@ const Pricing = () => {
               <Link to={user ? "/dashboard/api-keys" : "/auth"}>Get an API Key</Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link to="/builders/cli">CLI Quickstart</Link>
+              <Link to="/builders/quickstart">CLI Quickstart</Link>
             </Button>
           </div>
         </div>

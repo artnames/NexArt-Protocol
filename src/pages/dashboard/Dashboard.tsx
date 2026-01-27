@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const PLAN_LIMITS: Record<string, number> = {
   free: 100,
-  pro: 10000,
+  pro: 5000,
   team: 50000,
   enterprise: 1000000,
 };
