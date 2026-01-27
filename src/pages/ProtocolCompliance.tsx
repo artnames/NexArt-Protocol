@@ -183,6 +183,13 @@ const ProtocolCompliance = () => {
           </section>
 
           <section className="mt-12 pt-8 border-t border-border">
+            <p className="text-caption mb-4">
+              Certified runs are subject to plan limits. See{" "}
+              <a href="/pricing" className="text-body underline underline-offset-2 hover:text-foreground">
+                pricing
+              </a>{" "}
+              for details.
+            </p>
             <p className="text-caption">
               For technical details on SDK integration, see the{" "}
               <a href="/builders" className="text-body underline underline-offset-2 hover:text-foreground">

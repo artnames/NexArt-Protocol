@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
@@ -129,6 +130,17 @@ const CanonicalRenderer = () => {
               The NexArt Canonical Renderer exists to make building easier — not to centralize control. It is a reference implementation that demonstrates the protocol, lowers the barrier for new builders, and provides a shared standard for the ecosystem. Builders who need more control can run their own renderer at any time. The protocol remains open, deterministic, and verifiable regardless of which renderer produces the output.
             </p>
           </div>
+        </section>
+
+        {/* Pricing Note */}
+        <section className="pt-8 border-t border-border">
+          <p className="text-caption text-sm">
+            Certified runs via the canonical renderer are subject to plan limits. See{" "}
+            <Link to="/pricing" className="text-body underline underline-offset-2 hover:text-foreground">
+              pricing
+            </Link>{" "}
+            for details.
+          </p>
         </section>
       </PageContent>
     </PageLayout>

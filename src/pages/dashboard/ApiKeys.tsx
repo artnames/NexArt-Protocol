@@ -38,8 +38,8 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const PLAN_OPTIONS = [
   { value: "free", label: "Free", limit: "100 runs/month" },
-  { value: "pro", label: "Pro", limit: "10,000 runs/month" },
-  { value: "team", label: "Pro+ / Team", limit: "50,000 runs/month" },
+  { value: "pro", label: "Pro", limit: "~5,000 runs/month" },
+  { value: "team", label: "Pro+ / Team", limit: "~50,000 runs/month" },
   { value: "enterprise", label: "Enterprise", limit: "Contract scope" },
 ];
 

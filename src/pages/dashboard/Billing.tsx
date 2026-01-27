@@ -16,60 +16,62 @@ const plans = [
     limit: "100 certified runs / month",
     icon: Zap,
     features: [
-      "Full SDK & CLI access",
       "Shared canonical node",
-      "Hard cap enforced",
+      "Hard cap",
       "No SLA",
     ],
+    note: "Not intended for production.",
     cta: "Current Plan",
     ctaAction: "none",
     highlight: false,
   },
   {
     name: "Pro",
-    price: "$3,600",
+    price: "$6,000",
     period: "/ year",
-    description: "Indie & Early Commercial",
-    limit: "10,000 certified runs / month",
+    description: "Serious Indie & Startups",
+    limit: "~5,000 certified runs / month",
     icon: Zap,
     features: [
-      "Commercial usage licensed",
-      "Priority node access",
+      "Commercial CodeMode usage",
+      "Priority access to canonical node",
       "Email support",
     ],
+    note: null,
     cta: "Contact",
     ctaAction: "contact",
     highlight: false,
   },
   {
     name: "Pro+ / Team",
-    price: "$12,000",
+    price: "$18,000",
     period: "/ year",
-    description: "Scaling Teams",
-    limit: "50,000 certified runs / month",
+    description: "Cushion Tier",
+    limit: "~50,000 certified runs / month",
     icon: Users,
     features: [
       "Multiple environments",
       "Priority queue",
-      "Team management",
     ],
+    note: null,
     cta: "Contact",
     ctaAction: "contact",
-    highlight: false,
+    highlight: true,
   },
   {
     name: "Enterprise",
     price: "From $50,000",
     period: "/ year",
-    description: "Organization-wide",
-    limit: "Contract scope",
+    description: "Infrastructure Dependency",
+    limit: "Unlimited (by contract scope)",
     icon: Building,
     features: [
-      "Dedicated or private node",
+      "Private or dedicated node option",
       "Audit retention",
-      "Custom SLAs",
-      "Org-wide license",
+      "Version guarantees",
+      "SLAs",
     ],
+    note: null,
     cta: "Talk to Sales",
     ctaAction: "contact",
     highlight: false,
@@ -122,11 +124,16 @@ export default function Billing() {
             {plans.map((plan) => {
               const Icon = plan.icon;
               return (
-                <Card key={plan.name} className="flex flex-col">
+                <Card key={plan.name} className={`flex flex-col ${plan.highlight ? 'border-primary ring-1 ring-primary/20' : ''}`}>
                   <CardHeader>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Icon className="h-5 w-5" />
-                      <Badge variant="outline">{plan.name}</Badge>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Icon className="h-5 w-5" />
+                        <Badge variant="outline">{plan.name}</Badge>
+                      </div>
+                      {plan.highlight && (
+                        <Badge variant="default" className="text-xs">Most Popular</Badge>
+                      )}
                     </div>
                     <CardTitle className="text-2xl">
                       {plan.price}
@@ -146,6 +153,9 @@ export default function Billing() {
                         </li>
                       ))}
                     </ul>
+                    {plan.note && (
+                      <p className="text-xs text-caption italic mt-4">{plan.note}</p>
+                    )}
                   </CardContent>
                   <div className="p-6 pt-0">
                     {plan.ctaAction === "none" ? (
