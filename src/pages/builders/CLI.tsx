@@ -4,8 +4,11 @@ import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const BuildersCLI = () => {
+  const { user } = useAuth();
+
   return (
     <PageLayout>
       <Helmet>
@@ -18,13 +21,13 @@ const BuildersCLI = () => {
 
       <PageHeader
         title="NexArt CLI"
-        subtitle="The NexArt CLI runs Code Mode sketches using the canonical remote renderer, producing a deterministic PNG plus an auditable snapshot you can verify and replay."
+        subtitle="Run Code Mode sketches using the canonical remote renderer. Get a deterministic PNG plus an auditable snapshot you can verify and replay."
       />
 
       <PageContent>
         <div className="flex gap-3 mb-12">
           <Button asChild>
-            <Link to="/pricing">Get API Key</Link>
+            <Link to={user ? "/dashboard/api-keys" : "/auth"}>Get API Key</Link>
           </Button>
           <Button variant="outline" asChild>
             <Link to="/protocol">Read the Protocol</Link>
@@ -32,6 +35,7 @@ const BuildersCLI = () => {
         </div>
 
         <article className="prose-protocol prose-spec">
+          {/* Install */}
           <h2>1. Install</h2>
           <p>
             No installation required. Run the CLI directly via <code>npx</code>:
@@ -40,10 +44,10 @@ const BuildersCLI = () => {
             <code>npx --yes @nexart/cli@0.2.3 --help</code>
           </div>
 
-          <h2>2. Authenticate (Canonical Renderer)</h2>
+          {/* Auth Setup */}
+          <h2>2. Authenticate</h2>
           <p>
-            The production canonical renderer requires an API key for authenticated rendering. 
-            Set the following environment variables:
+            The canonical renderer requires an API key. Set these environment variables:
           </p>
           <div className="spec-code">
             <code>
@@ -51,18 +55,18 @@ const BuildersCLI = () => {
               export NEXART_API_KEY="nx_live_..."
             </code>
           </div>
-
           <div className="spec-note">
             <p className="spec-note-title">API key format</p>
             <ul>
-              <li>Use the raw API key that starts with <code>nx_live_...</code></li>
-              <li>Do NOT use the hashed key (sha256) — that is stored server-side.</li>
+              <li>Use the raw key starting with <code>nx_live_...</code></li>
+              <li>Do NOT use the hashed (sha256) version — that's stored server-side only.</li>
             </ul>
           </div>
 
-          <h2>3. Quickstart: Run an official example</h2>
+          {/* Run + Verify */}
+          <h2>3. Run a certified render</h2>
           <p>
-            The SDK repo includes an official example sketch at <code>./examples/sketch.js</code>.
+            Execute a sketch and receive a canonical PNG plus verifiable snapshot:
           </p>
           <div className="spec-code">
             <code>
@@ -73,17 +77,15 @@ const BuildersCLI = () => {
               {"  "}--out ./out.png
             </code>
           </div>
-          <p>This writes:</p>
+          <p>This produces:</p>
           <ul>
-            <li><code>out.png</code> — rendered image at canonical resolution</li>
+            <li><code>out.png</code> — rendered image at canonical resolution (1950×2400)</li>
             <li><code>out.snapshot.json</code> — deterministic snapshot with hashes and metadata</li>
           </ul>
 
           <h2>4. Verify a snapshot</h2>
           <p>
-            Verification re-renders the sketch with the same parameters and confirms that the 
-            <code>outputHash</code> matches the original. A successful verification proves the 
-            render is deterministic and untampered.
+            Re-render with the same parameters and confirm the <code>outputHash</code> matches:
           </p>
           <div className="spec-code">
             <code>npx --yes @nexart/cli@0.2.3 nexart verify ./out.snapshot.json</code>
@@ -91,29 +93,54 @@ const BuildersCLI = () => {
 
           <h2>5. Replay a snapshot</h2>
           <p>
-            Replay reproduces the image from a snapshot without re-verification.
+            Reproduce the image from a snapshot without re-verification:
           </p>
           <div className="spec-code">
             <code>npx --yes @nexart/cli@0.2.3 nexart replay ./out.snapshot.json --out ./replay.png</code>
           </div>
 
+          {/* Canonical Size */}
           <h2>6. Canonical size rules</h2>
           <div className="spec-warning">
             <p className="spec-warning-title">Important</p>
             <ul>
               <li>Canonical renderer enforces <strong>1950 × 2400</strong>.</li>
               <li>Do not pass custom width/height to the canonical endpoint.</li>
-              <li>Do not call <code>createCanvas()</code> inside sketches. The renderer provides the canvas.</li>
+              <li>Do not call <code>createCanvas()</code> inside sketches — the renderer provides the canvas.</li>
             </ul>
           </div>
 
-          <h2>7. API (for builders)</h2>
+          {/* Common Errors */}
+          <h2>7. Common errors</h2>
+
+          <h3>401 UNAUTHORIZED</h3>
+          <p><strong>Cause:</strong> Missing <code>Authorization: Bearer &lt;api_key&gt;</code></p>
+          <p><strong>Fix:</strong> Set <code>NEXART_API_KEY</code> environment variable or pass <code>--api-key</code></p>
+
+          <h3>400 PROTOCOL_VIOLATION: "Canvas width must be 1950"</h3>
+          <p><strong>Cause:</strong> Passing custom width/height or calling <code>createCanvas()</code></p>
+          <p><strong>Fix:</strong> Remove width/height parameters. Let the renderer provide the canvas.</p>
+
+          <h3>429 TOO MANY REQUESTS</h3>
+          <p><strong>Cause:</strong> Rate limit exceeded (monthly quota or burst limit)</p>
+          <p><strong>Fix:</strong> Wait and retry, or upgrade your plan for higher limits.</p>
+
+          <h3>410 GONE when calling /render</h3>
+          <p><strong>Cause:</strong> <code>/render</code> is disabled in production</p>
+          <p><strong>Fix:</strong> Use <code>/api/render</code> with API key authentication.</p>
+
+          <h3>"Unexpected token … PNG is not valid JSON"</h3>
+          <p><strong>Cause:</strong> <code>/api/render</code> returns PNG bytes by default</p>
+          <p><strong>Fix:</strong> Use <code>arrayBuffer()</code>/<code>blob()</code> in fetch, or set <code>Accept: application/json</code> header.</p>
+
+          {/* API Reference */}
+          <h2>8. API reference (for builders)</h2>
           <p>
             <code>POST /api/render</code> returns PNG bytes by default. 
-            To receive JSON, set header <code>Accept: application/json</code>.
+            Set <code>Accept: application/json</code> to receive JSON.
           </p>
 
-          <h3>PNG (default)</h3>
+          <h3>PNG response (default)</h3>
           <div className="spec-code">
             <code>
               BASE="https://nexart-canonical-renderer-production.up.railway.app"{"\n"}
@@ -126,7 +153,7 @@ const BuildersCLI = () => {
             </code>
           </div>
 
-          <h3>JSON (only if Accept is set)</h3>
+          <h3>JSON response</h3>
           <div className="spec-code">
             <code>
               curl -sS "$BASE/api/render" \{"\n"}
@@ -136,29 +163,11 @@ const BuildersCLI = () => {
               {"  "}-d '&#123;"code":"function setup()&#123; background(50); &#125;","seed":"test","VAR":[0,0,0,0,0,0,0,0,0,0],"protocolVersion":"1.2.0"&#125;'
             </code>
           </div>
-
-          <h2>8. Common errors / troubleshooting</h2>
-
-          <h3>401 UNAUTHORIZED</h3>
-          <p><strong>Cause:</strong> Missing <code>Authorization: Bearer &lt;api_key&gt;</code></p>
-          <p><strong>Fix:</strong> Set <code>NEXART_API_KEY</code> or pass <code>--api-key</code></p>
-
-          <h3>410 GONE when calling /render</h3>
-          <p><strong>Cause:</strong> <code>/render</code> is disabled in production</p>
-          <p><strong>Fix:</strong> Call <code>/api/render</code> with API key</p>
-
-          <h3>"Unexpected token … PNG is not valid JSON"</h3>
-          <p><strong>Cause:</strong> <code>/api/render</code> returns PNG bytes by default</p>
-          <p><strong>Fix:</strong> In <code>fetch()</code>, use <code>arrayBuffer()</code>/<code>blob()</code> OR set <code>Accept: application/json</code></p>
-
-          <h3>PROTOCOL_VIOLATION: "Canvas width must be 1950"</h3>
-          <p><strong>Cause:</strong> Passing custom width/height to canonical endpoint</p>
-          <p><strong>Fix:</strong> Remove width/height and do not call <code>createCanvas()</code></p>
         </article>
 
         <div className="flex gap-3 mt-12 pt-8 border-t border-border">
           <Button asChild>
-            <Link to="/pricing">Get API Key</Link>
+            <Link to={user ? "/dashboard/api-keys" : "/auth"}>Get API Key</Link>
           </Button>
           <Button variant="outline" asChild>
             <Link to="/protocol">Read the Protocol</Link>
