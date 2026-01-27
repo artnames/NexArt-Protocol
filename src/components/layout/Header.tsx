@@ -65,6 +65,7 @@ const navGroups = [
 // Standalone nav items (not in dropdowns)
 const standaloneItems = [
   { href: "/pricing", label: "Pricing" },
+  { href: "/dashboard", label: "Dashboard" },
 ];
 
 const Header = () => {
