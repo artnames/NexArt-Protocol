@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,8 +33,15 @@ import {
 } from "@/components/ui/table";
 import { listKeys, provisionKey, revokeKey, rotateKey, ApiKey, ProvisionKeyResponse } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Copy, Check, RefreshCw, Ban, Key } from "lucide-react";
+import { Plus, Copy, Check, RefreshCw, Ban, Key, Terminal, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+
+const PLAN_OPTIONS = [
+  { value: "free", label: "Free", limit: "100 runs/month" },
+  { value: "pro", label: "Pro", limit: "10,000 runs/month" },
+  { value: "team", label: "Pro+ / Team", limit: "50,000 runs/month" },
+  { value: "enterprise", label: "Enterprise", limit: "Contract scope" },
+];
 
 export default function ApiKeys() {
   const { user, loading: authLoading } = useAuth();
@@ -166,6 +173,9 @@ export default function ApiKeys() {
     return <Navigate to="/auth" replace />;
   }
 
+  const activeKeys = keys.filter((k) => k.status === "active");
+  const hasNoActiveKeys = activeKeys.length === 0;
+
   return (
     <>
       <Helmet>
@@ -175,10 +185,31 @@ export default function ApiKeys() {
       
       <DashboardLayout title="API Keys">
         <div className="space-y-6">
+          {/* No Keys CTA */}
+          {hasNoActiveKeys && !loading && (
+            <Card className="border-primary/30 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Plus className="h-5 w-5" />
+                  Create your first API key
+                </CardTitle>
+                <CardDescription>
+                  You need an API key to authenticate with the canonical renderer and run certified executions.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={() => setCreateDialogOpen(true)}>
+                  <Key className="h-4 w-4 mr-2" />
+                  Create API Key
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Actions */}
           <div className="flex justify-between items-center">
             <p className="text-caption">
-              Manage your API keys for certified execution. Keys are hashed and stored securely.
+              Keys are hashed and stored securely. You'll only see the plaintext once.
             </p>
             <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
               <DialogTrigger asChild>
@@ -211,10 +242,11 @@ export default function ApiKeys() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="free">Free (100 runs/month)</SelectItem>
-                        <SelectItem value="pro">Pro (10,000 runs/month)</SelectItem>
-                        <SelectItem value="team">Team (100,000 runs/month)</SelectItem>
-                        <SelectItem value="enterprise">Enterprise (1,000,000 runs/month)</SelectItem>
+                        {PLAN_OPTIONS.map((plan) => (
+                          <SelectItem key={plan.value} value={plan.value}>
+                            {plan.label} ({plan.limit})
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -351,6 +383,49 @@ export default function ApiKeys() {
                   </TableBody>
                 </Table>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Quick Start */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Terminal className="h-5 w-5" />
+                Quick Start
+              </CardTitle>
+              <CardDescription>
+                Use your API key with the canonical renderer
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-muted p-4 rounded-md font-mono text-sm overflow-x-auto space-y-3">
+                <div>
+                  <div className="text-caption"># Set environment variables</div>
+                  <div className="mt-1">export NEXART_RENDERER_ENDPOINT="https://nexart-canonical-renderer-production.up.railway.app"</div>
+                  <div className="mt-1">export NEXART_API_KEY="nx_live_..."</div>
+                </div>
+                <div>
+                  <div className="text-caption"># Run a certified render</div>
+                  <div className="mt-1">npx --yes @nexart/cli@0.2.3 nexart run ./examples/sketch.js \</div>
+                  <div className="pl-4">--seed 12345 --vars "50,50,50,0,0,0,0,0,0,0" \</div>
+                  <div className="pl-4">--include-code --out out.png</div>
+                </div>
+                <div>
+                  <div className="text-caption"># Verify the snapshot</div>
+                  <div className="mt-1">npx --yes @nexart/cli@0.2.3 nexart verify out.snapshot.json</div>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2 text-sm text-caption bg-muted/50 p-3 rounded-md">
+                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                <span>Canonical size is enforced (1950×2400). Do not pass custom width/height.</span>
+              </div>
+
+              <Link to="/builders/cli" className="inline-block">
+                <Button variant="link" className="p-0 h-auto text-sm">
+                  View full CLI documentation →
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>

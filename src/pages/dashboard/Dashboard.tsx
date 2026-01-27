@@ -6,8 +6,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { listKeys, getUsageSummaryByPeriod, ApiKey, UsageSummary } from "@/lib/api";
-import { Key, BarChart3, ArrowRight, Zap } from "lucide-react";
+import { Key, BarChart3, ArrowRight, Zap, Plus, Terminal, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+
+const PLAN_LIMITS: Record<string, number> = {
+  free: 100,
+  pro: 10000,
+  team: 50000,
+  enterprise: 1000000,
+};
+
+const PLAN_NAMES: Record<string, string> = {
+  free: "Free",
+  pro: "Pro",
+  team: "Pro+ / Team",
+  enterprise: "Enterprise",
+};
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -37,7 +51,7 @@ export default function Dashboard() {
 
   const activeKeys = keys.filter((k) => k.status === "active");
   const currentPlan = activeKeys.length > 0 ? activeKeys[0].plan : "free";
-  const monthlyLimit = activeKeys.length > 0 ? activeKeys[0].monthly_limit : 100;
+  const monthlyLimit = PLAN_LIMITS[currentPlan] || 100;
 
   const getPlanBadgeVariant = (plan: string) => {
     switch (plan) {
@@ -56,6 +70,8 @@ export default function Dashboard() {
     return <Navigate to="/auth" replace />;
   }
 
+  const hasNoActiveKeys = activeKeys.length === 0;
+
   return (
     <>
       <Helmet>
@@ -68,14 +84,37 @@ export default function Dashboard() {
           <div className="text-caption">Loading...</div>
         ) : (
           <div className="space-y-6">
+            {/* No Keys CTA */}
+            {hasNoActiveKeys && (
+              <Card className="border-primary/30 bg-primary/5">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Plus className="h-5 w-5" />
+                    Create your first API key
+                  </CardTitle>
+                  <CardDescription>
+                    You need an API key to run certified renders with the canonical renderer.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Link to="/dashboard/api-keys">
+                    <Button>
+                      <Key className="h-4 w-4 mr-2" />
+                      Create API Key
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Plan & Usage Summary */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card>
                 <CardHeader className="pb-2">
                   <CardDescription>Current Plan</CardDescription>
                   <CardTitle className="flex items-center gap-2">
-                    <Badge variant={getPlanBadgeVariant(currentPlan)} className="capitalize">
-                      {currentPlan}
+                    <Badge variant={getPlanBadgeVariant(currentPlan)}>
+                      {PLAN_NAMES[currentPlan] || "Free"}
                     </Badge>
                   </CardTitle>
                 </CardHeader>
@@ -171,7 +210,7 @@ export default function Dashboard() {
             </div>
 
             {/* Upgrade CTA */}
-            {currentPlan === "free" && (
+            {currentPlan === "free" && !hasNoActiveKeys && (
               <Card className="border-primary/20 bg-primary/5">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
@@ -179,7 +218,7 @@ export default function Dashboard() {
                     Upgrade Your Plan
                   </CardTitle>
                   <CardDescription>
-                    Get more certified execution capacity and unlock team features
+                    Get more certified runs and unlock priority queue access
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -196,18 +235,43 @@ export default function Dashboard() {
             {/* Quick Start */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Quick Start</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Terminal className="h-5 w-5" />
+                  Quick Start
+                </CardTitle>
                 <CardDescription>
-                  Use your API key with the NexArt renderer
+                  Run your first certified render with the NexArt CLI
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="bg-muted p-4 rounded-md font-mono text-sm overflow-x-auto">
-                  <div className="text-caption"># Set your environment variables</div>
-                  <div className="mt-1">export NEXART_API_KEY=nx_live_...</div>
-                  <div className="mt-3 text-caption"># Run a certified render</div>
-                  <div className="mt-1">nexart run examples/sketch.js --seed 12345 --include-code --out out.png</div>
+              <CardContent className="space-y-4">
+                <div className="bg-muted p-4 rounded-md font-mono text-sm overflow-x-auto space-y-3">
+                  <div>
+                    <div className="text-caption"># Set environment variables</div>
+                    <div className="mt-1">export NEXART_RENDERER_ENDPOINT="https://nexart-canonical-renderer-production.up.railway.app"</div>
+                    <div className="mt-1">export NEXART_API_KEY="nx_live_..."</div>
+                  </div>
+                  <div>
+                    <div className="text-caption"># Run a certified render</div>
+                    <div className="mt-1">npx --yes @nexart/cli@0.2.3 nexart run ./examples/sketch.js \</div>
+                    <div className="pl-4">--seed 12345 --vars "50,50,50,0,0,0,0,0,0,0" \</div>
+                    <div className="pl-4">--include-code --out out.png</div>
+                  </div>
+                  <div>
+                    <div className="text-caption"># Verify the snapshot</div>
+                    <div className="mt-1">npx --yes @nexart/cli@0.2.3 nexart verify out.snapshot.json</div>
+                  </div>
                 </div>
+
+                <div className="flex items-start gap-2 text-sm text-caption bg-muted/50 p-3 rounded-md">
+                  <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                  <span>Canonical size is enforced (1950×2400). Do not pass custom width/height.</span>
+                </div>
+
+                <Link to="/builders/cli" className="inline-block">
+                  <Button variant="link" className="p-0 h-auto text-sm">
+                    View full CLI documentation →
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
