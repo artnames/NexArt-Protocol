@@ -32,6 +32,7 @@ import Pricing from "./pages/Pricing";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/dashboard/Dashboard";
 import ApiKeys from "./pages/dashboard/ApiKeys";
 import Usage from "./pages/dashboard/Usage";
@@ -74,6 +75,7 @@ const App = () => (
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/auth/reset-password" element={<ResetPassword />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/api-keys" element={<ApiKeys />} />
               <Route path="/dashboard/usage" element={<Usage />} />
