@@ -85,6 +85,19 @@ Deno.serve(async (req) => {
     
     const sql = postgres(databaseUrl, { ssl: 'require' });
 
+    // Rate limit: max 10 keys per user
+    const existingKeys = await sql`
+      SELECT COUNT(*)::int as count FROM api_keys WHERE user_id = ${userId}::uuid
+    `;
+    
+    if (existingKeys[0].count >= 10) {
+      await sql.end();
+      return new Response(JSON.stringify({ error: 'Maximum of 10 API keys allowed per user' }), { 
+        status: 429, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
+    }
+
     // Insert into api_keys table
     const result = await sql`
       INSERT INTO api_keys (key_hash, label, plan, status, monthly_limit, user_id, created_at)
