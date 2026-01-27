@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,14 +14,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { getUsageSummaryByPeriod, getRecentUsage, UsageSummary, UsageEvent } from "@/lib/api";
 import { Activity, CheckCircle, XCircle, Clock } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Usage() {
+  const { user, loading: authLoading } = useAuth();
   const [usageToday, setUsageToday] = useState<UsageSummary | null>(null);
   const [usageMonth, setUsageMonth] = useState<UsageSummary | null>(null);
   const [recentEvents, setRecentEvents] = useState<UsageEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user) return;
+    
     async function loadData() {
       try {
         const [todayData, monthData, eventsData] = await Promise.all([
@@ -38,7 +43,7 @@ export default function Usage() {
       }
     }
     loadData();
-  }, []);
+  }, [user]);
 
   function formatDate(dateStr: string) {
     return new Date(dateStr).toLocaleString("en-US", {
@@ -58,6 +63,14 @@ export default function Usage() {
       return <Badge variant="destructive">Server Error</Badge>;
     }
     return <Badge variant="outline">{statusCode}</Badge>;
+  }
+
+  if (authLoading) {
+    return <div className="flex items-center justify-center min-h-screen text-caption">Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
   }
 
   return (

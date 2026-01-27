@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,13 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { listKeys, getUsageSummaryByPeriod, ApiKey, UsageSummary } from "@/lib/api";
 import { Key, BarChart3, ArrowRight, Zap } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Dashboard() {
+  const { user, loading: authLoading } = useAuth();
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [usageMonth, setUsageMonth] = useState<UsageSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user) return;
+    
     async function loadData() {
       try {
         const [keysData, usageData] = await Promise.all([
@@ -29,7 +33,7 @@ export default function Dashboard() {
       }
     }
     loadData();
-  }, []);
+  }, [user]);
 
   const activeKeys = keys.filter((k) => k.status === "active");
   const currentPlan = activeKeys.length > 0 ? activeKeys[0].plan : "free";
@@ -43,6 +47,14 @@ export default function Dashboard() {
       default: return "outline";
     }
   };
+
+  if (authLoading) {
+    return <div className="flex items-center justify-center min-h-screen text-caption">Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
 
   return (
     <>

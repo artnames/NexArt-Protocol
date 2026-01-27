@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,8 +34,10 @@ import {
 import { listKeys, provisionKey, revokeKey, rotateKey, ApiKey, ProvisionKeyResponse } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Copy, Check, RefreshCw, Ban, Key } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ApiKeys() {
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,8 +50,10 @@ export default function ApiKeys() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    loadKeys();
-  }, []);
+    if (user) {
+      loadKeys();
+    }
+  }, [user]);
 
   async function loadKeys() {
     try {
@@ -151,6 +156,14 @@ export default function ApiKeys() {
       month: "short",
       day: "numeric",
     });
+  }
+
+  if (authLoading) {
+    return <div className="flex items-center justify-center min-h-screen text-caption">Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
   }
 
   return (
