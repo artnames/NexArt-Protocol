@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
       throw new Error("DATABASE_URL not configured");
     }
     
-    const sql = postgres(databaseUrl, { ssl: 'require' });
+    const sql = postgres(databaseUrl, { ssl: { rejectUnauthorized: false } });
 
     // Verify ownership and get old key details
     const oldKey = await sql`

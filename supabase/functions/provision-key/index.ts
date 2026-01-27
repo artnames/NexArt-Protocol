@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
       throw new Error("DATABASE_URL not configured");
     }
     
-    const sql = postgres(databaseUrl, { ssl: 'require' });
+    const sql = postgres(databaseUrl, { ssl: { rejectUnauthorized: false } });
 
     // Rate limit: max 10 keys per user
     const existingKeys = await sql`
