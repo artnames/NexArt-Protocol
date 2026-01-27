@@ -1,9 +1,11 @@
+import { Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, Zap, Users, Building } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const plans = [
   {
@@ -74,6 +76,8 @@ const plans = [
 ];
 
 export default function Billing() {
+  const { user, loading: authLoading } = useAuth();
+
   const handleUpgradeRequest = (planName: string) => {
     const subject = encodeURIComponent(`NexArt Plan Upgrade Request: ${planName}`);
     const body = encodeURIComponent(
@@ -81,6 +85,14 @@ export default function Billing() {
     );
     window.location.href = `mailto:support@nexart.io?subject=${subject}&body=${body}`;
   };
+
+  if (authLoading) {
+    return <div className="flex items-center justify-center min-h-screen text-caption">Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
 
   return (
     <>
