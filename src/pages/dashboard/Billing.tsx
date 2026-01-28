@@ -213,9 +213,9 @@ export default function Billing() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button asChild>
-                    <a href="mailto:sales@nexart.io">
+                    <a href="mailto:licensing@artnames.io">
                       <Mail className="h-4 w-4 mr-2" />
-                      sales@nexart.io
+                      licensing@artnames.io
                     </a>
                   </Button>
                   <Button variant="outline" asChild>
@@ -300,7 +300,7 @@ export default function Billing() {
                         </Button>
                       ) : (
                         <Button className="w-full" asChild>
-                          <a href="mailto:sales@nexart.io">{plan.cta}</a>
+                          <a href="mailto:licensing@artnames.io">{plan.cta}</a>
                         </Button>
                       )}
                     </div>
