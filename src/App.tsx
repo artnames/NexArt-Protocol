@@ -39,6 +39,8 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import ApiKeys from "./pages/dashboard/ApiKeys";
 import Usage from "./pages/dashboard/Usage";
 import Billing from "./pages/dashboard/Billing";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 
 const queryClient = new QueryClient();
 
@@ -84,6 +86,8 @@ const App = () => (
               <Route path="/dashboard/api-keys" element={<ApiKeys />} />
               <Route path="/dashboard/usage" element={<Usage />} />
               <Route path="/dashboard/billing" element={<Billing />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
