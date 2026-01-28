@@ -25,13 +25,13 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/canonical-renderer" className="text-caption hover:text-foreground transition-colors">
-                  Canonical Renderer
+                <Link to="/privacy" className="text-caption hover:text-foreground transition-colors">
+                  Privacy
                 </Link>
               </li>
               <li>
-                <Link to="/builder-rewards" className="text-caption hover:text-foreground transition-colors">
-                  Builder Rewards
+                <Link to="/terms" className="text-caption hover:text-foreground transition-colors">
+                  Terms
                 </Link>
               </li>
             </ul>
@@ -112,16 +112,6 @@ const Footer = () => {
                 >
                   X / Twitter
                 </a>
-              </li>
-              <li>
-                <Link to="/privacy" className="text-caption hover:text-foreground transition-colors">
-                  Privacy
-                </Link>
-              </li>
-              <li>
-                <Link to="/terms" className="text-caption hover:text-foreground transition-colors">
-                  Terms
-                </Link>
               </li>
             </ul>
           </div>
