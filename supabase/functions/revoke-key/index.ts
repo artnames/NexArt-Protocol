@@ -6,6 +6,21 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+function getDbConnection() {
+  const databaseUrl = Deno.env.get("DATABASE_URL");
+  
+  if (!databaseUrl) {
+    throw new Error("CONFIG: DATABASE_URL missing");
+  }
+
+  return postgres(databaseUrl, { 
+    ssl: false,
+    connection: {
+      application_name: 'nexart-revoke-key'
+    }
+  });
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -15,7 +30,7 @@ Deno.serve(async (req) => {
     // Validate auth
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
+      return new Response(JSON.stringify({ error: 'AUTH', message: 'Unauthorized' }), { 
         status: 401, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
@@ -29,58 +44,77 @@ Deno.serve(async (req) => {
 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
+      return new Response(JSON.stringify({ error: 'AUTH', message: 'Unauthorized' }), { 
         status: 401, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
     }
 
     const userId = user.id;
-    const body = await req.json();
+    
+    let body: { keyId?: string } = {};
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(JSON.stringify({ error: 'VALIDATION', message: 'Invalid JSON body' }), { 
+        status: 400, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
+    }
+    
     const keyId = body.keyId;
 
     if (!keyId) {
-      return new Response(JSON.stringify({ error: 'keyId is required' }), { 
+      return new Response(JSON.stringify({ error: 'VALIDATION', message: 'keyId is required' }), { 
         status: 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
     }
 
-    // Connect to Railway Postgres
-    const databaseUrl = Deno.env.get("DATABASE_URL");
-    if (!databaseUrl) {
-      throw new Error("DATABASE_URL not configured");
-    }
-    
-    const sql = postgres(databaseUrl, { ssl: { rejectUnauthorized: false } });
+    const sql = getDbConnection();
 
-    // Revoke the key (only if owned by user)
-    const result = await sql`
-      UPDATE api_keys 
-      SET status = 'revoked', revoked_at = NOW()
-      WHERE id = ${keyId} AND user_id = ${userId}::uuid AND status = 'active'
-      RETURNING id
-    `;
+    try {
+      // Revoke the key (only if owned by user)
+      // Note: Railway schema doesn't have revoked_at column
+      const result = await sql`
+        UPDATE api_keys 
+        SET status = 'revoked'
+        WHERE id = ${keyId}::int AND user_id = ${userId}::uuid AND status = 'active'
+        RETURNING id
+      `;
 
-    await sql.end();
+      await sql.end();
 
-    if (result.length === 0) {
-      return new Response(JSON.stringify({ error: 'Key not found or already revoked' }), { 
-        status: 404, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      if (result.length === 0) {
+        return new Response(JSON.stringify({ error: 'NOT_FOUND', message: 'Key not found or already revoked' }), { 
+          status: 404, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        });
+      }
+
+      console.log(`Revoked key ${keyId} for user ${userId}`);
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
+
+    } catch (dbError) {
+      await sql.end();
+      throw dbError;
     }
-
-    console.log(`Revoked key ${keyId} for user ${userId}`);
-
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
 
   } catch (err) {
     const error = err as Error;
-    console.error('Error revoking key:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('Error revoking key:', error.message);
+    
+    let errorCode = 'INTERNAL';
+    if (error.message.includes('CONFIG')) errorCode = 'CONFIG';
+    else if (error.message.includes('SSL') || error.message.includes('certificate')) errorCode = 'DB_SSL';
+    
+    return new Response(JSON.stringify({ 
+      error: errorCode, 
+      message: error.message 
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });

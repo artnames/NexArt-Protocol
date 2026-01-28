@@ -6,6 +6,21 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+function getDbConnection() {
+  const databaseUrl = Deno.env.get("DATABASE_URL");
+  
+  if (!databaseUrl) {
+    throw new Error("CONFIG: DATABASE_URL missing");
+  }
+
+  return postgres(databaseUrl, { 
+    ssl: false,
+    connection: {
+      application_name: 'nexart-list-keys'
+    }
+  });
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -15,7 +30,7 @@ Deno.serve(async (req) => {
     // Validate auth
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
+      return new Response(JSON.stringify({ error: 'AUTH', message: 'Unauthorized' }), { 
         status: 401, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
@@ -29,50 +44,56 @@ Deno.serve(async (req) => {
 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
+      return new Response(JSON.stringify({ error: 'AUTH', message: 'Unauthorized' }), { 
         status: 401, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
     }
 
     const userId = user.id;
+    const sql = getDbConnection();
 
-    // Connect to Railway Postgres
-    const databaseUrl = Deno.env.get("DATABASE_URL");
-    if (!databaseUrl) {
-      throw new Error("DATABASE_URL not configured");
+    try {
+      // Get keys for this user (never return key_hash)
+      // Note: Railway schema doesn't have revoked_at or last_used_at columns
+      const keys = await sql`
+        SELECT 
+          id, 
+          label, 
+          plan, 
+          status, 
+          monthly_limit,
+          created_at
+        FROM api_keys 
+        WHERE user_id = ${userId}::uuid
+        ORDER BY created_at DESC
+      `;
+
+      await sql.end();
+
+      console.log(`Listed ${keys.length} keys for user ${userId}`);
+
+      return new Response(JSON.stringify({ keys }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+
+    } catch (dbError) {
+      await sql.end();
+      throw dbError;
     }
-    
-    const sql = postgres(databaseUrl, { ssl: { rejectUnauthorized: false } });
-
-    // Get keys for this user (never return key_hash)
-    const keys = await sql`
-      SELECT 
-        id, 
-        label, 
-        plan, 
-        status, 
-        monthly_limit,
-        created_at, 
-        revoked_at,
-        last_used_at
-      FROM api_keys 
-      WHERE user_id = ${userId}::uuid
-      ORDER BY created_at DESC
-    `;
-
-    await sql.end();
-
-    console.log(`Listed ${keys.length} keys for user ${userId}`);
-
-    return new Response(JSON.stringify({ keys }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
 
   } catch (err) {
     const error = err as Error;
-    console.error('Error listing keys:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('Error listing keys:', error.message);
+    
+    let errorCode = 'INTERNAL';
+    if (error.message.includes('CONFIG')) errorCode = 'CONFIG';
+    else if (error.message.includes('SSL') || error.message.includes('certificate')) errorCode = 'DB_SSL';
+    
+    return new Response(JSON.stringify({ 
+      error: errorCode, 
+      message: error.message 
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
