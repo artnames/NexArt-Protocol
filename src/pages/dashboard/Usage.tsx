@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -13,7 +15,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { getUsageSummaryByPeriod, getRecentUsage, UsageSummary, UsageEvent } from "@/lib/api";
-import { Activity, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Activity, CheckCircle, XCircle, Clock, Info, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Usage() {
@@ -22,6 +24,7 @@ export default function Usage() {
   const [usageMonth, setUsageMonth] = useState<UsageSummary | null>(null);
   const [recentEvents, setRecentEvents] = useState<UsageEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"today" | "month">("month");
 
   useEffect(() => {
     if (!user) return;
@@ -73,6 +76,9 @@ export default function Usage() {
     return <Navigate to="/auth" replace />;
   }
 
+  const currentUsage = activeTab === "today" ? usageToday : usageMonth;
+  const hasNoUsage = !usageMonth || usageMonth.total === 0;
+
   return (
     <>
       <Helmet>
@@ -85,88 +91,43 @@ export default function Usage() {
           <div className="text-caption">Loading...</div>
         ) : (
           <div className="space-y-6">
-            {/* Summary Cards */}
-            <div className="grid gap-4 md:grid-cols-2">
-              {/* Today */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Activity className="h-5 w-5" />
-                    Today
-                  </CardTitle>
-                  <CardDescription>Usage statistics for today</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-2xl font-semibold">{usageToday?.total || 0}</p>
-                      <p className="text-sm text-caption">Total Requests</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-semibold flex items-center gap-1">
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                        {usageToday?.success || 0}
-                      </p>
-                      <p className="text-sm text-caption">Successful</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-semibold flex items-center gap-1">
-                        <XCircle className="h-5 w-5 text-red-500" />
-                        {usageToday?.errors || 0}
-                      </p>
-                      <p className="text-sm text-caption">Errors</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-semibold flex items-center gap-1">
-                        <Clock className="h-5 w-5 text-blue-500" />
-                        {usageToday?.avg_duration_ms || 0}ms
-                      </p>
-                      <p className="text-sm text-caption">Avg Duration</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* This Month */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Activity className="h-5 w-5" />
-                    This Month
-                  </CardTitle>
-                  <CardDescription>Usage statistics for this billing period</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-2xl font-semibold">{usageMonth?.total || 0}</p>
-                      <p className="text-sm text-caption">Total Requests</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-semibold flex items-center gap-1">
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                        {usageMonth?.success || 0}
-                      </p>
-                      <p className="text-sm text-caption">Successful</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-semibold flex items-center gap-1">
-                        <XCircle className="h-5 w-5 text-red-500" />
-                        {usageMonth?.errors || 0}
-                      </p>
-                      <p className="text-sm text-caption">Errors</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-semibold flex items-center gap-1">
-                        <Clock className="h-5 w-5 text-blue-500" />
-                        {usageMonth?.avg_duration_ms || 0}ms
-                      </p>
-                      <p className="text-sm text-caption">Avg Duration</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Explanation */}
+            <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg text-sm">
+              <Info className="h-5 w-5 mt-0.5 shrink-0 text-primary" />
+              <div>
+                <p className="font-medium">What counts as a certified run?</p>
+                <p className="text-caption mt-1">
+                  Each certified run corresponds to one call to the canonical renderer. 
+                  A successful render produces a deterministic PNG and a verifiable snapshot.
+                </p>
+              </div>
             </div>
+
+            {/* Summary with Tabs */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  Usage Summary
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "today" | "month")}>
+                  <TabsList className="mb-4">
+                    <TabsTrigger value="today">Today</TabsTrigger>
+                    <TabsTrigger value="month">This Month</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="today" className="mt-0">
+                    <UsageStats usage={usageToday} period="today" />
+                  </TabsContent>
+                  
+                  <TabsContent value="month" className="mt-0">
+                    <UsageStats usage={usageMonth} period="month" />
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
 
             {/* Recent Events */}
             <Card>
@@ -175,8 +136,21 @@ export default function Usage() {
                 <CardDescription>Last 50 certified execution requests</CardDescription>
               </CardHeader>
               <CardContent>
-                {recentEvents.length === 0 ? (
-                  <p className="text-caption">No usage events yet.</p>
+                {hasNoUsage ? (
+                  <div className="text-center py-8">
+                    <Activity className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-lg font-medium mb-2">No certified runs yet</p>
+                    <p className="text-caption text-sm mb-4">
+                      Create an API key and run your first certified render to see usage data here.
+                    </p>
+                    <Link to="/dashboard/api-keys">
+                      <Button variant="outline">
+                        Get Started
+                      </Button>
+                    </Link>
+                  </div>
+                ) : recentEvents.length === 0 ? (
+                  <p className="text-caption">No recent events found.</p>
                 ) : (
                   <Table>
                     <TableHeader>
@@ -215,5 +189,39 @@ export default function Usage() {
         )}
       </DashboardLayout>
     </>
+  );
+}
+
+function UsageStats({ usage, period }: { usage: UsageSummary | null; period: string }) {
+  const hasData = usage && usage.total > 0;
+  
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="p-4 bg-muted/50 rounded-lg">
+        <p className="text-2xl font-semibold">{usage?.total || 0}</p>
+        <p className="text-sm text-caption">Total Runs</p>
+      </div>
+      <div className="p-4 bg-muted/50 rounded-lg">
+        <p className="text-2xl font-semibold flex items-center gap-2">
+          <CheckCircle className="h-5 w-5 text-green-500" />
+          {usage?.success || 0}
+        </p>
+        <p className="text-sm text-caption">Successful</p>
+      </div>
+      <div className="p-4 bg-muted/50 rounded-lg">
+        <p className="text-2xl font-semibold flex items-center gap-2">
+          <XCircle className="h-5 w-5 text-red-500" />
+          {usage?.errors || 0}
+        </p>
+        <p className="text-sm text-caption">Errors</p>
+      </div>
+      <div className="p-4 bg-muted/50 rounded-lg">
+        <p className="text-2xl font-semibold flex items-center gap-2">
+          <Clock className="h-5 w-5 text-blue-500" />
+          {usage?.avg_duration_ms || 0}ms
+        </p>
+        <p className="text-sm text-caption">Avg Duration</p>
+      </div>
+    </div>
   );
 }

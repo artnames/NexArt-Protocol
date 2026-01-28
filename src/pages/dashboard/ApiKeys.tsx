@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/table";
 import { listKeys, provisionKey, revokeKey, rotateKey, ApiKey, ProvisionKeyResponse } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Copy, Check, RefreshCw, Ban, Key, Terminal, AlertCircle } from "lucide-react";
+import { Plus, Copy, Check, RefreshCw, Ban, Key, Terminal, AlertTriangle, FileImage, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const PLAN_OPTIONS = [
@@ -42,6 +42,13 @@ const PLAN_OPTIONS = [
   { value: "team", label: "Pro+ / Team", limit: "~50,000 runs/month" },
   { value: "enterprise", label: "Enterprise", limit: "Contract scope" },
 ];
+
+const PLAN_BADGE_VARIANTS: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+  enterprise: "default",
+  team: "secondary",
+  pro: "outline",
+  free: "outline",
+};
 
 export default function ApiKeys() {
   const { user, loading: authLoading } = useAuth();
@@ -208,8 +215,8 @@ export default function ApiKeys() {
 
           {/* Actions */}
           <div className="flex justify-between items-center">
-            <p className="text-caption">
-              Keys are hashed and stored securely. You'll only see the plaintext once.
+            <p className="text-caption text-sm">
+              Keys are hashed and stored securely. Plaintext is shown once only.
             </p>
             <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
               <DialogTrigger asChild>
@@ -263,23 +270,32 @@ export default function ApiKeys() {
             </Dialog>
           </div>
 
-          {/* New Key Dialog */}
+          {/* New Key Dialog - One-time display with strong warning */}
           <Dialog open={showKeyDialogOpen} onOpenChange={setShowKeyDialogOpen}>
-            <DialogContent>
+            <DialogContent className="sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   <Key className="h-5 w-5" />
                   Your New API Key
                 </DialogTitle>
-                <DialogDescription>
-                  Copy this key now. You won't be able to see it again.
-                </DialogDescription>
               </DialogHeader>
               {newKeyResult && (
                 <div className="space-y-4 py-4">
-                  <div className="bg-muted p-4 rounded-md">
-                    <code className="text-sm break-all">{newKeyResult.apiKey}</code>
+                  {/* Strong Warning */}
+                  <div className="flex items-start gap-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-md text-amber-900 dark:text-amber-200">
+                    <ShieldAlert className="h-5 w-5 mt-0.5 shrink-0" />
+                    <div className="text-sm">
+                      <p className="font-semibold">This key will not be shown again.</p>
+                      <p className="mt-1 opacity-90">Store it securely. If you lose it, you'll need to create a new key.</p>
+                    </div>
                   </div>
+
+                  {/* Key Display */}
+                  <div className="bg-muted p-4 rounded-md">
+                    <code className="text-sm break-all font-mono">{newKeyResult.apiKey}</code>
+                  </div>
+                  
+                  {/* Copy Button */}
                   <Button
                     variant="outline"
                     className="w-full"
@@ -297,10 +313,23 @@ export default function ApiKeys() {
                       </>
                     )}
                   </Button>
-                  <div className="text-sm text-caption space-y-1">
-                    <p><strong>Label:</strong> {newKeyResult.label}</p>
-                    <p><strong>Plan:</strong> {newKeyResult.plan}</p>
-                    <p><strong>Monthly Limit:</strong> {newKeyResult.monthlyLimit.toLocaleString()} runs</p>
+
+                  {/* Key Details */}
+                  <div className="text-sm space-y-2 pt-2 border-t border-border">
+                    <div className="flex justify-between">
+                      <span className="text-caption">Label</span>
+                      <span className="font-medium">{newKeyResult.label}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-caption">Plan</span>
+                      <Badge variant={PLAN_BADGE_VARIANTS[newKeyResult.plan] || "outline"} className="capitalize">
+                        {newKeyResult.plan}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-caption">Monthly Limit</span>
+                      <span>{newKeyResult.monthlyLimit.toLocaleString()} runs</span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -339,10 +368,10 @@ export default function ApiKeys() {
                   </TableHeader>
                   <TableBody>
                     {keys.map((key) => (
-                      <TableRow key={key.id}>
+                      <TableRow key={key.id} className={key.status === "revoked" ? "opacity-60" : ""}>
                         <TableCell className="font-medium">{key.label}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="capitalize">
+                          <Badge variant={PLAN_BADGE_VARIANTS[key.plan] || "outline"} className="capitalize">
                             {key.plan}
                           </Badge>
                         </TableCell>
@@ -416,8 +445,18 @@ export default function ApiKeys() {
                 </div>
               </div>
 
-              <div className="flex items-start gap-2 text-sm text-caption bg-muted/50 p-3 rounded-md">
-                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+              {/* PNG Warning */}
+              <div className="flex items-start gap-3 text-sm bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 p-3 rounded-md">
+                <FileImage className="h-5 w-5 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-medium">The canonical renderer returns a PNG (image/png), not JSON.</p>
+                  <p className="text-caption mt-1">Treat responses as binary data. Parse the snapshot file separately.</p>
+                </div>
+              </div>
+
+              {/* Canvas Warning */}
+              <div className="flex items-start gap-3 text-sm text-caption bg-muted/50 p-3 rounded-md">
+                <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
                 <span>Canonical size is enforced (1950×2400). Do not pass custom width/height.</span>
               </div>
 

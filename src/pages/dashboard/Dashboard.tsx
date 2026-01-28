@@ -5,8 +5,9 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { listKeys, getUsageSummaryByPeriod, ApiKey, UsageSummary } from "@/lib/api";
-import { Key, BarChart3, ArrowRight, Zap, Plus, Terminal, AlertCircle } from "lucide-react";
+import { Key, BarChart3, ArrowRight, Zap, Plus, Terminal, AlertTriangle, FileImage } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const PLAN_LIMITS: Record<string, number> = {
@@ -22,6 +23,18 @@ const PLAN_NAMES: Record<string, string> = {
   team: "Pro+ / Team",
   enterprise: "Enterprise",
 };
+
+// Derive highest plan from all active keys
+function getHighestPlan(keys: ApiKey[]): string {
+  const planOrder = ["enterprise", "team", "pro", "free"];
+  const activeKeys = keys.filter((k) => k.status === "active");
+  for (const plan of planOrder) {
+    if (activeKeys.some((k) => k.plan === plan)) {
+      return plan;
+    }
+  }
+  return "free";
+}
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -50,8 +63,18 @@ export default function Dashboard() {
   }, [user]);
 
   const activeKeys = keys.filter((k) => k.status === "active");
-  const currentPlan = activeKeys.length > 0 ? activeKeys[0].plan : "free";
-  const monthlyLimit = PLAN_LIMITS[currentPlan] || 100;
+  const currentPlan = getHighestPlan(keys);
+  const monthlyLimit = activeKeys.length > 0 
+    ? Math.max(...activeKeys.map(k => k.monthly_limit))
+    : PLAN_LIMITS[currentPlan] || 100;
+
+  const usagePercent = monthlyLimit > 0 
+    ? Math.min(100, ((usageMonth?.total || 0) / monthlyLimit) * 100)
+    : 0;
+
+  const successRate = usageMonth?.total 
+    ? Math.round((usageMonth.success / usageMonth.total) * 100) 
+    : null;
 
   const getPlanBadgeVariant = (plan: string) => {
     switch (plan) {
@@ -71,6 +94,7 @@ export default function Dashboard() {
   }
 
   const hasNoActiveKeys = activeKeys.length === 0;
+  const hasNoUsage = !usageMonth || usageMonth.total === 0;
 
   return (
     <>
@@ -130,9 +154,10 @@ export default function Dashboard() {
                   <CardDescription>Usage This Month</CardDescription>
                   <CardTitle>{usageMonth?.total?.toLocaleString() || 0}</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-2">
+                  <Progress value={usagePercent} className="h-2" />
                   <p className="text-sm text-caption">
-                    of {monthlyLimit.toLocaleString()} certified runs
+                    {usagePercent.toFixed(0)}% of {monthlyLimit.toLocaleString()} limit
                   </p>
                 </CardContent>
               </Card>
@@ -141,14 +166,15 @@ export default function Dashboard() {
                 <CardHeader className="pb-2">
                   <CardDescription>Success Rate</CardDescription>
                   <CardTitle>
-                    {usageMonth?.total
-                      ? `${Math.round((usageMonth.success / usageMonth.total) * 100)}%`
-                      : "—"}
+                    {successRate !== null ? `${successRate}%` : "—"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-caption">
-                    {usageMonth?.errors || 0} errors this month
+                    {hasNoUsage 
+                      ? "No certified runs yet"
+                      : `${usageMonth?.errors || 0} errors this month`
+                    }
                   </p>
                 </CardContent>
               </Card>
@@ -262,8 +288,18 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2 text-sm text-caption bg-muted/50 p-3 rounded-md">
-                  <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                {/* PNG Warning */}
+                <div className="flex items-start gap-3 text-sm bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 p-3 rounded-md">
+                  <FileImage className="h-5 w-5 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-medium">The canonical renderer returns a PNG (image/png), not JSON.</p>
+                    <p className="text-caption mt-1">Treat responses as binary data. Parse the snapshot file separately.</p>
+                  </div>
+                </div>
+
+                {/* Canvas Warning */}
+                <div className="flex items-start gap-3 text-sm text-caption bg-muted/50 p-3 rounded-md">
+                  <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
                   <span>Canonical size is enforced (1950×2400). Do not pass custom width/height.</span>
                 </div>
 
