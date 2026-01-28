@@ -113,6 +113,16 @@ const Footer = () => {
                   X / Twitter
                 </a>
               </li>
+              <li>
+                <Link to="/privacy" className="text-caption hover:text-foreground transition-colors">
+                  Privacy
+                </Link>
+              </li>
+              <li>
+                <Link to="/terms" className="text-caption hover:text-foreground transition-colors">
+                  Terms
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
