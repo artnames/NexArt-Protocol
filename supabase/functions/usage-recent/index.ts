@@ -6,6 +6,21 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+function getDbConnection() {
+  const databaseUrl = Deno.env.get("DATABASE_URL");
+  
+  if (!databaseUrl) {
+    throw new Error("CONFIG: DATABASE_URL missing");
+  }
+
+  return postgres(databaseUrl, { 
+    ssl: false,
+    connection: {
+      application_name: 'nexart-usage-recent'
+    }
+  });
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -15,7 +30,7 @@ Deno.serve(async (req) => {
     // Validate auth
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
+      return new Response(JSON.stringify({ error: 'AUTH', message: 'Unauthorized' }), { 
         status: 401, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
@@ -29,51 +44,59 @@ Deno.serve(async (req) => {
 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
+      return new Response(JSON.stringify({ error: 'AUTH', message: 'Unauthorized' }), { 
         status: 401, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
     }
 
     const userId = user.id;
+    const sql = getDbConnection();
 
-    // Connect to Railway Postgres
-    const databaseUrl = Deno.env.get("DATABASE_URL");
-    if (!databaseUrl) {
-      throw new Error("DATABASE_URL not configured");
+    try {
+      // Get recent usage events for user's keys
+      // Note: Railway schema uses 'ts' not 'created_at', 'error' not 'error_code'
+      const events = await sql`
+        SELECT 
+          ue.id,
+          ue.ts as created_at,
+          ue.endpoint,
+          ue.status_code,
+          ue.duration_ms,
+          ue.error as error_code,
+          ak.label as key_label
+        FROM usage_events ue
+        INNER JOIN api_keys ak ON ue.api_key_id = ak.id
+        WHERE ak.user_id = ${userId}::uuid
+        ORDER BY ue.ts DESC
+        LIMIT 50
+      `;
+
+      await sql.end();
+
+      console.log(`Listed ${events.length} recent events for user ${userId}`);
+
+      return new Response(JSON.stringify({ events }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+
+    } catch (dbError) {
+      await sql.end();
+      throw dbError;
     }
-    
-    const sql = postgres(databaseUrl, { ssl: { rejectUnauthorized: false } });
-
-    // Get recent usage events for user's keys
-    const events = await sql`
-      SELECT 
-        ue.id,
-        ue.created_at,
-        ue.endpoint,
-        ue.status_code,
-        ue.duration_ms,
-        ue.error_code,
-        ak.label as key_label
-      FROM usage_events ue
-      INNER JOIN api_keys ak ON ue.api_key_id = ak.id
-      WHERE ak.user_id = ${userId}::uuid
-      ORDER BY ue.created_at DESC
-      LIMIT 50
-    `;
-
-    await sql.end();
-
-    console.log(`Listed ${events.length} recent events for user ${userId}`);
-
-    return new Response(JSON.stringify({ events }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
 
   } catch (err) {
     const error = err as Error;
-    console.error('Error getting recent usage:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('Error getting recent usage:', error.message);
+    
+    let errorCode = 'INTERNAL';
+    if (error.message.includes('CONFIG')) errorCode = 'CONFIG';
+    else if (error.message.includes('SSL') || error.message.includes('certificate')) errorCode = 'DB_SSL';
+    
+    return new Response(JSON.stringify({ 
+      error: errorCode, 
+      message: error.message 
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });

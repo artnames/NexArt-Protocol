@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.usage-recent]
 verify_jwt = false
+
+[functions.db-health]
+verify_jwt = false

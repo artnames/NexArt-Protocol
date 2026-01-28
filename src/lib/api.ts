@@ -7,8 +7,7 @@ export interface ApiKey {
   status: string;
   monthly_limit: number;
   created_at: string;
-  revoked_at: string | null;
-  last_used_at: string | null;
+  // Note: revoked_at and last_used_at are not in Railway schema
 }
 
 export interface UsageSummary {
