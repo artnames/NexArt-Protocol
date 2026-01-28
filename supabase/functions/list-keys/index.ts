@@ -55,14 +55,12 @@ Deno.serve(async (req) => {
 
     try {
       // Get keys for this user (never return key_hash)
-      // Note: Railway schema doesn't have revoked_at or last_used_at columns
+      // Note: Plan/quota are enforced at ACCOUNT level - keys are credentials only
       const keys = await sql`
         SELECT 
           id, 
           label, 
-          plan, 
           status, 
-          monthly_limit,
           created_at
         FROM api_keys 
         WHERE user_id = ${userId}::uuid

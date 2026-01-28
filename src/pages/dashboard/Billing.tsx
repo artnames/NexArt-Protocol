@@ -5,9 +5,10 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Zap, Users, Building, Mail, CreditCard } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Check, Zap, Users, Building, Mail, CreditCard, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { listKeys, ApiKey } from "@/lib/api";
+import { getAccountPlan, listKeys, AccountPlan, ApiKey, parseApiError, getFriendlyErrorMessage, ApiError } from "@/lib/api";
 
 const plans = [
   {
@@ -84,38 +85,28 @@ const plans = [
   },
 ];
 
-const PLAN_NAMES: Record<string, string> = {
-  free: "Free",
-  pro: "Pro",
-  team: "Pro+ / Team",
-  enterprise: "Enterprise",
-};
-
-function getHighestPlan(keys: ApiKey[]): string {
-  const planOrder = ["enterprise", "team", "pro", "free"];
-  const activeKeys = keys.filter((k) => k.status === "active");
-  for (const plan of planOrder) {
-    if (activeKeys.some((k) => k.plan === plan)) {
-      return plan;
-    }
-  }
-  return "free";
-}
-
 export default function Billing() {
   const { user, loading: authLoading } = useAuth();
+  const [accountPlan, setAccountPlan] = useState<AccountPlan | null>(null);
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<ApiError | null>(null);
 
   useEffect(() => {
     if (!user) return;
     
     async function loadData() {
+      setLoadError(null);
       try {
-        const keysData = await listKeys();
+        const [planData, keysData] = await Promise.all([
+          getAccountPlan(),
+          listKeys(),
+        ]);
+        setAccountPlan(planData);
         setKeys(keysData);
       } catch (error) {
-        console.error("Failed to load keys:", error);
+        console.error("Failed to load data:", error);
+        setLoadError(parseApiError(error));
       } finally {
         setLoading(false);
       }
@@ -131,11 +122,11 @@ export default function Billing() {
     return <Navigate to="/auth" replace />;
   }
 
-  const currentPlan = getHighestPlan(keys);
+  const currentPlan = accountPlan?.plan || 'free';
   const activeKeys = keys.filter((k) => k.status === "active");
-  const monthlyLimit = activeKeys.length > 0 
-    ? Math.max(...activeKeys.map(k => k.monthly_limit))
-    : 100;
+  const usagePercent = accountPlan 
+    ? Math.min(100, (accountPlan.used / accountPlan.monthlyLimit) * 100)
+    : 0;
 
   return (
     <>
@@ -149,25 +140,60 @@ export default function Billing() {
           <div className="text-caption">Loading...</div>
         ) : (
           <div className="space-y-6">
-            {/* Current Plan */}
+            {/* Error State */}
+            {loadError && (
+              <Card className="border-destructive/50 bg-destructive/5">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg text-destructive">
+                    <AlertCircle className="h-5 w-5" />
+                    {loadError.isServiceUnavailable ? "Service Unavailable" : "Error Loading Data"}
+                  </CardTitle>
+                  <CardDescription className="text-destructive/80">
+                    {getFriendlyErrorMessage(loadError)}
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            )}
+
+            {/* Current Plan - Account Level */}
             <Card className="border-primary/20 bg-primary/5">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <CreditCard className="h-5 w-5" />
-                  Current Plan
+                  Account Plan
                 </CardTitle>
+                <CardDescription>
+                  Plan and quota are shared across all your API keys
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4">
                   <Badge variant="default" className="text-base px-3 py-1">
-                    {PLAN_NAMES[currentPlan] || "Free"}
+                    {accountPlan?.planName || "Free"}
                   </Badge>
                   <span className="text-caption">
-                    {monthlyLimit.toLocaleString()} certified runs / month
+                    {(accountPlan?.monthlyLimit || 100).toLocaleString()} certified runs / month
                   </span>
                 </div>
+                
+                {/* Usage Progress */}
+                {accountPlan && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Usage this month</span>
+                      <span className="font-medium">
+                        {accountPlan.used.toLocaleString()} / {accountPlan.monthlyLimit.toLocaleString()}
+                      </span>
+                    </div>
+                    <Progress value={usagePercent} className="h-2" />
+                    <p className="text-xs text-caption">
+                      {accountPlan.remaining.toLocaleString()} runs remaining
+                    </p>
+                  </div>
+                )}
+
                 <p className="text-sm text-caption">
-                  {activeKeys.length} active API key{activeKeys.length !== 1 ? "s" : ""}
+                  {activeKeys.length} active API key{activeKeys.length !== 1 ? "s" : ""} (max 10)
                 </p>
               </CardContent>
             </Card>
@@ -216,6 +242,10 @@ export default function Billing() {
                 </p>
                 <p className="text-caption text-sm">
                   Same SDK. Same CLI. Same code. Paid plans unlock assurance, not features.
+                </p>
+                <p className="text-caption text-sm border-l-2 border-primary/30 pl-3">
+                  <strong>Note:</strong> Creating multiple API keys does not increase your quota. 
+                  All keys share your account's monthly limit.
                 </p>
               </CardContent>
             </Card>

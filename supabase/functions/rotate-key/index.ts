@@ -89,9 +89,9 @@ Deno.serve(async (req) => {
     const sql = getDbConnection();
 
     try {
-      // Verify ownership and get old key details
+      // Verify ownership and get old key label
       const oldKey = await sql`
-        SELECT id, plan, label, monthly_limit
+        SELECT id, label
         FROM api_keys 
         WHERE id = ${keyId}::int AND user_id = ${userId}::uuid AND status = 'active'
       `;
@@ -125,10 +125,10 @@ Deno.serve(async (req) => {
       const apiKey = generateApiKey();
       const keyHash = await hashApiKey(apiKey);
 
-      // Create new key with same settings
+      // Create new key - plan/quota are now account-level, keys are credentials only
       const result = await sql`
         INSERT INTO api_keys (key_hash, label, plan, status, monthly_limit, user_id, created_at)
-        VALUES (${keyHash}, ${oldKey[0].label}, ${oldKey[0].plan}, 'active', ${oldKey[0].monthly_limit}, ${userId}::uuid, NOW())
+        VALUES (${keyHash}, ${oldKey[0].label}, 'free', 'active', 100, ${userId}::uuid, NOW())
         RETURNING id
       `;
 
@@ -146,11 +146,10 @@ Deno.serve(async (req) => {
 
       console.log(`Rotated key ${keyId} for user ${userId}`);
 
+      // Return new key - plan/quota info comes from account-plan endpoint
       return new Response(JSON.stringify({
         apiKey,
         apiKeyId: result[0].id,
-        monthlyLimit: oldKey[0].monthly_limit,
-        plan: oldKey[0].plan,
         label: oldKey[0].label
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
