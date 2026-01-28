@@ -18,13 +18,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Table,
   TableBody,
   TableCell,
@@ -37,39 +30,34 @@ import {
   provisionKey, 
   revokeKey, 
   rotateKey, 
+  getAccountPlan,
   ApiKey, 
+  AccountPlan,
   ProvisionKeyResponse,
   parseApiError,
   getFriendlyErrorMessage,
   ApiError 
 } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Copy, Check, RefreshCw, Ban, Key, Terminal, AlertTriangle, FileImage, ShieldAlert, AlertCircle } from "lucide-react";
+import { Plus, Copy, Check, RefreshCw, Ban, Key, Terminal, AlertTriangle, FileImage, ShieldAlert, AlertCircle, HelpCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-const PLAN_OPTIONS = [
-  { value: "free", label: "Free", limit: "100 runs/month" },
-  { value: "pro", label: "Pro", limit: "~5,000 runs/month" },
-  { value: "team", label: "Pro+ / Team", limit: "~50,000 runs/month" },
-  { value: "enterprise", label: "Enterprise", limit: "Contract scope" },
-];
-
-const PLAN_BADGE_VARIANTS: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
-  enterprise: "default",
-  team: "secondary",
-  pro: "outline",
-  free: "outline",
+const PLAN_NAMES: Record<string, string> = {
+  free: "Free",
+  pro: "Pro",
+  team: "Pro+ / Team",
+  enterprise: "Enterprise",
 };
 
 export default function ApiKeys() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [keys, setKeys] = useState<ApiKey[]>([]);
+  const [accountPlan, setAccountPlan] = useState<AccountPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<ApiError | null>(null);
   const [creating, setCreating] = useState(false);
   const [newKeyLabel, setNewKeyLabel] = useState("");
-  const [newKeyPlan, setNewKeyPlan] = useState("free");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newKeyResult, setNewKeyResult] = useState<ProvisionKeyResponse | null>(null);
   const [showKeyDialogOpen, setShowKeyDialogOpen] = useState(false);
@@ -79,7 +67,7 @@ export default function ApiKeys() {
 
   useEffect(() => {
     if (user) {
-      loadKeys();
+      loadData();
     }
   }, [user]);
 
@@ -98,13 +86,17 @@ export default function ApiKeys() {
     }
   }, [showKeyDialogOpen]);
 
-  async function loadKeys() {
+  async function loadData() {
     setLoadError(null);
     try {
-      const data = await listKeys();
-      setKeys(data);
+      const [keysData, planData] = await Promise.all([
+        listKeys(),
+        getAccountPlan(),
+      ]);
+      setKeys(keysData);
+      setAccountPlan(planData);
     } catch (error) {
-      console.error("Failed to load keys:", error);
+      console.error("Failed to load data:", error);
       const apiError = parseApiError(error);
       setLoadError(apiError);
       toast({
@@ -129,13 +121,12 @@ export default function ApiKeys() {
 
     setCreating(true);
     try {
-      const result = await provisionKey(newKeyPlan, newKeyLabel);
+      const result = await provisionKey(newKeyLabel);
       setNewKeyResult(result);
       setCreateDialogOpen(false);
       setShowKeyDialogOpen(true);
       setNewKeyLabel("");
-      setNewKeyPlan("free");
-      await loadKeys();
+      await loadData();
     } catch (error) {
       console.error("Failed to create key:", error);
       const apiError = parseApiError(error);
@@ -154,7 +145,7 @@ export default function ApiKeys() {
       const result = await rotateKey(keyId);
       setNewKeyResult(result);
       setShowKeyDialogOpen(true);
-      await loadKeys();
+      await loadData();
       toast({
         title: "Key rotated",
         description: "Your old key has been revoked and a new one created.",
@@ -173,7 +164,7 @@ export default function ApiKeys() {
   async function handleRevokeKey(keyId: string) {
     try {
       await revokeKey(keyId);
-      await loadKeys();
+      await loadData();
       toast({
         title: "Key revoked",
         description: "The API key has been revoked and can no longer be used.",
@@ -248,9 +239,27 @@ export default function ApiKeys() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="outline" onClick={() => loadKeys()}>
+                <Button variant="outline" onClick={() => loadData()}>
                   Try Again
                 </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Account Plan Info */}
+          {accountPlan && !loadError && (
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Account Plan</CardTitle>
+                <CardDescription>
+                  Quota is shared across all your API keys
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex items-center gap-4">
+                <Badge variant="default">{accountPlan.planName}</Badge>
+                <span className="text-sm text-caption">
+                  {accountPlan.used.toLocaleString()} / {accountPlan.monthlyLimit.toLocaleString()} certified runs this month
+                </span>
               </CardContent>
             </Card>
           )}
@@ -279,7 +288,7 @@ export default function ApiKeys() {
           {/* Actions */}
           <div className="flex justify-between items-center">
             <p className="text-caption text-sm">
-              Keys are hashed and stored securely. Plaintext is shown once only.
+              Keys are credentials only. Quota is enforced at the account level.
             </p>
             <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
               <DialogTrigger asChild>
@@ -304,21 +313,9 @@ export default function ApiKeys() {
                       value={newKeyLabel}
                       onChange={(e) => setNewKeyLabel(e.target.value)}
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="key-plan">Plan</Label>
-                    <Select value={newKeyPlan} onValueChange={setNewKeyPlan}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {PLAN_OPTIONS.map((plan) => (
-                          <SelectItem key={plan.value} value={plan.value}>
-                            {plan.label} ({plan.limit})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <p className="text-xs text-caption">
+                      Use descriptive names to identify keys (e.g., "Production", "CI/CD", "Development")
+                    </p>
                   </div>
                 </div>
                 <DialogFooter>
@@ -360,7 +357,7 @@ export default function ApiKeys() {
                     <ShieldAlert className="h-5 w-5 mt-0.5 shrink-0" />
                     <div className="text-sm">
                       <p className="font-semibold">This key will not be shown again.</p>
-                      <p className="mt-1 opacity-90">Store it securely. If you lose it, you'll need to create a new key.</p>
+                      <p className="mt-1 opacity-90">Store it securely. If you lose it, you'll need to rotate it.</p>
                     </div>
                   </div>
 
@@ -399,16 +396,6 @@ export default function ApiKeys() {
                       <span className="text-caption">Label</span>
                       <span className="font-medium">{newKeyResult.label}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-caption">Plan</span>
-                      <Badge variant={PLAN_BADGE_VARIANTS[newKeyResult.plan] || "outline"} className="capitalize">
-                        {newKeyResult.plan}
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-caption">Monthly Limit</span>
-                      <span>{newKeyResult.monthlyLimit.toLocaleString()} runs</span>
-                    </div>
                   </div>
 
                   {/* Confirmation Checkbox */}
@@ -439,12 +426,12 @@ export default function ApiKeys() {
             </DialogContent>
           </Dialog>
 
-          {/* Keys Table */}
+          {/* Keys Table - Simplified: no per-key plan/limit */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Your API Keys</CardTitle>
               <CardDescription>
-                Active and revoked keys for your account
+                Active and revoked keys for your account. Keys share your account quota.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -459,9 +446,7 @@ export default function ApiKeys() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>
-                      <TableHead>Plan</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Monthly Limit</TableHead>
                       <TableHead>Created</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -471,11 +456,6 @@ export default function ApiKeys() {
                       <TableRow key={key.id} className={key.status === "revoked" ? "opacity-60" : ""}>
                         <TableCell className="font-medium">{key.label}</TableCell>
                         <TableCell>
-                          <Badge variant={PLAN_BADGE_VARIANTS[key.plan] || "outline"} className="capitalize">
-                            {key.plan}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
                           <Badge
                             variant={key.status === "active" ? "default" : "secondary"}
                             className="capitalize"
@@ -483,7 +463,6 @@ export default function ApiKeys() {
                             {key.status}
                           </Badge>
                         </TableCell>
-                        <TableCell>{key.monthly_limit.toLocaleString()}</TableCell>
                         <TableCell>{formatDate(key.created_at)}</TableCell>
                         <TableCell className="text-right">
                           {key.status === "active" && (
@@ -492,9 +471,10 @@ export default function ApiKeys() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleRotateKey(key.id)}
-                                title="Rotate key"
+                                title="Lost this key? Rotate to get a new one"
                               >
                                 <RefreshCw className="h-4 w-4" />
+                                <span className="sr-only">Rotate</span>
                               </Button>
                               <Button
                                 variant="ghost"
@@ -503,14 +483,32 @@ export default function ApiKeys() {
                                 title="Revoke key"
                               >
                                 <Ban className="h-4 w-4" />
+                                <span className="sr-only">Revoke</span>
                               </Button>
                             </div>
+                          )}
+                          {key.status === "revoked" && (
+                            <span className="text-xs text-caption">Revoked</span>
                           )}
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
+              )}
+
+              {/* Lost Key Help */}
+              {activeKeys.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-border">
+                  <div className="flex items-start gap-2 text-sm text-caption">
+                    <HelpCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                    <div>
+                      <span className="font-medium">Lost a key?</span> Click the rotate button (
+                      <RefreshCw className="h-3 w-3 inline mx-1" />) to revoke the old key and create a new one.
+                      Keys cannot be retrieved after creation.
+                    </div>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>

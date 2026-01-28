@@ -6,15 +6,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-function getPlanLimits(plan: string): number {
-  const limits: Record<string, number> = {
-    free: 100,
-    pro: 10000,
-    team: 100000,
-    enterprise: 1000000,
-  };
-  return limits[plan] || 100;
-}
+// NOTE: Plan and quota are now enforced at ACCOUNT level, not per-key
+// Keys are credentials only. Plan/monthly_limit on api_keys table is deprecated for enforcement.
+// Account-level plan is managed via the accounts table or user metadata.
 
 function generateApiKey(): string {
   const bytes = new Uint8Array(24);
@@ -123,30 +117,20 @@ Deno.serve(async (req) => {
     const userId = user.id;
     
     // Parse request body
-    let body: { plan?: string; label?: string } = {};
+    let body: { label?: string } = {};
     try {
       body = await req.json();
     } catch {
       // Empty body is ok, use defaults
     }
     
-    const plan = body.plan || 'free';
     const label = body.label || 'Default Key';
 
-    if (!['free', 'pro', 'team', 'enterprise'].includes(plan)) {
-      return new Response(JSON.stringify({ 
-        error: 'VALIDATION', 
-        message: 'Invalid plan. Must be: free, pro, team, or enterprise' 
-      }), { 
-        status: 400, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      });
-    }
-
     // Generate and hash the API key
+    // NOTE: Plan/quota are enforced at ACCOUNT level, not per-key
+    // We store 'free' and 100 as legacy placeholders; enforcement happens via account-plan
     const apiKey = generateApiKey();
     const keyHash = await hashApiKey(apiKey);
-    const monthlyLimit = getPlanLimits(plan);
 
     // Connect to Railway Postgres
     console.log(`Attempting DB connection for user ${userId}`);
@@ -169,10 +153,11 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Insert into api_keys table (matches Railway schema)
+      // Insert into api_keys table - keys are credentials only
+      // Plan/monthly_limit stored as legacy placeholders; enforcement is at account level
       const result = await sql`
         INSERT INTO api_keys (user_id, key_hash, label, plan, status, monthly_limit, created_at)
-        VALUES (${userId}::uuid, ${keyHash}, ${label}, ${plan}, 'active', ${monthlyLimit}, NOW())
+        VALUES (${userId}::uuid, ${keyHash}, ${label}, 'free', 'active', 100, NOW())
         RETURNING id
       `;
 
@@ -189,14 +174,13 @@ Deno.serve(async (req) => {
 
       await sql.end();
 
-      console.log(`Provisioned key for user ${userId}, plan: ${plan}, keyId: ${result[0].id}`);
+      console.log(`Provisioned key for user ${userId}, keyId: ${result[0].id}`);
 
       // Return plaintext key ONCE - it's never stored
+      // Note: Plan/quota info is now retrieved from account-plan endpoint
       return new Response(JSON.stringify({
         apiKey,
         apiKeyId: result[0].id,
-        monthlyLimit,
-        plan,
         label
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

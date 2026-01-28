@@ -9,7 +9,9 @@ import { Progress } from "@/components/ui/progress";
 import { 
   listKeys, 
   getUsageSummaryByPeriod, 
+  getAccountPlan,
   ApiKey, 
+  AccountPlan,
   UsageSummary,
   parseApiError,
   getFriendlyErrorMessage,
@@ -19,36 +21,11 @@ import { Key, BarChart3, ArrowRight, Zap, Plus, Terminal, AlertTriangle, FileIma
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
-const PLAN_LIMITS: Record<string, number> = {
-  free: 100,
-  pro: 5000,
-  team: 50000,
-  enterprise: 1000000,
-};
-
-const PLAN_NAMES: Record<string, string> = {
-  free: "Free",
-  pro: "Pro",
-  team: "Pro+ / Team",
-  enterprise: "Enterprise",
-};
-
-// Derive highest plan from all active keys
-function getHighestPlan(keys: ApiKey[]): string {
-  const planOrder = ["enterprise", "team", "pro", "free"];
-  const activeKeys = keys.filter((k) => k.status === "active");
-  for (const plan of planOrder) {
-    if (activeKeys.some((k) => k.plan === plan)) {
-      return plan;
-    }
-  }
-  return "free";
-}
-
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [keys, setKeys] = useState<ApiKey[]>([]);
+  const [accountPlan, setAccountPlan] = useState<AccountPlan | null>(null);
   const [usageMonth, setUsageMonth] = useState<UsageSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<ApiError | null>(null);
@@ -61,12 +38,14 @@ export default function Dashboard() {
   async function loadData() {
     setLoadError(null);
     try {
-      const [keysData, usageData] = await Promise.all([
+      const [keysData, usageData, planData] = await Promise.all([
         listKeys(),
         getUsageSummaryByPeriod("month"),
+        getAccountPlan(),
       ]);
       setKeys(keysData);
       setUsageMonth(usageData);
+      setAccountPlan(planData);
     } catch (error) {
       console.error("Failed to load dashboard data:", error);
       const apiError = parseApiError(error);
@@ -82,13 +61,14 @@ export default function Dashboard() {
   }
 
   const activeKeys = keys.filter((k) => k.status === "active");
-  const currentPlan = getHighestPlan(keys);
-  const monthlyLimit = activeKeys.length > 0 
-    ? Math.max(...activeKeys.map(k => k.monthly_limit))
-    : PLAN_LIMITS[currentPlan] || 100;
+  
+  // Account-level plan and quota
+  const currentPlan = accountPlan?.plan || "free";
+  const monthlyLimit = accountPlan?.monthlyLimit || 100;
+  const usedThisMonth = accountPlan?.used || 0;
 
   const usagePercent = monthlyLimit > 0 
-    ? Math.min(100, ((usageMonth?.total || 0) / monthlyLimit) * 100)
+    ? Math.min(100, (usedThisMonth / monthlyLimit) * 100)
     : 0;
 
   const successRate = usageMonth?.total 
@@ -171,14 +151,14 @@ export default function Dashboard() {
               </Card>
             )}
 
-            {/* Plan & Usage Summary */}
+            {/* Account Plan & Usage Summary */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card>
                 <CardHeader className="pb-2">
-                  <CardDescription>Current Plan</CardDescription>
+                  <CardDescription>Account Plan</CardDescription>
                   <CardTitle className="flex items-center gap-2">
                     <Badge variant={getPlanBadgeVariant(currentPlan)}>
-                      {PLAN_NAMES[currentPlan] || "Free"}
+                      {accountPlan?.planName || "Free"}
                     </Badge>
                   </CardTitle>
                 </CardHeader>
@@ -192,7 +172,7 @@ export default function Dashboard() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardDescription>Usage This Month</CardDescription>
-                  <CardTitle>{usageMonth?.total?.toLocaleString() || 0}</CardTitle>
+                  <CardTitle>{usedThisMonth.toLocaleString()}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <Progress value={usagePercent} className="h-2" />
@@ -226,7 +206,7 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-caption">
-                    {keys.length} total keys
+                    {keys.length} total keys (max 10)
                   </p>
                 </CardContent>
               </Card>

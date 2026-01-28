@@ -1,5 +1,8 @@
 project_id = "tnvckrssolgjrtcfhnwm"
 
+[functions.account-plan]
+verify_jwt = false
+
 [functions.provision-key]
 verify_jwt = false
 

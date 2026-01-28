@@ -1,12 +1,19 @@
 import { supabase } from "@/integrations/supabase/client";
 
+// API Keys are now credentials only - plan/quota enforced at account level
 export interface ApiKey {
   id: string;
   label: string;
-  plan: string;
   status: string;
-  monthly_limit: number;
   created_at: string;
+}
+
+export interface AccountPlan {
+  plan: string;
+  planName: string;
+  monthlyLimit: number;
+  used: number;
+  remaining: number;
 }
 
 export interface UsageSummary {
@@ -30,8 +37,6 @@ export interface UsageEvent {
 export interface ProvisionKeyResponse {
   apiKey: string;
   apiKeyId: string;
-  monthlyLimit: number;
-  plan: string;
   label: string;
 }
 
@@ -128,9 +133,14 @@ async function handleFunctionResponse<T>(
   return data as T;
 }
 
-export async function provisionKey(plan: string = "free", label: string = "Default Key"): Promise<ProvisionKeyResponse> {
+// Account-level plan (replaces per-key plan logic)
+export async function getAccountPlan(): Promise<AccountPlan> {
+  return handleFunctionResponse<AccountPlan>("account-plan");
+}
+
+export async function provisionKey(label: string = "Default Key"): Promise<ProvisionKeyResponse> {
   return handleFunctionResponse<ProvisionKeyResponse>("provision-key", {
-    body: { plan, label },
+    body: { label },
   });
 }
 
