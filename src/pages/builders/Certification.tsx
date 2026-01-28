@@ -12,7 +12,7 @@ const BuildersCertification = () => {
   return (
     <PageLayout>
       <Helmet>
-        <title>Canonical Certification — NexArt Builders</title>
+        <title>Canonical Certification — NexArt Protocol</title>
         <meta
           name="description"
           content="What canonical certification means in the NexArt protocol. Deterministic execution, verifiable snapshots, and reproducibility guarantees."
@@ -21,89 +21,129 @@ const BuildersCertification = () => {
 
       <PageHeader
         title="Canonical Certification"
-        subtitle="What it means to produce a certified output."
+        subtitle="Determinism is a property. Certification is proof."
       />
 
       <PageContent>
         <article className="prose-protocol prose-spec">
-          <h2>What is a certified run?</h2>
+          {/* What is Canonical Certification */}
+          <h2>What is canonical certification?</h2>
           <p>
-            A <strong>certified run</strong> is a single execution of a Code Mode sketch through the 
-            canonical renderer that produces:
+            Canonical certification is the process of executing a Code Mode sketch through 
+            the NexArt canonical renderer and producing cryptographically verifiable proof 
+            of that execution. The result is not just an image — it is an auditable record 
+            that ties inputs, outputs, and execution environment together.
+          </p>
+          <p>
+            A <strong>certified run</strong> produces:
           </p>
           <ul>
-            <li>A deterministic PNG at canonical resolution (1950×2400)</li>
-            <li>A verifiable snapshot (<code>.snapshot.json</code>) containing input parameters and output hash</li>
+            <li>A deterministic PNG at canonical resolution</li>
+            <li>A snapshot file (<code>.snapshot.json</code>) containing all input parameters</li>
+            <li>Cryptographic hashes linking the snapshot to the output</li>
           </ul>
           <p>
-            The snapshot is cryptographically linked to the output. Given the same inputs, any 
-            compliant renderer will produce byte-identical output with the same hash.
+            Given the same inputs, any compliant renderer will produce byte-identical output 
+            with the same hash. This is the foundation of NexArt's reproducibility guarantee.
           </p>
 
-          <h2>Why certification matters</h2>
+          {/* Determinism vs Certification */}
+          <h2>Determinism vs. certification</h2>
           <p>
-            Certification provides three guarantees:
+            <strong>Determinism</strong> is a property of the code. A deterministic sketch, 
+            given the same seed and parameters, will always produce the same output.
           </p>
-          <ul>
-            <li><strong>Reproducibility</strong> — The exact same output can be regenerated from the snapshot</li>
-            <li><strong>Auditability</strong> — The snapshot records all inputs and the output hash</li>
-            <li><strong>Verification</strong> — Anyone can independently verify that an image matches its snapshot</li>
-          </ul>
           <p>
-            These guarantees are essential for archival, minting, and any context where proof of 
-            authenticity matters.
-          </p>
-
-          <h2>Certified vs. local execution</h2>
-          <p>
-            The NexArt SDK and CLI can execute sketches locally for free. Local execution is 
-            deterministic but does not produce a certified snapshot.
+            <strong>Certification</strong> is proof that determinism was exercised under 
+            controlled conditions. It answers: <em>was this output actually produced by 
+            running this code with these inputs?</em>
           </p>
           <table>
             <thead>
               <tr>
                 <th>Aspect</th>
-                <th>Local Execution</th>
-                <th>Certified Run</th>
+                <th>Determinism</th>
+                <th>Certification</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>Deterministic</td>
-                <td>✓</td>
-                <td>✓</td>
+                <td>What it is</td>
+                <td>A code property</td>
+                <td>An execution proof</td>
               </tr>
               <tr>
-                <td>Produces PNG</td>
-                <td>✓</td>
-                <td>✓</td>
+                <td>Requires</td>
+                <td>Compliant code</td>
+                <td>Canonical renderer</td>
               </tr>
               <tr>
-                <td>Produces snapshot</td>
-                <td>—</td>
-                <td>✓</td>
+                <td>Produces</td>
+                <td>Repeatable output</td>
+                <td>Verifiable record</td>
               </tr>
               <tr>
-                <td>Verifiable hash</td>
-                <td>—</td>
-                <td>✓</td>
+                <td>Verifiable by</td>
+                <td>Re-execution</td>
+                <td>Hash comparison</td>
               </tr>
               <tr>
-                <td>Suitable for minting</td>
-                <td>—</td>
-                <td>✓</td>
-              </tr>
-              <tr>
-                <td>Cost</td>
-                <td>Free</td>
-                <td>Plan-based</td>
+                <td>Trust model</td>
+                <td>Trust the code</td>
+                <td>Trust the protocol</td>
               </tr>
             </tbody>
           </table>
-
-          <h2>The snapshot format</h2>
           <p>
-            A snapshot contains everything needed to reproduce and verify a render:
+            You can have determinism without certification (local execution). You cannot 
+            have certification without determinism.
+          </p>
+
+          {/* What happens during a certified run */}
+          <h2>What happens during a certified run</h2>
+          <p>
+            When a sketch is submitted to the canonical renderer:
+          </p>
+          <ol>
+            <li>
+              <strong>Input validation</strong> — The renderer verifies the sketch is 
+              protocol-compliant, the seed is valid, and all parameters are within bounds.
+            </li>
+            <li>
+              <strong>Environment lock</strong> — Execution occurs in a controlled environment 
+              with pinned runtime versions, fixed canvas dimensions, and deterministic RNG.
+            </li>
+            <li>
+              <strong>Execution</strong> — The sketch runs exactly once. No retries, no 
+              branching, no external dependencies.
+            </li>
+            <li>
+              <strong>Output capture</strong> — The rendered canvas is exported as a PNG 
+              at canonical resolution.
+            </li>
+            <li>
+              <strong>Hash generation</strong> — The output is hashed. The code is hashed. 
+              Both are recorded in the snapshot.
+            </li>
+            <li>
+              <strong>Snapshot emission</strong> — The snapshot file is returned alongside 
+              the image, containing everything needed for future verification.
+            </li>
+          </ol>
+
+          {/* Artifacts produced */}
+          <h2>Artifacts produced</h2>
+          <p>
+            A certified run returns two artifacts:
+          </p>
+          <h3>1. Output PNG</h3>
+          <p>
+            The rendered image at canonical resolution (1950×2400 pixels). This is the 
+            visual output of the sketch.
+          </p>
+          <h3>2. Snapshot file</h3>
+          <p>
+            A JSON file containing:
           </p>
           <div className="spec-code">
             <code>{`{
@@ -117,39 +157,253 @@ const BuildersCertification = () => {
 }`}</code>
           </div>
           <p>
-            The <code>outputHash</code> is the cryptographic fingerprint of the PNG. Verification 
-            re-renders with the same parameters and confirms the hash matches.
+            The <code>outputHash</code> is the cryptographic fingerprint of the PNG. 
+            The <code>codeHash</code> is the fingerprint of the source code. Together, 
+            they form an immutable link between input and output.
           </p>
 
-          <h2>Running a certified render</h2>
+          {/* Canonical constraints */}
+          <h2>Canonical constraints</h2>
           <p>
-            Use the CLI with an API key to produce certified output:
+            The canonical renderer enforces strict constraints to ensure reproducibility:
           </p>
-          <div className="spec-code">
-            <code>
-              nexart run ./sketch.js --seed 12345 --out out.png
-            </code>
+          <ul>
+            <li>
+              <strong>Fixed canvas size</strong> — 1950×2400 pixels. No exceptions.
+            </li>
+            <li>
+              <strong>No <code>createCanvas()</code></strong> — The canvas is provided 
+              by the runtime. Do not create your own.
+            </li>
+            <li>
+              <strong>No custom dimensions</strong> — Width and height are not parameters. 
+              They are protocol constants.
+            </li>
+            <li>
+              <strong>Seeded RNG only</strong> — All randomness must derive from the 
+              provided seed. No <code>Math.random()</code>.
+            </li>
+            <li>
+              <strong>No external resources</strong> — No network calls, no file system 
+              access, no dynamic imports.
+            </li>
+            <li>
+              <strong>No time-dependent behavior</strong> — <code>Date.now()</code> and 
+              similar are forbidden.
+            </li>
+          </ul>
+          <div className="spec-warning">
+            <p className="spec-warning-title">Protocol violation</p>
+            <p>
+              Violating any constraint results in a <code>400</code> error. The render 
+              will not execute.
+            </p>
           </div>
+
+          {/* When certification is needed */}
+          <h2>When certification is needed</h2>
           <p>
-            This produces both <code>out.png</code> and <code>out.snapshot.json</code>.
+            Certification is required when:
+          </p>
+          <ul>
+            <li>
+              <strong>Minting</strong> — The output will be tokenized or registered 
+              on-chain.
+            </li>
+            <li>
+              <strong>Archival</strong> — The output must be reproducible indefinitely.
+            </li>
+            <li>
+              <strong>Provenance</strong> — Third parties need to verify the output 
+              was produced by specific code and inputs.
+            </li>
+            <li>
+              <strong>Auditability</strong> — Compliance, legal, or contractual 
+              requirements demand a verifiable record.
+            </li>
+            <li>
+              <strong>Dispute resolution</strong> — The snapshot serves as evidence 
+              of what was executed.
+            </li>
+          </ul>
+          <p>
+            Certification is <em>not</em> required for:
+          </p>
+          <ul>
+            <li>Local development and iteration</li>
+            <li>Exploratory rendering in browser-based tools</li>
+            <li>Previewing outputs before committing to a final version</li>
+          </ul>
+
+          {/* What certification is not */}
+          <h2>What certification is not</h2>
+          <p>
+            To avoid confusion:
+          </p>
+          <ul>
+            <li>
+              <strong>Not a quality judgment</strong> — Certification proves execution, 
+              not aesthetic value.
+            </li>
+            <li>
+              <strong>Not copy protection</strong> — The output is not encrypted or 
+              access-controlled. Anyone can view it.
+            </li>
+            <li>
+              <strong>Not a blockchain transaction</strong> — Certification happens 
+              off-chain. On-chain registration is a separate, optional step.
+            </li>
+            <li>
+              <strong>Not a watermark</strong> — The image contains no embedded metadata. 
+              The snapshot is a separate file.
+            </li>
+            <li>
+              <strong>Not DRM</strong> — Certification is about proof, not restriction.
+            </li>
+          </ul>
+
+          {/* Plan limits reference */}
+          <p className="text-caption text-sm mt-8 pt-4 border-t border-border">
+            Certified runs are subject to plan limits. See{" "}
+            <Link to="/pricing" className="text-link hover:text-link-hover underline underline-offset-2">
+              pricing
+            </Link>{" "}
+            for details.
           </p>
 
-          <h2>Verification</h2>
-          <p>
-            Anyone with the snapshot can verify the output:
-          </p>
-          <div className="spec-code">
-            <code>nexart verify out.snapshot.json</code>
-          </div>
-          <p>
-            Verification re-renders the sketch and confirms the output hash matches. A passing 
-            verification proves the image is authentic and untampered.
+          {/* Why Certification Exists */}
+          <h2 className="mt-16 pt-8 border-t border-border">Why certification exists</h2>
+          <p className="text-caption">
+            Understanding the problem certification solves.
           </p>
 
-          <h2>Plan limits</h2>
+          {/* The reproducibility problem */}
+          <h3>The reproducibility problem</h3>
           <p>
-            Certified runs are metered by plan. See <Link to="/pricing" className="text-link hover:text-link-hover underline underline-offset-2">pricing</Link> for 
-            details on limits and tiers.
+            Generative systems produce outputs from code. If the code is deterministic, 
+            running it again should produce the same output. In theory.
+          </p>
+          <p>
+            In practice, reproducibility fails. Runtime versions change. Dependencies 
+            update. Floating-point behavior varies across platforms. What rendered 
+            correctly in 2024 may render differently in 2027 — or fail entirely.
+          </p>
+          <p>
+            This is not a hypothetical risk. It is the default outcome for any 
+            software system without explicit reproducibility guarantees.
+          </p>
+
+          {/* Why determinism degrades */}
+          <h3>Why determinism alone degrades over time</h3>
+          <p>
+            Determinism is necessary but not sufficient. A sketch may be deterministic 
+            <em>today</em> — same seed, same output. But determinism is fragile:
+          </p>
+          <ul>
+            <li>
+              <strong>Runtime drift</strong> — Node.js 18 and Node.js 22 may handle 
+              edge cases differently.
+            </li>
+            <li>
+              <strong>Dependency rot</strong> — A library update changes internal 
+              behavior.
+            </li>
+            <li>
+              <strong>Platform divergence</strong> — ARM and x86 produce different 
+              floating-point results.
+            </li>
+            <li>
+              <strong>Canvas implementation</strong> — Browser canvas and node-canvas 
+              are not byte-identical.
+            </li>
+          </ul>
+          <p>
+            Without a controlled environment, determinism is a local property that 
+            does not survive time or platform changes.
+          </p>
+
+          {/* Why canonical environments matter */}
+          <h3>Why canonical environments matter</h3>
+          <p>
+            A <strong>canonical environment</strong> is a fixed, versioned execution 
+            context. It specifies:
+          </p>
+          <ul>
+            <li>Exact runtime versions (Node.js, canvas library, etc.)</li>
+            <li>Fixed canvas dimensions and pixel format</li>
+            <li>Pinned protocol version</li>
+            <li>Deterministic random number generation</li>
+          </ul>
+          <p>
+            When a sketch runs in the canonical environment, the output is not just 
+            deterministic — it is <em>reproducible across time</em>. The same inputs 
+            will produce the same output in 2025, 2030, or 2040, as long as the 
+            canonical renderer is preserved.
+          </p>
+          <p>
+            This is not a convenience. It is a prerequisite for any system where 
+            outputs have long-term significance.
+          </p>
+
+          {/* Certification as a trust primitive */}
+          <h3>Certification as a trust primitive</h3>
+          <p>
+            Certification creates a trust chain:
+          </p>
+          <ol>
+            <li>
+              <strong>Code → Output</strong> — The sketch, given specific inputs, 
+              produces a specific output.
+            </li>
+            <li>
+              <strong>Output → Hash</strong> — The output is fingerprinted. Any 
+              modification is detectable.
+            </li>
+            <li>
+              <strong>Hash → Snapshot</strong> — The hash is recorded alongside 
+              inputs and metadata.
+            </li>
+            <li>
+              <strong>Snapshot → Verification</strong> — Anyone can re-run the 
+              sketch and confirm the hash matches.
+            </li>
+          </ol>
+          <p>
+            This chain is the basis for trust without authority. You do not need 
+            to trust the artist, the platform, or the marketplace. You can verify.
+          </p>
+
+          {/* Long-term relevance */}
+          <h3>Long-term relevance</h3>
+          <p>
+            Certification addresses requirements that extend beyond the moment of creation:
+          </p>
+          <ul>
+            <li>
+              <strong>Auditability</strong> — Years later, a third party can verify 
+              that an output was produced by specific code. No database lookup required.
+            </li>
+            <li>
+              <strong>Compliance</strong> — Regulatory or contractual requirements 
+              may demand proof of origin and execution.
+            </li>
+            <li>
+              <strong>Dispute resolution</strong> — The snapshot is evidence. It 
+              answers: <em>was this the output of that code?</em>
+            </li>
+            <li>
+              <strong>Archival integrity</strong> — Museums, collectors, and 
+              institutions can preserve not just the image, but the proof.
+            </li>
+            <li>
+              <strong>Decentralized verification</strong> — Verification does not 
+              depend on NexArt. Anyone with the snapshot and a compliant renderer 
+              can verify.
+            </li>
+          </ul>
+          <p>
+            Certification is not about today's transaction. It is about tomorrow's 
+            question: <em>how do you know?</em>
           </p>
         </article>
 
