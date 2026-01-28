@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -31,9 +32,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { listKeys, provisionKey, revokeKey, rotateKey, ApiKey, ProvisionKeyResponse } from "@/lib/api";
+import { 
+  listKeys, 
+  provisionKey, 
+  revokeKey, 
+  rotateKey, 
+  ApiKey, 
+  ProvisionKeyResponse,
+  parseApiError,
+  getFriendlyErrorMessage,
+  ApiError 
+} from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Copy, Check, RefreshCw, Ban, Key, Terminal, AlertTriangle, FileImage, ShieldAlert } from "lucide-react";
+import { Plus, Copy, Check, RefreshCw, Ban, Key, Terminal, AlertTriangle, FileImage, ShieldAlert, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const PLAN_OPTIONS = [
@@ -55,6 +66,7 @@ export default function ApiKeys() {
   const { toast } = useToast();
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<ApiError | null>(null);
   const [creating, setCreating] = useState(false);
   const [newKeyLabel, setNewKeyLabel] = useState("");
   const [newKeyPlan, setNewKeyPlan] = useState("free");
@@ -62,6 +74,8 @@ export default function ApiKeys() {
   const [newKeyResult, setNewKeyResult] = useState<ProvisionKeyResponse | null>(null);
   const [showKeyDialogOpen, setShowKeyDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [keySavedConfirmed, setKeySavedConfirmed] = useState(false);
+  const keyDisplayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -69,16 +83,34 @@ export default function ApiKeys() {
     }
   }, [user]);
 
+  // Auto-select key text when dialog opens
+  useEffect(() => {
+    if (showKeyDialogOpen && keyDisplayRef.current) {
+      const selection = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(keyDisplayRef.current);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }
+    // Reset confirmation when dialog opens
+    if (showKeyDialogOpen) {
+      setKeySavedConfirmed(false);
+    }
+  }, [showKeyDialogOpen]);
+
   async function loadKeys() {
+    setLoadError(null);
     try {
       const data = await listKeys();
       setKeys(data);
     } catch (error) {
       console.error("Failed to load keys:", error);
+      const apiError = parseApiError(error);
+      setLoadError(apiError);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to load API keys",
+        title: `Error (${apiError.code})`,
+        description: getFriendlyErrorMessage(apiError),
       });
     } finally {
       setLoading(false);
@@ -106,10 +138,11 @@ export default function ApiKeys() {
       await loadKeys();
     } catch (error) {
       console.error("Failed to create key:", error);
+      const apiError = parseApiError(error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to create API key",
+        title: `Error (${apiError.code})`,
+        description: getFriendlyErrorMessage(apiError),
       });
     } finally {
       setCreating(false);
@@ -128,10 +161,11 @@ export default function ApiKeys() {
       });
     } catch (error) {
       console.error("Failed to rotate key:", error);
+      const apiError = parseApiError(error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to rotate API key",
+        title: `Error (${apiError.code})`,
+        description: getFriendlyErrorMessage(apiError),
       });
     }
   }
@@ -146,10 +180,11 @@ export default function ApiKeys() {
       });
     } catch (error) {
       console.error("Failed to revoke key:", error);
+      const apiError = parseApiError(error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to revoke API key",
+        title: `Error (${apiError.code})`,
+        description: getFriendlyErrorMessage(apiError),
       });
     }
   }
@@ -172,6 +207,13 @@ export default function ApiKeys() {
     });
   }
 
+  function handleCloseKeyDialog() {
+    if (keySavedConfirmed) {
+      setShowKeyDialogOpen(false);
+      setKeySavedConfirmed(false);
+    }
+  }
+
   if (authLoading) {
     return <div className="flex items-center justify-center min-h-screen text-caption">Loading...</div>;
   }
@@ -192,8 +234,29 @@ export default function ApiKeys() {
       
       <DashboardLayout title="API Keys">
         <div className="space-y-6">
+          {/* Error State */}
+          {loadError && (
+            <Card className="border-destructive/50 bg-destructive/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg text-destructive">
+                  <AlertCircle className="h-5 w-5" />
+                  {loadError.isServiceUnavailable ? "Service Unavailable" : "Error Loading Keys"}
+                </CardTitle>
+                <CardDescription className="text-destructive/80">
+                  {getFriendlyErrorMessage(loadError)}
+                  {loadError.code && <span className="ml-2 font-mono text-xs">({loadError.code})</span>}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" onClick={() => loadKeys()}>
+                  Try Again
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
           {/* No Keys CTA */}
-          {hasNoActiveKeys && !loading && (
+          {hasNoActiveKeys && !loading && !loadError && (
             <Card className="border-primary/30 bg-primary/5">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -270,9 +333,20 @@ export default function ApiKeys() {
             </Dialog>
           </div>
 
-          {/* New Key Dialog - One-time display with strong warning */}
-          <Dialog open={showKeyDialogOpen} onOpenChange={setShowKeyDialogOpen}>
-            <DialogContent className="sm:max-w-lg">
+          {/* New Key Dialog - One-time display with confirmation checkbox */}
+          <Dialog open={showKeyDialogOpen} onOpenChange={(open) => {
+            // Only allow closing if confirmed
+            if (!open && !keySavedConfirmed) {
+              return;
+            }
+            setShowKeyDialogOpen(open);
+          }}>
+            <DialogContent className="sm:max-w-lg" onInteractOutside={(e) => {
+              // Prevent closing on outside click unless confirmed
+              if (!keySavedConfirmed) {
+                e.preventDefault();
+              }
+            }}>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   <Key className="h-5 w-5" />
@@ -290,9 +364,14 @@ export default function ApiKeys() {
                     </div>
                   </div>
 
-                  {/* Key Display */}
+                  {/* Key Display - Auto-selected */}
                   <div className="bg-muted p-4 rounded-md">
-                    <code className="text-sm break-all font-mono">{newKeyResult.apiKey}</code>
+                    <code 
+                      ref={keyDisplayRef}
+                      className="text-sm break-all font-mono select-all"
+                    >
+                      {newKeyResult.apiKey}
+                    </code>
                   </div>
                   
                   {/* Copy Button */}
@@ -331,11 +410,30 @@ export default function ApiKeys() {
                       <span>{newKeyResult.monthlyLimit.toLocaleString()} runs</span>
                     </div>
                   </div>
+
+                  {/* Confirmation Checkbox */}
+                  <div className="flex items-center space-x-2 pt-2 border-t border-border">
+                    <Checkbox 
+                      id="confirm-saved"
+                      checked={keySavedConfirmed}
+                      onCheckedChange={(checked) => setKeySavedConfirmed(checked === true)}
+                    />
+                    <label 
+                      htmlFor="confirm-saved"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      I have securely saved this API key
+                    </label>
+                  </div>
                 </div>
               )}
               <DialogFooter>
-                <Button onClick={() => setShowKeyDialogOpen(false)}>
-                  I've Saved My Key
+                <Button 
+                  onClick={handleCloseKeyDialog}
+                  disabled={!keySavedConfirmed}
+                  className={!keySavedConfirmed ? "opacity-50 cursor-not-allowed" : ""}
+                >
+                  Done
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -352,6 +450,8 @@ export default function ApiKeys() {
             <CardContent>
               {loading ? (
                 <p className="text-caption">Loading...</p>
+              ) : loadError ? (
+                <p className="text-caption">Unable to load keys. Please try again.</p>
               ) : keys.length === 0 ? (
                 <p className="text-caption">No API keys yet. Create one to get started.</p>
               ) : (

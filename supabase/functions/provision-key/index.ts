@@ -176,6 +176,17 @@ Deno.serve(async (req) => {
         RETURNING id
       `;
 
+      // Insert audit event for key creation
+      try {
+        await sql`
+          INSERT INTO usage_events (api_key_id, endpoint, status_code, duration_ms, ts)
+          VALUES (${result[0].id}, 'audit:key_created', 200, 0, NOW())
+        `;
+      } catch (auditError) {
+        // Log but don't fail if audit insert fails
+        console.warn('Failed to insert audit event:', auditError);
+      }
+
       await sql.end();
 
       console.log(`Provisioned key for user ${userId}, plan: ${plan}, keyId: ${result[0].id}`);

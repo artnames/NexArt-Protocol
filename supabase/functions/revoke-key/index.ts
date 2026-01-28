@@ -83,14 +83,25 @@ Deno.serve(async (req) => {
         RETURNING id
       `;
 
-      await sql.end();
-
       if (result.length === 0) {
+        await sql.end();
         return new Response(JSON.stringify({ error: 'NOT_FOUND', message: 'Key not found or already revoked' }), { 
           status: 404, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         });
       }
+
+      // Insert audit event for key revocation
+      try {
+        await sql`
+          INSERT INTO usage_events (api_key_id, endpoint, status_code, duration_ms, ts)
+          VALUES (${result[0].id}, 'audit:key_revoked', 200, 0, NOW())
+        `;
+      } catch (auditError) {
+        console.warn('Failed to insert audit event:', auditError);
+      }
+
+      await sql.end();
 
       console.log(`Revoked key ${keyId} for user ${userId}`);
 
