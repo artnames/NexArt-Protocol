@@ -7,7 +7,6 @@ export interface ApiKey {
   status: string;
   monthly_limit: number;
   created_at: string;
-  // Note: revoked_at and last_used_at are not in Railway schema
 }
 
 export interface UsageSummary {
@@ -36,6 +35,53 @@ export interface ProvisionKeyResponse {
   label: string;
 }
 
+// Error types for friendly UI messages
+export interface ApiError {
+  code: string;
+  message: string;
+  isServiceUnavailable: boolean;
+}
+
+export function parseApiError(error: unknown): ApiError {
+  const err = error as { message?: string; code?: string };
+  const message = err?.message || "An unexpected error occurred";
+  const code = err?.code || "UNKNOWN";
+  
+  // Check for service unavailability patterns
+  const isServiceUnavailable = 
+    message.toLowerCase().includes("database") ||
+    message.toLowerCase().includes("connection") ||
+    message.toLowerCase().includes("unavailable") ||
+    code === "DB_CONNECTION" ||
+    code === "DB_SSL" ||
+    code === "CONFIG";
+
+  return {
+    code,
+    message,
+    isServiceUnavailable,
+  };
+}
+
+export function getFriendlyErrorMessage(error: ApiError): string {
+  if (error.isServiceUnavailable) {
+    return "Service temporarily unavailable. Please try again in a moment.";
+  }
+  
+  switch (error.code) {
+    case "AUTH":
+      return "Authentication failed. Please sign in again.";
+    case "RATE_LIMIT":
+      return "You've reached the maximum number of API keys (10).";
+    case "VALIDATION":
+      return error.message;
+    case "NOT_FOUND":
+      return "The requested resource was not found.";
+    default:
+      return error.message || "An unexpected error occurred.";
+  }
+}
+
 async function getAuthHeaders(): Promise<Record<string, string>> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.access_token) {
@@ -46,63 +92,69 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   };
 }
 
-export async function provisionKey(plan: string = "free", label: string = "Default Key"): Promise<ProvisionKeyResponse> {
-  const { data, error } = await supabase.functions.invoke("provision-key", {
-    body: { plan, label },
+async function handleFunctionResponse<T>(
+  functionName: string,
+  options?: { body?: Record<string, unknown> }
+): Promise<T> {
+  const { data, error } = await supabase.functions.invoke(functionName, {
+    body: options?.body,
   });
 
   if (error) {
-    throw new Error(error.message || "Failed to provision key");
+    // Try to extract structured error from function response
+    const apiError: ApiError = {
+      code: (error as any)?.code || "INTERNAL",
+      message: error.message || "Failed to call function",
+      isServiceUnavailable: false,
+    };
+    
+    // Check if error contains service unavailability indicators
+    if (error.message?.includes("DB") || error.message?.includes("connection")) {
+      apiError.isServiceUnavailable = true;
+    }
+    
+    throw apiError;
   }
 
-  return data as ProvisionKeyResponse;
+  // Check if data contains an error structure
+  if (data?.error) {
+    throw {
+      code: data.error,
+      message: data.message || "Operation failed",
+      isServiceUnavailable: data.error === "DB_CONNECTION" || data.error === "CONFIG",
+    } as ApiError;
+  }
+
+  return data as T;
+}
+
+export async function provisionKey(plan: string = "free", label: string = "Default Key"): Promise<ProvisionKeyResponse> {
+  return handleFunctionResponse<ProvisionKeyResponse>("provision-key", {
+    body: { plan, label },
+  });
 }
 
 export async function listKeys(): Promise<ApiKey[]> {
-  const { data, error } = await supabase.functions.invoke("list-keys");
-
-  if (error) {
-    throw new Error(error.message || "Failed to list keys");
-  }
-
-  return data.keys as ApiKey[];
+  const data = await handleFunctionResponse<{ keys: ApiKey[] }>("list-keys");
+  return data.keys;
 }
 
 export async function rotateKey(keyId: string): Promise<ProvisionKeyResponse> {
-  const { data, error } = await supabase.functions.invoke("rotate-key", {
+  return handleFunctionResponse<ProvisionKeyResponse>("rotate-key", {
     body: { keyId },
   });
-
-  if (error) {
-    throw new Error(error.message || "Failed to rotate key");
-  }
-
-  return data as ProvisionKeyResponse;
 }
 
 export async function revokeKey(keyId: string): Promise<void> {
-  const { data, error } = await supabase.functions.invoke("revoke-key", {
+  await handleFunctionResponse<{ success: boolean }>("revoke-key", {
     body: { keyId },
   });
-
-  if (error) {
-    throw new Error(error.message || "Failed to revoke key");
-  }
 }
 
 export async function getUsageSummary(period: "today" | "month"): Promise<UsageSummary> {
-  const { data, error } = await supabase.functions.invoke("usage-summary", {
+  return handleFunctionResponse<UsageSummary>("usage-summary", {
     body: {},
-    headers: {
-      "x-period": period,
-    },
   });
-
-  if (error) {
-    throw new Error(error.message || "Failed to get usage summary");
-  }
-
-  return data as UsageSummary;
 }
 
 export async function getUsageSummaryByPeriod(period: "today" | "month"): Promise<UsageSummary> {
@@ -120,19 +172,24 @@ export async function getUsageSummaryByPeriod(period: "today" | "month"): Promis
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Failed to get usage summary");
+    let errorData;
+    try {
+      errorData = await response.json();
+    } catch {
+      errorData = { error: "INTERNAL", message: "Failed to get usage summary" };
+    }
+    
+    throw {
+      code: errorData.error || "INTERNAL",
+      message: errorData.message || "Failed to get usage summary",
+      isServiceUnavailable: errorData.error === "DB_CONNECTION" || errorData.error === "CONFIG",
+    } as ApiError;
   }
 
   return response.json();
 }
 
 export async function getRecentUsage(): Promise<UsageEvent[]> {
-  const { data, error } = await supabase.functions.invoke("usage-recent");
-
-  if (error) {
-    throw new Error(error.message || "Failed to get recent usage");
-  }
-
-  return data.events as UsageEvent[];
+  const data = await handleFunctionResponse<{ events: UsageEvent[] }>("usage-recent");
+  return data.events;
 }

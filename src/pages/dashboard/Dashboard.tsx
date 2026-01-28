@@ -6,9 +6,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { listKeys, getUsageSummaryByPeriod, ApiKey, UsageSummary } from "@/lib/api";
-import { Key, BarChart3, ArrowRight, Zap, Plus, Terminal, AlertTriangle, FileImage } from "lucide-react";
+import { 
+  listKeys, 
+  getUsageSummaryByPeriod, 
+  ApiKey, 
+  UsageSummary,
+  parseApiError,
+  getFriendlyErrorMessage,
+  ApiError
+} from "@/lib/api";
+import { Key, BarChart3, ArrowRight, Zap, Plus, Terminal, AlertTriangle, FileImage, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const PLAN_LIMITS: Record<string, number> = {
   free: 100,
@@ -38,29 +47,39 @@ function getHighestPlan(keys: ApiKey[]): string {
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
+  const { toast } = useToast();
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [usageMonth, setUsageMonth] = useState<UsageSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<ApiError | null>(null);
 
   useEffect(() => {
     if (!user) return;
-    
-    async function loadData() {
-      try {
-        const [keysData, usageData] = await Promise.all([
-          listKeys(),
-          getUsageSummaryByPeriod("month"),
-        ]);
-        setKeys(keysData);
-        setUsageMonth(usageData);
-      } catch (error) {
-        console.error("Failed to load dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
     loadData();
   }, [user]);
+
+  async function loadData() {
+    setLoadError(null);
+    try {
+      const [keysData, usageData] = await Promise.all([
+        listKeys(),
+        getUsageSummaryByPeriod("month"),
+      ]);
+      setKeys(keysData);
+      setUsageMonth(usageData);
+    } catch (error) {
+      console.error("Failed to load dashboard data:", error);
+      const apiError = parseApiError(error);
+      setLoadError(apiError);
+      toast({
+        variant: "destructive",
+        title: `Error (${apiError.code})`,
+        description: getFriendlyErrorMessage(apiError),
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const activeKeys = keys.filter((k) => k.status === "active");
   const currentPlan = getHighestPlan(keys);
@@ -108,8 +127,29 @@ export default function Dashboard() {
           <div className="text-caption">Loading...</div>
         ) : (
           <div className="space-y-6">
+            {/* Error State */}
+            {loadError && (
+              <Card className="border-destructive/50 bg-destructive/5">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg text-destructive">
+                    <AlertCircle className="h-5 w-5" />
+                    {loadError.isServiceUnavailable ? "Service Unavailable" : "Error Loading Data"}
+                  </CardTitle>
+                  <CardDescription className="text-destructive/80">
+                    {getFriendlyErrorMessage(loadError)}
+                    {loadError.code && <span className="ml-2 font-mono text-xs">({loadError.code})</span>}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button variant="outline" onClick={() => loadData()}>
+                    Try Again
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
             {/* No Keys CTA */}
-            {hasNoActiveKeys && (
+            {hasNoActiveKeys && !loadError && (
               <Card className="border-primary/30 bg-primary/5">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">

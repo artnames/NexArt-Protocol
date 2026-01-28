@@ -14,39 +14,59 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { getUsageSummaryByPeriod, getRecentUsage, UsageSummary, UsageEvent } from "@/lib/api";
-import { Activity, CheckCircle, XCircle, Clock, Info, BarChart3 } from "lucide-react";
+import { 
+  getUsageSummaryByPeriod, 
+  getRecentUsage, 
+  UsageSummary, 
+  UsageEvent,
+  parseApiError,
+  getFriendlyErrorMessage,
+  ApiError
+} from "@/lib/api";
+import { Activity, CheckCircle, XCircle, Clock, Info, BarChart3, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Usage() {
   const { user, loading: authLoading } = useAuth();
+  const { toast } = useToast();
   const [usageToday, setUsageToday] = useState<UsageSummary | null>(null);
   const [usageMonth, setUsageMonth] = useState<UsageSummary | null>(null);
   const [recentEvents, setRecentEvents] = useState<UsageEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<ApiError | null>(null);
   const [activeTab, setActiveTab] = useState<"today" | "month">("month");
 
   useEffect(() => {
     if (!user) return;
-    
-    async function loadData() {
-      try {
-        const [todayData, monthData, eventsData] = await Promise.all([
-          getUsageSummaryByPeriod("today"),
-          getUsageSummaryByPeriod("month"),
-          getRecentUsage(),
-        ]);
-        setUsageToday(todayData);
-        setUsageMonth(monthData);
-        setRecentEvents(eventsData);
-      } catch (error) {
-        console.error("Failed to load usage data:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
     loadData();
   }, [user]);
+
+  async function loadData() {
+    setLoadError(null);
+    setLoading(true);
+    try {
+      const [todayData, monthData, eventsData] = await Promise.all([
+        getUsageSummaryByPeriod("today"),
+        getUsageSummaryByPeriod("month"),
+        getRecentUsage(),
+      ]);
+      setUsageToday(todayData);
+      setUsageMonth(monthData);
+      setRecentEvents(eventsData);
+    } catch (error) {
+      console.error("Failed to load usage data:", error);
+      const apiError = parseApiError(error);
+      setLoadError(apiError);
+      toast({
+        variant: "destructive",
+        title: `Error (${apiError.code})`,
+        description: getFriendlyErrorMessage(apiError),
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
 
   function formatDate(dateStr: string) {
     return new Date(dateStr).toLocaleString("en-US", {
@@ -91,6 +111,27 @@ export default function Usage() {
           <div className="text-caption">Loading...</div>
         ) : (
           <div className="space-y-6">
+            {/* Error State */}
+            {loadError && (
+              <Card className="border-destructive/50 bg-destructive/5">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg text-destructive">
+                    <AlertCircle className="h-5 w-5" />
+                    {loadError.isServiceUnavailable ? "Service Unavailable" : "Error Loading Usage Data"}
+                  </CardTitle>
+                  <CardDescription className="text-destructive/80">
+                    {getFriendlyErrorMessage(loadError)}
+                    {loadError.code && <span className="ml-2 font-mono text-xs">({loadError.code})</span>}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button variant="outline" onClick={() => loadData()}>
+                    Try Again
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Explanation */}
             <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg text-sm">
               <Info className="h-5 w-5 mt-0.5 shrink-0 text-primary" />
@@ -193,8 +234,6 @@ export default function Usage() {
 }
 
 function UsageStats({ usage, period }: { usage: UsageSummary | null; period: string }) {
-  const hasData = usage && usage.total > 0;
-  
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       <div className="p-4 bg-muted/50 rounded-lg">
