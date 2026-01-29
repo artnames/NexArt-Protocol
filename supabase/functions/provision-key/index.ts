@@ -6,9 +6,17 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// NOTE: Plan and quota are now enforced at ACCOUNT level, not per-key
-// Keys are credentials only. Plan/monthly_limit on api_keys table is deprecated for enforcement.
-// Account-level plan is managed via the accounts table or user metadata.
+// API key count limits per plan
+const PLAN_KEY_LIMITS: Record<string, number> = {
+  free: 2,
+  pro: 5,
+  pro_plus: 10,
+  team: 10,
+  enterprise: 1000, // effectively unlimited
+};
+
+// Hard safety cap regardless of plan
+const ABSOLUTE_MAX_KEYS = 50;
 
 function generateApiKey(): string {
   const bytes = new Uint8Array(24);
@@ -32,7 +40,6 @@ function getDbConnection() {
     throw new Error("CONFIG: DATABASE_URL missing");
   }
 
-  // Parse the URL to extract host for logging (no credentials)
   try {
     const url = new URL(databaseUrl);
     console.log(`DB config: host=${url.hostname}, port=${url.port || 5432}, hasPassword=${!!url.password}`);
@@ -40,7 +47,6 @@ function getDbConnection() {
     console.log("DB config: URL present but not parseable as URL");
   }
 
-  // Railway proxy doesn't require SSL for connections
   return postgres(databaseUrl, { 
     ssl: false,
     connection: {
@@ -126,35 +132,66 @@ Deno.serve(async (req) => {
     
     const label = body.label || 'Default Key';
 
-    // Generate and hash the API key
-    // NOTE: Plan/quota are enforced at ACCOUNT level, not per-key
-    // We store 'free' and 100 as legacy placeholders; enforcement happens via account-plan
-    const apiKey = generateApiKey();
-    const keyHash = await hashApiKey(apiKey);
-
     // Connect to Railway Postgres
     console.log(`Attempting DB connection for user ${userId}`);
     const sql = getDbConnection();
 
     try {
-      // Rate limit: max 10 keys per user
+      // Get user's plan from accounts table (or default to free)
+      let plan = 'free';
+      try {
+        const accountResult = await sql`
+          SELECT plan FROM accounts WHERE user_id = ${userId}::uuid LIMIT 1
+        `;
+        if (accountResult.length > 0) {
+          plan = accountResult[0].plan;
+        }
+      } catch {
+        // accounts table may not exist, default to free
+        console.log('Accounts table not found, defaulting to free plan');
+      }
+
+      // Get plan-based key limit
+      const maxKeys = PLAN_KEY_LIMITS[plan] || PLAN_KEY_LIMITS.free;
+
+      // Count active keys for this user
       const existingKeys = await sql`
-        SELECT COUNT(*)::int as count FROM api_keys WHERE user_id = ${userId}::uuid
+        SELECT COUNT(*)::int as count FROM api_keys WHERE user_id = ${userId}::uuid AND status = 'active'
       `;
-      
-      if (existingKeys[0].count >= 10) {
+      const activeKeyCount = existingKeys[0].count;
+
+      // Check plan-based key limit
+      if (activeKeyCount >= maxKeys) {
+        await sql.end();
+        console.log(`Key limit reached for user ${userId}: ${activeKeyCount}/${maxKeys} (plan: ${plan})`);
+        return new Response(JSON.stringify({ 
+          error: 'KEY_LIMIT_REACHED', 
+          message: `Key limit reached for your plan (${maxKeys} keys)`,
+          maxKeys,
+          keysUsed: activeKeyCount,
+        }), { 
+          status: 403, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        });
+      }
+
+      // Check absolute safety cap
+      if (activeKeyCount >= ABSOLUTE_MAX_KEYS) {
         await sql.end();
         return new Response(JSON.stringify({ 
           error: 'RATE_LIMIT', 
-          message: 'Maximum of 10 API keys allowed per user' 
+          message: 'Maximum API keys limit reached' 
         }), { 
           status: 429, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         });
       }
 
-      // Insert into api_keys table - keys are credentials only
-      // Plan/monthly_limit stored as legacy placeholders; enforcement is at account level
+      // Generate and hash the API key
+      const apiKey = generateApiKey();
+      const keyHash = await hashApiKey(apiKey);
+
+      // Insert into api_keys table
       const result = await sql`
         INSERT INTO api_keys (user_id, key_hash, label, plan, status, monthly_limit, created_at)
         VALUES (${userId}::uuid, ${keyHash}, ${label}, 'free', 'active', 100, NOW())
@@ -168,16 +205,13 @@ Deno.serve(async (req) => {
           VALUES (${result[0].id}, 'audit:key_created', 200, 0, NOW())
         `;
       } catch (auditError) {
-        // Log but don't fail if audit insert fails
         console.warn('Failed to insert audit event:', auditError);
       }
 
       await sql.end();
 
-      console.log(`Provisioned key for user ${userId}, keyId: ${result[0].id}`);
+      console.log(`Provisioned key for user ${userId}, keyId: ${result[0].id}, plan: ${plan}, keys: ${activeKeyCount + 1}/${maxKeys}`);
 
-      // Return plaintext key ONCE - it's never stored
-      // Note: Plan/quota info is now retrieved from account-plan endpoint
       return new Response(JSON.stringify({
         apiKey,
         apiKeyId: result[0].id,
@@ -196,7 +230,6 @@ Deno.serve(async (req) => {
     console.error('Error provisioning key:', error.message);
     console.error('Stack:', error.stack);
     
-    // Determine error type
     let errorCode = 'INTERNAL';
     if (error.message.includes('CONFIG')) {
       errorCode = 'CONFIG';

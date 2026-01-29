@@ -14,6 +14,9 @@ export interface AccountPlan {
   monthlyLimit: number;
   used: number;
   remaining: number;
+  maxKeys: number;
+  keysUsed: number;
+  keysRemaining: number;
 }
 
 export interface UsageSummary {
@@ -77,7 +80,9 @@ export function getFriendlyErrorMessage(error: ApiError): string {
     case "AUTH":
       return "Authentication failed. Please sign in again.";
     case "RATE_LIMIT":
-      return "You've reached the maximum number of API keys (10).";
+      return "You've reached the maximum number of API keys.";
+    case "KEY_LIMIT_REACHED":
+      return error.message || "Key limit reached for your plan.";
     case "VALIDATION":
       return error.message;
     case "NOT_FOUND":

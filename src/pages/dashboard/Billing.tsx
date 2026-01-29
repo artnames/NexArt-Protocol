@@ -193,7 +193,10 @@ export default function Billing() {
                 )}
 
                 <p className="text-sm text-caption">
-                  {activeKeys.length} active API key{activeKeys.length !== 1 ? "s" : ""} (max 10)
+                  API keys: {accountPlan?.keysUsed || 0} / {accountPlan?.maxKeys || 2}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Free: 2 keys • Pro: 5 • Pro+: 10 • Enterprise: unlimited
                 </p>
               </CardContent>
             </Card>
