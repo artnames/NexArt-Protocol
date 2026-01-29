@@ -49,6 +49,52 @@ const PLAN_NAMES: Record<string, string> = {
   enterprise: "Enterprise",
 };
 
+// Key Limit Reached Dialog Component
+function KeyLimitDialog({ 
+  open, 
+  onOpenChange, 
+  maxKeys, 
+  keysUsed 
+}: { 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void; 
+  maxKeys: number; 
+  keysUsed: number;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-amber-500" />
+            Key Limit Reached
+          </DialogTitle>
+          <DialogDescription>
+            Your plan allows {maxKeys} API key{maxKeys !== 1 ? 's' : ''} and you currently have {keysUsed}.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="py-4">
+          <p className="text-sm text-body">
+            To create a new API key, you can:
+          </p>
+          <ul className="mt-2 space-y-1 text-sm text-caption list-disc list-inside">
+            <li>Revoke an existing key you no longer need</li>
+            <li>Upgrade your plan to get more keys</li>
+          </ul>
+        </div>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Manage Keys
+          </Button>
+          <Button asChild>
+            <Link to="/dashboard/billing">View Plans</Link>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function ApiKeys() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -63,6 +109,7 @@ export default function ApiKeys() {
   const [showKeyDialogOpen, setShowKeyDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [keySavedConfirmed, setKeySavedConfirmed] = useState(false);
+  const [keyLimitDialogOpen, setKeyLimitDialogOpen] = useState(false);
   const keyDisplayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -130,11 +177,19 @@ export default function ApiKeys() {
     } catch (error) {
       console.error("Failed to create key:", error);
       const apiError = parseApiError(error);
-      toast({
-        variant: "destructive",
-        title: `Error (${apiError.code})`,
-        description: getFriendlyErrorMessage(apiError),
-      });
+      
+      // Handle KEY_LIMIT_REACHED specifically
+      if (apiError.code === "KEY_LIMIT_REACHED") {
+        setCreateDialogOpen(false);
+        setKeyLimitDialogOpen(true);
+        await loadData(); // Refresh to get updated counts
+      } else {
+        toast({
+          variant: "destructive",
+          title: `Error (${apiError.code})`,
+          description: getFriendlyErrorMessage(apiError),
+        });
+      }
     } finally {
       setCreating(false);
     }
@@ -246,20 +301,41 @@ export default function ApiKeys() {
             </Card>
           )}
 
-          {/* Account Plan Info */}
+          {/* Account Plan Info with Key Limits */}
           {accountPlan && !loadError && (
             <Card className="border-primary/20 bg-primary/5">
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Account Plan</CardTitle>
+                <CardTitle className="text-lg">Account Limits</CardTitle>
                 <CardDescription>
-                  Quota is shared across all your API keys
+                  Quota and key limits are shared across all your API keys
                 </CardDescription>
               </CardHeader>
-              <CardContent className="flex items-center gap-4">
-                <Badge variant="default">{accountPlan.planName}</Badge>
-                <span className="text-sm text-caption">
-                  {accountPlan.used.toLocaleString()} / {accountPlan.monthlyLimit.toLocaleString()} certified runs this month
-                </span>
+              <CardContent className="space-y-3">
+                <div className="flex flex-wrap items-center gap-4">
+                  <Badge variant="default">{accountPlan.planName}</Badge>
+                  <span className="text-sm text-caption">
+                    <strong>{accountPlan.keysUsed}</strong> / {accountPlan.maxKeys} API keys
+                  </span>
+                  <span className="text-sm text-caption">
+                    <strong>{accountPlan.used.toLocaleString()}</strong> / {accountPlan.monthlyLimit.toLocaleString()} certified runs this month
+                  </span>
+                </div>
+                <p className="text-xs text-caption">
+                  API keys are credentials for separating environments. Creating more keys does not increase your certified run quota.
+                </p>
+                {accountPlan.keysRemaining === 0 && (
+                  <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-md text-amber-900 dark:text-amber-200 text-sm">
+                    <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+                    <div>
+                      <span className="font-medium">Key limit reached.</span>{" "}
+                      Revoke an existing key or{" "}
+                      <Link to="/dashboard/billing" className="underline font-medium">
+                        upgrade your plan
+                      </Link>{" "}
+                      to add more keys.
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
@@ -292,7 +368,7 @@ export default function ApiKeys() {
             </p>
             <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
               <DialogTrigger asChild>
-                <Button>
+                <Button disabled={accountPlan?.keysRemaining === 0}>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Key
                 </Button>
@@ -329,6 +405,14 @@ export default function ApiKeys() {
               </DialogContent>
             </Dialog>
           </div>
+
+          {/* Key Limit Reached Error Dialog */}
+          <KeyLimitDialog 
+            open={keyLimitDialogOpen} 
+            onOpenChange={setKeyLimitDialogOpen}
+            maxKeys={accountPlan?.maxKeys || 2}
+            keysUsed={accountPlan?.keysUsed || 0}
+          />
 
           {/* New Key Dialog - One-time display with confirmation checkbox */}
           <Dialog open={showKeyDialogOpen} onOpenChange={(open) => {

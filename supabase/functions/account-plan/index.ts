@@ -10,8 +10,18 @@ const corsHeaders = {
 const PLAN_LIMITS: Record<string, number> = {
   free: 100,
   pro: 5000,
+  pro_plus: 50000,
   team: 50000,
   enterprise: 1000000,
+};
+
+// API key count limits per plan
+const PLAN_KEY_LIMITS: Record<string, number> = {
+  free: 2,
+  pro: 5,
+  pro_plus: 10,
+  team: 10,
+  enterprise: 1000, // effectively unlimited
 };
 
 function getDbConnection() {
@@ -63,7 +73,6 @@ Deno.serve(async (req) => {
 
     try {
       // Check if accounts table exists and get plan, otherwise derive from user metadata or default to free
-      // For now, we'll check for an accounts record, or default to free
       const accountResult = await sql`
         SELECT plan, monthly_limit 
         FROM accounts 
@@ -89,12 +98,22 @@ Deno.serve(async (req) => {
           AND ue.endpoint NOT LIKE 'audit:%'
       `;
 
+      // Count active keys for the user
+      const keysResult = await sql`
+        SELECT COUNT(*)::int as count
+        FROM api_keys
+        WHERE user_id = ${userId}::uuid AND status = 'active'
+      `;
+
       const used = usageResult[0]?.used || 0;
       const remaining = Math.max(0, monthlyLimit - used);
+      const keysUsed = keysResult[0]?.count || 0;
+      const maxKeys = PLAN_KEY_LIMITS[plan] || PLAN_KEY_LIMITS.free;
+      const keysRemaining = Math.max(0, maxKeys - keysUsed);
 
       await sql.end();
 
-      console.log(`Account plan for user ${userId}: ${plan}, used: ${used}/${monthlyLimit}`);
+      console.log(`Account plan for user ${userId}: ${plan}, used: ${used}/${monthlyLimit}, keys: ${keysUsed}/${maxKeys}`);
 
       return new Response(JSON.stringify({
         plan,
@@ -102,6 +121,9 @@ Deno.serve(async (req) => {
         used,
         remaining,
         planName: getPlanName(plan),
+        maxKeys,
+        keysUsed,
+        keysRemaining,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -112,16 +134,46 @@ Deno.serve(async (req) => {
       // If accounts table doesn't exist, return free plan defaults
       const error = dbError as Error;
       if (error.message?.includes('relation "accounts" does not exist')) {
-        console.log(`Accounts table not found for user ${userId}, defaulting to free plan`);
-        return new Response(JSON.stringify({
-          plan: 'free',
-          monthlyLimit: PLAN_LIMITS.free,
-          used: 0,
-          remaining: PLAN_LIMITS.free,
-          planName: 'Free',
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
+        // Still need to count keys even if accounts table doesn't exist
+        const sql2 = getDbConnection();
+        try {
+          const keysResult = await sql2`
+            SELECT COUNT(*)::int as count
+            FROM api_keys
+            WHERE user_id = ${userId}::uuid AND status = 'active'
+          `;
+          const keysUsed = keysResult[0]?.count || 0;
+          await sql2.end();
+
+          console.log(`Accounts table not found for user ${userId}, defaulting to free plan, keys: ${keysUsed}`);
+          return new Response(JSON.stringify({
+            plan: 'free',
+            monthlyLimit: PLAN_LIMITS.free,
+            used: 0,
+            remaining: PLAN_LIMITS.free,
+            planName: 'Free',
+            maxKeys: PLAN_KEY_LIMITS.free,
+            keysUsed,
+            keysRemaining: Math.max(0, PLAN_KEY_LIMITS.free - keysUsed),
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        } catch {
+          await sql2.end();
+          // If api_keys table also doesn't exist, return full defaults
+          return new Response(JSON.stringify({
+            plan: 'free',
+            monthlyLimit: PLAN_LIMITS.free,
+            used: 0,
+            remaining: PLAN_LIMITS.free,
+            planName: 'Free',
+            maxKeys: PLAN_KEY_LIMITS.free,
+            keysUsed: 0,
+            keysRemaining: PLAN_KEY_LIMITS.free,
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
       }
       
       throw dbError;
@@ -149,6 +201,7 @@ function getPlanName(plan: string): string {
   const names: Record<string, string> = {
     free: 'Free',
     pro: 'Pro',
+    pro_plus: 'Pro+ / Team',
     team: 'Pro+ / Team',
     enterprise: 'Enterprise',
   };

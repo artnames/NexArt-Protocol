@@ -81,6 +81,10 @@ const GetStarted = () => {
             Read the full CLI documentation to understand authentication, canonical rules, and verification workflows.
           </p>
 
+          <p className="text-sm text-muted-foreground">
+            <strong>API Key limits by plan:</strong> Free includes 2 keys. Pro includes 5. Pro+ includes 10. Enterprise is contract-defined.
+          </p>
+
           <div className="mt-8">
             <Link
               to="/docs/cli"

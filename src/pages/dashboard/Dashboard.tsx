@@ -201,12 +201,12 @@ export default function Dashboard() {
 
               <Card>
                 <CardHeader className="pb-2">
-                  <CardDescription>Active Keys</CardDescription>
-                  <CardTitle>{activeKeys.length}</CardTitle>
+                  <CardDescription>API Keys</CardDescription>
+                  <CardTitle>{activeKeys.length} / {accountPlan?.maxKeys || 2}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-caption">
-                    {keys.length} total keys (max 10)
+                    {keys.length} total ({accountPlan?.keysRemaining || 0} remaining)
                   </p>
                 </CardContent>
               </Card>

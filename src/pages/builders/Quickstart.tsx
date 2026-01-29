@@ -40,6 +40,9 @@ const BuildersQuickstart = () => {
           <p>
             Create an API key in the dashboard. You'll need it to authenticate with the canonical renderer.
           </p>
+          <p className="text-sm text-muted-foreground">
+            <strong>Key limits:</strong> Free includes 2 API keys. Pro includes 5. Pro+ includes 10. Enterprise is contract-defined.
+          </p>
           <div className="my-6">
             <Button asChild>
               <Link to={user ? "/dashboard/api-keys" : "/auth"}>
