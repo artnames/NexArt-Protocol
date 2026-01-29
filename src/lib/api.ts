@@ -76,9 +76,14 @@ export function getFriendlyErrorMessage(error: ApiError): string {
     return "Service temporarily unavailable. Please try again in a moment.";
   }
   
+  // Check for auth-related errors in message
+  if (error.message?.includes("non-2xx status code") || error.message?.includes("401")) {
+    return "Please sign in to access this feature.";
+  }
+  
   switch (error.code) {
     case "AUTH":
-      return "Authentication failed. Please sign in again.";
+      return "Please sign in to continue.";
     case "RATE_LIMIT":
       return "You've reached the maximum number of API keys.";
     case "KEY_LIMIT_REACHED":
