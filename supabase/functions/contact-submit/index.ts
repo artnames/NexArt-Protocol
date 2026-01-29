@@ -84,7 +84,7 @@ This is an automated message from the NexArt contact form.
     console.log("From:", body.email, "| Plan interest:", planInterest);
 
     const { data, error } = await resend.emails.send({
-      from: "NexArt Contact <noreply@artnames.io>",
+      from: "NexArt Contact <noreply@nexart.io>",
       to: ["sales@artnames.io"],
       reply_to: body.email.trim(),
       subject: `[NexArt Contact] ${body.name.trim()}${body.company ? ` - ${body.company}` : ""}`,
