@@ -61,11 +61,18 @@ const GetStarted = () => {
             the same command with the same inputs will always produce identical results.
           </p>
 
+          <div className="bg-muted/50 border border-border rounded-md p-4 my-6">
+            <p className="text-sm text-muted-foreground mb-0">
+              <strong>HTTP API:</strong> If you call the HTTP API directly, include <code>protocolVersion</code> for audit stability. 
+              If omitted, the service will default to its current version and report the resolved version in response headers.
+            </p>
+          </div>
+
           <h2>What You Get</h2>
 
           <ul>
             <li><strong>out.png</strong> — The rendered image at canonical resolution (1950×2400)</li>
-            <li><strong>out.snapshot.json</strong> — Deterministic snapshot with hashes, metadata, and verification data</li>
+            <li><strong>out.snapshot.json</strong> — Deterministic snapshot with hashes, metadata, and verification data (always includes resolved <code>protocolVersion</code>)</li>
           </ul>
 
           <h2>Next Steps</h2>

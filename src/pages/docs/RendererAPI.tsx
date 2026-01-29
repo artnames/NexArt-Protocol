@@ -21,6 +21,18 @@ const RendererAPI = () => {
 
       <PageContent>
         <article className="prose-protocol prose-spec">
+          {/* Quick links */}
+          <nav className="mb-8 pb-6 border-b border-border">
+            <p className="text-sm text-muted-foreground mb-2">On this page:</p>
+            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              <li><a href="#request-format" className="text-link hover:text-link-hover underline underline-offset-2">Request Format</a></li>
+              <li><a href="#protocol-version" className="text-link hover:text-link-hover underline underline-offset-2">Protocol Version</a></li>
+              <li><a href="#response" className="text-link hover:text-link-hover underline underline-offset-2">Response</a></li>
+              <li><a href="#png-vs-snapshot" className="text-link hover:text-link-hover underline underline-offset-2">PNG vs Snapshot</a></li>
+              <li><a href="#error-codes" className="text-link hover:text-link-hover underline underline-offset-2">Error Codes</a></li>
+            </ul>
+          </nav>
+
           <h2>Endpoint</h2>
 
           <div className="spec-code">
@@ -37,7 +49,7 @@ const RendererAPI = () => {
             <code>Authorization: Bearer nx_live_...</code>
           </div>
 
-          <h2>Request Body</h2>
+          <h2 id="request-format">Request Format</h2>
 
           <p>
             Send a JSON payload with the following structure:
@@ -60,6 +72,7 @@ const RendererAPI = () => {
                 <tr>
                   <th>Field</th>
                   <th>Type</th>
+                  <th>Required</th>
                   <th>Description</th>
                 </tr>
               </thead>
@@ -67,28 +80,59 @@ const RendererAPI = () => {
                 <tr>
                   <td><code>code</code></td>
                   <td>string</td>
+                  <td>Yes</td>
                   <td>The generative sketch code</td>
                 </tr>
                 <tr>
                   <td><code>seed</code></td>
                   <td>string</td>
+                  <td>Yes</td>
                   <td>Random seed for deterministic output</td>
                 </tr>
                 <tr>
                   <td><code>VAR</code></td>
                   <td>number[]</td>
+                  <td>Yes</td>
                   <td>Array of 10 variable values (VAR[0..9])</td>
                 </tr>
                 <tr>
                   <td><code>protocolVersion</code></td>
                   <td>string</td>
-                  <td>Protocol version (currently "1.2.0")</td>
+                  <td>No</td>
+                  <td>Protocol version (defaults to current if omitted)</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <h2>Response</h2>
+          <h2 id="protocol-version">Protocol Version</h2>
+          <p className="text-caption text-sm mb-4">Required for audits, optional in requests</p>
+
+          <p>
+            <strong>Recommended:</strong> Clients should always send <code>protocolVersion</code> for audit stability and reproducibility.
+          </p>
+
+          <p>
+            <strong>If omitted:</strong> The canonical renderer defaults to its current protocol version and proceeds with the render.
+          </p>
+
+          <ul>
+            <li>The resolved version is returned in the response header: <code>x-protocol-version</code></li>
+            <li>When defaulted, the response includes: <code>x-protocol-defaulted: true</code></li>
+            <li>Snapshots (CLI output) always record the resolved <code>protocolVersion</code> for reproducibility</li>
+          </ul>
+
+          <div className="spec-warning">
+            <p className="spec-warning-title">Audit Stability</p>
+            <p>
+              For archival, minting, or any use case requiring long-term reproducibility, 
+              always include <code>protocolVersion</code> explicitly. This ensures your 
+              renders are pinned to a specific protocol version regardless of future 
+              renderer updates.
+            </p>
+          </div>
+
+          <h2 id="response">Response</h2>
 
           <p>
             A successful response returns a binary PNG image:
@@ -120,7 +164,11 @@ const RendererAPI = () => {
                 </tr>
                 <tr>
                   <td><code>x-protocol-version</code></td>
-                  <td>Protocol version used for rendering</td>
+                  <td>Protocol version used for rendering (always present)</td>
+                </tr>
+                <tr>
+                  <td><code>x-protocol-defaulted</code></td>
+                  <td><code>true</code> if protocolVersion was omitted and defaulted</td>
                 </tr>
                 <tr>
                   <td><code>x-sdk-version</code></td>
@@ -130,7 +178,45 @@ const RendererAPI = () => {
             </table>
           </div>
 
-          <h2>Error Codes</h2>
+          <h2 id="png-vs-snapshot">PNG vs Snapshot</h2>
+          <p className="text-caption text-sm mb-4">Why the canonical renderer returns PNG, not JSON</p>
+
+          <p>
+            The canonical renderer separates <strong>artifacts</strong> from <strong>proofs</strong>:
+          </p>
+
+          <ul>
+            <li>
+              <strong>PNG</strong> — The canonical artifact output. This is the rendered image 
+              at canonical resolution (1950×2400). It is portable, viewable, and archivable 
+              without special tooling.
+            </li>
+            <li>
+              <strong>Snapshot (JSON)</strong> — The proof metadata that references the artifact. 
+              Contains the artifact hash, input parameters, protocol version, runtime hash, 
+              and timestamps. This is what makes verification possible.
+            </li>
+          </ul>
+
+          <p>
+            This separation keeps artifacts portable and proofs verifiable. The PNG can be 
+            displayed, stored, or transmitted independently. The snapshot can be used to 
+            verify authenticity by re-rendering and comparing hashes.
+          </p>
+
+          <div className="spec-code">
+            <code>{`// Snapshot structure
+{
+  "protocolVersion": "1.2.0",
+  "seed": "12345",
+  "VAR": [...],
+  "codeHash": "sha256:...",
+  "outputHash": "sha256:...",
+  "timestamp": "2025-01-27T..."
+}`}</code>
+          </div>
+
+          <h2 id="error-codes">Error Codes</h2>
 
           <div className="spec-table-wrapper">
             <table className="spec-table">

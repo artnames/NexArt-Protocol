@@ -82,6 +82,15 @@ const BuildersQuickstart = () => {
             A successful verification proves the output hash matches a re-render with identical parameters.
           </p>
 
+          {/* HTTP API note */}
+          <div className="bg-muted/50 border border-border rounded-md p-4 my-6">
+            <p className="text-sm text-muted-foreground mb-0">
+              <strong>HTTP API:</strong> If you call the HTTP API directly, include <code>protocolVersion</code> for audit stability. 
+              If omitted, the service will default to its current version and report the resolved version in headers 
+              (<code>x-protocol-version</code>, <code>x-protocol-defaulted: true</code>).
+            </p>
+          </div>
+
           {/* Callout */}
           <div className="spec-warning">
             <p className="spec-warning-title">Canvas size</p>
