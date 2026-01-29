@@ -73,12 +73,20 @@ const BuildersCLI = () => {
           </p>
           <div className="spec-code">
             <code>
-              npx --yes @nexart/cli@0.2.3 nexart run ./examples/sketch.js \{"\n"}
+              npx --yes @nexart/cli@0.2.3 run ./examples/sketch.js \{"\n"}
               {"  "}--seed 12345 \{"\n"}
               {"  "}--vars "50,50,50,0,0,0,0,0,0,0" \{"\n"}
               {"  "}--include-code \{"\n"}
               {"  "}--out out.png
             </code>
+          </div>
+          <div className="spec-note">
+            <p className="spec-note-title">Important</p>
+            <ul>
+              <li>The canonical renderer returns a <strong>PNG</strong> (<code>image/png</code>), not JSON.</li>
+              <li>Canonical size is enforced at <strong>1950×2400</strong>. Do not pass <code>width</code>/<code>height</code> and do not call <code>createCanvas()</code>.</li>
+              <li>If <code>protocolVersion</code> is omitted, the renderer defaults to <code>1.2.0</code> and returns <code>X-Protocol-Defaulted: true</code>.</li>
+            </ul>
           </div>
           <p>Outputs:</p>
           <ul>
@@ -124,7 +132,7 @@ const BuildersCLI = () => {
             Verify that a snapshot matches its output:
           </p>
           <div className="spec-code">
-            <code>npx --yes @nexart/cli@0.2.3 nexart verify out.snapshot.json</code>
+            <code>npx --yes @nexart/cli@0.2.3 verify out.snapshot.json</code>
           </div>
           <p>
             Verification re-renders with the same parameters and confirms the <code>outputHash</code> matches.
@@ -135,7 +143,7 @@ const BuildersCLI = () => {
             Reproduce an image from a snapshot without re-verification:
           </p>
           <div className="spec-code">
-            <code>npx --yes @nexart/cli@0.2.3 nexart replay out.snapshot.json --out replay.png</code>
+            <code>npx --yes @nexart/cli@0.2.3 replay out.snapshot.json --out replay.png</code>
           </div>
 
           {/* Common Errors */}

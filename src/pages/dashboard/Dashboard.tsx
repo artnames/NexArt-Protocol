@@ -298,13 +298,13 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <div className="text-caption"># Run a certified render</div>
-                    <div className="mt-1">npx --yes @nexart/cli@0.2.3 nexart run ./examples/sketch.js \</div>
+                    <div className="mt-1">npx --yes @nexart/cli@0.2.3 run ./examples/sketch.js \</div>
                     <div className="pl-4">--seed 12345 --vars "50,50,50,0,0,0,0,0,0,0" \</div>
                     <div className="pl-4">--include-code --out out.png</div>
                   </div>
                   <div>
                     <div className="text-caption"># Verify the snapshot</div>
-                    <div className="mt-1">npx --yes @nexart/cli@0.2.3 nexart verify out.snapshot.json</div>
+                    <div className="mt-1">npx --yes @nexart/cli@0.2.3 verify out.snapshot.json</div>
                   </div>
                 </div>
 

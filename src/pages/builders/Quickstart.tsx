@@ -57,12 +57,19 @@ const BuildersQuickstart = () => {
             <code>
               export NEXART_RENDERER_ENDPOINT="https://nexart-canonical-renderer-production.up.railway.app"{"\n"}
               export NEXART_API_KEY="nx_live_..."{"\n\n"}
-              npx --yes @nexart/cli@0.2.3 nexart run ./examples/sketch.js \{"\n"}
+              npx --yes @nexart/cli@0.2.3 run ./examples/sketch.js \{"\n"}
               {"  "}--seed 12345 \{"\n"}
               {"  "}--vars "50,50,50,0,0,0,0,0,0,0" \{"\n"}
               {"  "}--include-code \{"\n"}
               {"  "}--out out.png
             </code>
+          </div>
+          <div className="spec-note">
+            <p className="spec-note-title">Important</p>
+            <ul>
+              <li>The canonical renderer returns a <strong>PNG</strong> (<code>image/png</code>), not JSON.</li>
+              <li>Canonical size is enforced at <strong>1950×2400</strong>. Do not pass <code>width</code>/<code>height</code> and do not call <code>createCanvas()</code>.</li>
+            </ul>
           </div>
           <p>This produces:</p>
           <ul>
@@ -76,7 +83,7 @@ const BuildersQuickstart = () => {
             Confirm the render is deterministic and untampered:
           </p>
           <div className="spec-code">
-            <code>npx --yes @nexart/cli@0.2.3 nexart verify out.snapshot.json</code>
+            <code>npx --yes @nexart/cli@0.2.3 verify out.snapshot.json</code>
           </div>
           <p>
             A successful verification proves the output hash matches a re-render with identical parameters.

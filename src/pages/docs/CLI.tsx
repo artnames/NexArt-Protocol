@@ -28,7 +28,7 @@ const CLI = () => {
           </p>
 
           <div className="spec-code">
-            <code>npx @nexart/cli --help</code>
+            <code>npx --yes @nexart/cli@0.2.3 --help</code>
           </div>
 
           <h2>Environment Variables</h2>
@@ -73,12 +73,21 @@ const CLI = () => {
 
           <div className="spec-code">
             <code>
-              npx @nexart/cli run ./examples/sketch.js \{"\n"}
+              npx --yes @nexart/cli@0.2.3 run ./examples/sketch.js \{"\n"}
               {"  "}--seed 12345 \{"\n"}
               {"  "}--vars "50,50,50,0,0,0,0,0,0,0" \{"\n"}
               {"  "}--include-code \{"\n"}
               {"  "}--out out.png
             </code>
+          </div>
+
+          <div className="spec-note">
+            <p className="spec-note-title">Important</p>
+            <ul>
+              <li>The canonical renderer returns a <strong>PNG</strong> (<code>image/png</code>), not JSON.</li>
+              <li>Canonical size is enforced at <strong>1950×2400</strong>. Do not pass <code>width</code>/<code>height</code> and do not call <code>createCanvas()</code>.</li>
+              <li>If <code>protocolVersion</code> is omitted, the renderer defaults to <code>1.2.0</code> and returns <code>X-Protocol-Defaulted: true</code>.</li>
+            </ul>
           </div>
 
           <div className="spec-table-wrapper">
@@ -117,7 +126,7 @@ const CLI = () => {
           </p>
 
           <div className="spec-code">
-            <code>npx @nexart/cli verify out.snapshot.json</code>
+            <code>npx --yes @nexart/cli@0.2.3 verify out.snapshot.json</code>
           </div>
 
           <p>
