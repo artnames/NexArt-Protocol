@@ -49,10 +49,10 @@ const GetStarted = () => {
           <div className="spec-code">
             <code>
               <span className="text-caption"># Run without installing (recommended)</span>{"\n"}
-              npx @nexart/cli run ./examples/sketch.js --seed 12345 --include-code --out out.png{"\n"}
+              npx --yes @nexart/cli@0.2.3 run ./examples/sketch.js --seed 12345 --include-code --out out.png{"\n"}
               {"\n"}
               <span className="text-caption"># Verify determinism</span>{"\n"}
-              npx @nexart/cli verify out.snapshot.json
+              npx --yes @nexart/cli@0.2.3 verify out.snapshot.json
             </code>
           </div>
 
