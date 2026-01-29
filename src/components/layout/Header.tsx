@@ -151,11 +151,11 @@ const Header = () => {
                 <Menu className="h-5 w-5" />
               </button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72">
+            <SheetContent side="right" className="w-72 overflow-y-auto">
               <SheetHeader>
                 <SheetTitle className="font-mono text-sm">Navigation</SheetTitle>
               </SheetHeader>
-              <nav className="mt-6 space-y-6">
+              <nav className="mt-6 space-y-6 pb-6">
                 {navGroups.map((group) => (
                   <div key={group.label}>
                     <p className="text-xs font-mono text-caption uppercase tracking-wider mb-2">
