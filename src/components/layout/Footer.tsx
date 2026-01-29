@@ -80,11 +80,38 @@ const Footer = () => {
                   rel="noopener noreferrer"
                   className="text-caption hover:text-foreground transition-colors"
                 >
-                  NexArt App
+                  NexArt
                 </a>
               </li>
               <li>
-                <span className="text-muted-foreground">ByX <span className="text-xs">(coming soon)</span></span>
+                <a 
+                  href="https://byxcollection.xyz" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-caption hover:text-foreground transition-colors"
+                >
+                  ByX
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="https://recanon.xyz" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-caption hover:text-foreground transition-colors"
+                >
+                  Recanon
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="https://nexartsciencelab.xyz" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-caption hover:text-foreground transition-colors"
+                >
+                  Science Lab
+                </a>
               </li>
             </ul>
           </div>
