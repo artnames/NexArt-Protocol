@@ -302,43 +302,80 @@ export default function ApiKeys() {
           )}
 
           {/* Account Plan Info with Key Limits */}
-          {accountPlan && !loadError && (
-            <Card className="border-primary/20 bg-primary/5">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Account Limits</CardTitle>
-                <CardDescription>
-                  Quota and key limits are shared across all your API keys
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex flex-wrap items-center gap-4">
-                  <Badge variant="default">{accountPlan.planName}</Badge>
-                  <span className="text-sm text-caption">
-                    <strong>{accountPlan.keysUsed}</strong> / {accountPlan.maxKeys} API keys
-                  </span>
-                  <span className="text-sm text-caption">
-                    <strong>{accountPlan.used.toLocaleString()}</strong> / {accountPlan.monthlyLimit.toLocaleString()} certified runs this month
-                  </span>
-                </div>
-                <p className="text-xs text-caption">
-                  API keys are credentials for separating environments. Creating more keys does not increase your certified run quota.
-                </p>
-                {accountPlan.keysRemaining === 0 && (
-                  <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-md text-amber-900 dark:text-amber-200 text-sm">
-                    <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
-                    <div>
-                      <span className="font-medium">Key limit reached.</span>{" "}
-                      Revoke an existing key or{" "}
-                      <Link to="/dashboard/billing" className="underline font-medium">
-                        upgrade your plan
-                      </Link>{" "}
-                      to add more keys.
-                    </div>
+          {accountPlan && !loadError && (() => {
+            const isOverLimit = accountPlan.keysUsed > accountPlan.maxKeys;
+            const overBy = accountPlan.keysUsed - accountPlan.maxKeys;
+            const isAtOrOverLimit = accountPlan.keysRemaining <= 0;
+            
+            return (
+              <Card className={`${isOverLimit ? 'border-amber-500/40 bg-amber-500/5' : 'border-primary/20 bg-primary/5'}`}>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Account Limits</CardTitle>
+                  <CardDescription>
+                    Quota and key limits are shared across all your API keys
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-4">
+                    <Badge variant="default">{accountPlan.planName}</Badge>
+                    <span className="text-sm text-caption">
+                      <strong>{accountPlan.keysUsed}</strong> active keys (limit: {accountPlan.maxKeys})
+                    </span>
+                    {isOverLimit && (
+                      <Badge variant="destructive" className="text-xs">
+                        Over limit by {overBy}
+                      </Badge>
+                    )}
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
+                  <div className="text-sm text-caption">
+                    <strong>{accountPlan.used.toLocaleString()}</strong> / {accountPlan.monthlyLimit.toLocaleString()} certified runs this month
+                  </div>
+                  <p className="text-xs text-caption">
+                    API keys are credentials for separating environments. Creating more keys does not increase your certified run quota.
+                  </p>
+                  
+                  {/* Over limit explanation */}
+                  {isOverLimit && (
+                    <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-md text-amber-900 dark:text-amber-200 text-sm">
+                      <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+                      <div className="space-y-2">
+                        <p>
+                          These keys were created before plan-based key limits were enforced. 
+                          You can keep using them, but you can't create additional keys until you're within the limit.
+                        </p>
+                        <p className="text-xs opacity-80">
+                          <strong>Note:</strong> Rotate still works (it revokes the old key, then issues a new one).
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* At limit (but not over) */}
+                  {!isOverLimit && isAtOrOverLimit && (
+                    <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-md text-amber-900 dark:text-amber-200 text-sm">
+                      <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+                      <div>
+                        <span className="font-medium">Key limit reached.</span>{" "}
+                        Revoke an existing key or upgrade your plan to add more keys.
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Action buttons when over or at limit */}
+                  {isAtOrOverLimit && (
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      <Button variant="outline" size="sm" asChild>
+                        <a href="#keys-table">Manage Keys</a>
+                      </Button>
+                      <Button size="sm" asChild>
+                        <Link to="/pricing">Upgrade Plan</Link>
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })()}
 
           {/* No Keys CTA */}
           {hasNoActiveKeys && !loading && !loadError && (
@@ -511,7 +548,7 @@ export default function ApiKeys() {
           </Dialog>
 
           {/* Keys Table - Simplified: no per-key plan/limit */}
-          <Card>
+          <Card id="keys-table">
             <CardHeader>
               <CardTitle className="text-lg">Your API Keys</CardTitle>
               <CardDescription>
