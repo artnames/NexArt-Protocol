@@ -150,6 +150,13 @@ const CodeMode = () => {
             </p>
           </Link>
         </div>
+
+        {/* Quota Notice */}
+        <div className="mt-10 p-4 border border-border rounded-sm bg-muted/30">
+          <p className="text-body text-sm">
+            Canonical execution via the NexArt Canonical Renderer is subject to account-level quotas. Quotas apply per account across all API keys and do not affect local or preview execution.
+          </p>
+        </div>
       </PageContent>
     </PageLayout>
   );

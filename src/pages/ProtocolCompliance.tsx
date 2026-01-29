@@ -129,7 +129,7 @@ const ProtocolCompliance = () => {
             <h2>Protocol-Compliant Applications</h2>
             
             <p>
-              The following applications implement the NexArt Protocol:
+              The following applications independently implement the NexArt Protocol at different compliance levels. Inclusion reflects technical compliance, not ownership or endorsement.
             </p>
             
             <div className="mt-6 space-y-4">
@@ -157,7 +157,54 @@ const ProtocolCompliance = () => {
                   A protocol-compliant platform for generative collections. Artists define systems, collectors mint unique outputs.
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Coming soon
+                  <a href="https://byxcollection.xyz" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-caption">
+                    byxcollection.xyz
+                  </a>
+                </p>
+              </div>
+              
+              <div className="border border-border p-6 rounded-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-base font-medium text-foreground">Recanon</h3>
+                  <span className="text-xs font-mono px-2 py-1 bg-foreground text-background rounded-sm">LEVEL 2</span>
+                </div>
+                <p className="text-caption text-sm mb-3">
+                  A protocol-compliant application focused on certified canonical rendering and independent verification of NexArt systems.
+                </p>
+                <p className="text-caption text-xs mb-2">Supports:</p>
+                <ul className="text-caption text-xs space-y-1 list-disc list-inside mb-3">
+                  <li>Certified execution</li>
+                  <li>Hash verification</li>
+                  <li>Re-execution and audit workflows</li>
+                </ul>
+                <p className="text-xs text-muted-foreground">
+                  <a href="https://recanon.xyz" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-caption">
+                    recanon.xyz
+                  </a>
+                </p>
+              </div>
+              
+              <div className="border border-border p-6 rounded-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-base font-medium text-foreground">NexArt Science Lab</h3>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono px-2 py-1 bg-muted text-muted-foreground rounded-sm">LEVEL 1</span>
+                    <span className="text-xs text-caption">(LEVEL 2 planned)</span>
+                  </div>
+                </div>
+                <p className="text-caption text-sm mb-3">
+                  A protocol-compliant environment for deterministic scientific and research visualizations built on the NexArt Protocol.
+                </p>
+                <p className="text-caption text-xs mb-2">Use cases include:</p>
+                <ul className="text-caption text-xs space-y-1 list-disc list-inside mb-3">
+                  <li>Reproducible simulations</li>
+                  <li>Deterministic visual models</li>
+                  <li>Research-grade visual outputs</li>
+                </ul>
+                <p className="text-xs text-muted-foreground">
+                  <a href="https://nexartsciencelab.xyz" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-caption">
+                    nexartsciencelab.xyz
+                  </a>
                 </p>
               </div>
             </div>
@@ -260,7 +307,7 @@ const ProtocolCompliance = () => {
 
           <section className="mt-12 pt-8 border-t border-border">
             <p className="text-caption mb-4">
-              Certified runs are subject to plan limits. See{" "}
+              Certified runs are subject to account-level plan limits. Quotas apply per account across all API keys. See{" "}
               <a href="/pricing" className="text-body underline underline-offset-2 hover:text-foreground">
                 pricing
               </a>{" "}
