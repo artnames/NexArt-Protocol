@@ -121,6 +121,26 @@ Deno.serve(async (req) => {
         console.warn('Failed to insert audit event for old key:', auditError);
       }
 
+      // Ensure account row exists (FK-safe upsert)
+      try {
+        await sql`
+          INSERT INTO accounts (user_id, plan, monthly_limit, created_at, updated_at)
+          VALUES (${userId}::uuid, 'free', 100, now(), now())
+          ON CONFLICT (user_id) DO NOTHING
+        `;
+      } catch (upsertError) {
+        console.error('Account upsert failed:', upsertError);
+        await sql.end();
+        return new Response(JSON.stringify({ 
+          error: 'DB_ERROR', 
+          code: 'ACCOUNT_UPSERT_FAILED',
+          message: 'Could not create account record' 
+        }), { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        });
+      }
+
       // Generate new key
       const apiKey = generateApiKey();
       const keyHash = await hashApiKey(apiKey);
