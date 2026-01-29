@@ -137,18 +137,33 @@ Deno.serve(async (req) => {
     const sql = getDbConnection();
 
     try {
-      // Get user's plan from accounts table (or default to free)
-      let plan = 'free';
+      // Ensure account row exists (FK-safe upsert)
       try {
-        const accountResult = await sql`
-          SELECT plan FROM accounts WHERE user_id = ${userId}::uuid LIMIT 1
+        await sql`
+          INSERT INTO accounts (user_id, plan, monthly_limit, created_at, updated_at)
+          VALUES (${userId}::uuid, 'free', 100, now(), now())
+          ON CONFLICT (user_id) DO NOTHING
         `;
-        if (accountResult.length > 0) {
-          plan = accountResult[0].plan;
-        }
-      } catch {
-        // accounts table may not exist, default to free
-        console.log('Accounts table not found, defaulting to free plan');
+      } catch (upsertError) {
+        console.error('Account upsert failed:', upsertError);
+        await sql.end();
+        return new Response(JSON.stringify({ 
+          error: 'DB_ERROR', 
+          code: 'ACCOUNT_UPSERT_FAILED',
+          message: 'Could not create account record' 
+        }), { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        });
+      }
+
+      // Get user's plan from accounts table
+      let plan = 'free';
+      const accountResult = await sql`
+        SELECT plan FROM accounts WHERE user_id = ${userId}::uuid LIMIT 1
+      `;
+      if (accountResult.length > 0) {
+        plan = accountResult[0].plan;
       }
 
       // Get plan-based key limit
