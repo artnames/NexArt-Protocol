@@ -15,6 +15,7 @@ const plans = [
     price: "$0",
     priceDetail: "",
     limit: "100 certified runs / month",
+    keyLimit: "Up to 2 active API keys",
     features: [
       "Shared canonical node",
       "Hard cap",
@@ -31,6 +32,7 @@ const plans = [
     price: "$6,000",
     priceDetail: "/ year",
     limit: "~5,000 certified runs / month",
+    keyLimit: "Up to 5 active API keys",
     features: [
       "Commercial CodeMode usage",
       "Priority access to canonical node",
@@ -47,6 +49,7 @@ const plans = [
     price: "$18,000",
     priceDetail: "/ year",
     limit: "~50,000 certified runs / month",
+    keyLimit: "Up to 10 active API keys",
     features: [
       "Multiple environments",
       "Priority queue",
@@ -61,7 +64,8 @@ const plans = [
     tagline: "Infrastructure Dependency",
     price: "From $50,000",
     priceDetail: "/ year",
-    limit: "Unlimited (by contract scope)",
+    limit: "Custom limits (by contract)",
+    keyLimit: "Contract-based terms",
     features: [
       "Private or dedicated node option",
       "Audit retention",
@@ -157,9 +161,14 @@ const Pricing = () => {
                       <span className="text-body ml-1">{plan.priceDetail}</span>
                     )}
                   </div>
-                  <p className="text-sm font-medium text-foreground mb-4 pb-4 border-b border-border">
-                    {plan.limit}
-                  </p>
+                  <div className="mb-4 pb-4 border-b border-border">
+                    <p className="text-sm font-medium text-foreground">
+                      {plan.limit}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {plan.keyLimit}
+                    </p>
+                  </div>
                   <ul className="space-y-2 text-sm text-body flex-1">
                     {plan.features.map((feature, i) => (
                       <li key={i} className="flex items-start gap-2">
@@ -186,17 +195,25 @@ const Pricing = () => {
           </div>
         </section>
 
-        {/* Metering Rules */}
+        {/* Account-Level Enforcement */}
         <section className="mb-16">
-          <h2 className="text-2xl font-serif text-foreground mb-4">Metering rules</h2>
+          <h2 className="text-2xl font-serif text-foreground mb-4">Account-level enforcement</h2>
           <p className="text-body mb-4">
-            Metering exists to protect shared infrastructure — not to maximize revenue.
+            Quotas are enforced at the account level by the canonical renderer.
           </p>
           <ul className="list-disc list-inside text-body space-y-1">
+            <li>Limits are shared across all API keys in an account</li>
+            <li>API keys do not increase usage limits</li>
             <li>Explicit caps for Free / Pro / Pro+</li>
             <li>No surprise bills</li>
             <li>Enterprise usage governed by contract</li>
           </ul>
+          <div className="bg-muted/50 border border-border rounded-md p-4 mt-4">
+            <p className="text-sm text-foreground">
+              <strong>Note:</strong> API keys are used for authentication and environment separation only. 
+              They do not carry quota. Creating additional API keys does not increase your monthly limit.
+            </p>
+          </div>
         </section>
 
         {/* What we never charge for */}

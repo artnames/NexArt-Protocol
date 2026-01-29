@@ -27,6 +27,7 @@ const RendererAPI = () => {
             <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
               <li><a href="#request-format" className="text-link hover:text-link-hover underline underline-offset-2">Request Format</a></li>
               <li><a href="#protocol-version" className="text-link hover:text-link-hover underline underline-offset-2">Protocol Version</a></li>
+              <li><a href="#account-level-quotas" className="text-link hover:text-link-hover underline underline-offset-2">Quotas</a></li>
               <li><a href="#response" className="text-link hover:text-link-hover underline underline-offset-2">Response</a></li>
               <li><a href="#png-vs-snapshot" className="text-link hover:text-link-hover underline underline-offset-2">PNG vs Snapshot</a></li>
               <li><a href="#error-codes" className="text-link hover:text-link-hover underline underline-offset-2">Error Codes</a></li>
@@ -130,6 +131,52 @@ const RendererAPI = () => {
               renders are pinned to a specific protocol version regardless of future 
               renderer updates.
             </p>
+          </div>
+
+          <h2 id="account-level-quotas">Account-Level Quotas & Enforcement</h2>
+
+          <p>
+            Certified renders are subject to account-level monthly quotas enforced by the NexArt Canonical Renderer.
+          </p>
+
+          <ul>
+            <li>Quotas apply per account, not per API key</li>
+            <li>All active API keys under the same account share the same monthly limit</li>
+            <li>Creating additional API keys does not increase quota</li>
+            <li>Only successful certified renders (HTTP 200 from <code>/api/render</code>) count toward usage</li>
+            <li>Quota is checked before rendering begins</li>
+            <li>When the quota is exceeded, the renderer returns HTTP <code>429</code> and does not render</li>
+          </ul>
+
+          <h3>Quota Headers</h3>
+
+          <p>
+            Each successful render response includes quota headers:
+          </p>
+
+          <div className="spec-table-wrapper">
+            <table className="spec-table">
+              <thead>
+                <tr>
+                  <th>Header</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>X-Quota-Limit</code></td>
+                  <td>Monthly quota for the account</td>
+                </tr>
+                <tr>
+                  <td><code>X-Quota-Used</code></td>
+                  <td>Number of certified renders used this month</td>
+                </tr>
+                <tr>
+                  <td><code>X-Quota-Remaining</code></td>
+                  <td>Remaining certified renders for the current month</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
           <h2 id="response">Response</h2>

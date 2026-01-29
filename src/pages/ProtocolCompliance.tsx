@@ -221,8 +221,8 @@ const ProtocolCompliance = () => {
                   </tr>
                   <tr>
                     <td><code>C5</code></td>
-                    <td>Quota exceeded</td>
-                    <td><code>403</code></td>
+                    <td>Account quota exceeded</td>
+                    <td><code>429</code></td>
                   </tr>
                   <tr>
                     <td><code>C6</code></td>
