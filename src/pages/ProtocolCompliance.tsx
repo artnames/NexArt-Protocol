@@ -182,6 +182,82 @@ const ProtocolCompliance = () => {
             </p>
           </section>
 
+          <section className="mt-12" id="acceptance-checklist">
+            <h2>Acceptance Checklist</h2>
+            
+            <p>
+              The canonical renderer adheres to the following behavior guarantees. Compliant clients and integrations should expect these behaviors.
+            </p>
+            
+            <div className="spec-table-wrapper mt-6">
+              <table className="spec-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Behavior</th>
+                    <th>Expected Result</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>C1</code></td>
+                    <td>Valid request with all fields</td>
+                    <td><code>200</code>, <code>image/png</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>C2</code></td>
+                    <td>Same inputs produce same output</td>
+                    <td>Identical <code>outputHash</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>C3</code></td>
+                    <td>Missing API key</td>
+                    <td><code>401</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>C4</code></td>
+                    <td>Invalid API key</td>
+                    <td><code>401</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>C5</code></td>
+                    <td>Quota exceeded</td>
+                    <td><code>403</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>C6</code></td>
+                    <td>Protocol violation (e.g., wrong canvas size)</td>
+                    <td><code>400</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>C7</code></td>
+                    <td>Rate limit exceeded</td>
+                    <td><code>429</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>C8</code></td>
+                    <td>Response includes runtime hash</td>
+                    <td><code>x-runtime-hash</code> header present</td>
+                  </tr>
+                  <tr>
+                    <td><code>C9</code></td>
+                    <td>Response includes protocol version</td>
+                    <td><code>x-protocol-version</code> header present</td>
+                  </tr>
+                  <tr>
+                    <td><code>C10</code></td>
+                    <td>Missing <code>protocolVersion</code> in request</td>
+                    <td><code>200</code>, <code>image/png</code>, <code>x-protocol-version</code> present, <code>x-protocol-defaulted: true</code>, snapshot records resolved version</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <p className="text-caption text-sm mt-4">
+              C10 confirms that <code>protocolVersion</code> is lenient (optional) but always resolved and recorded. The canonical renderer defaults to its current version when omitted.
+            </p>
+          </section>
+
           <section className="mt-12 pt-8 border-t border-border">
             <p className="text-caption mb-4">
               Certified runs are subject to plan limits. See{" "}
