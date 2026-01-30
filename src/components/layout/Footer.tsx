@@ -74,9 +74,9 @@ const Footer = () => {
             <h4 className="text-xs font-mono text-foreground mb-4 tracking-wide">Apps</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a 
-                  href="https://nexart.xyz" 
-                  target="_blank" 
+                <a
+                  href="https://nexart.xyz"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-caption hover:text-foreground transition-colors"
                 >
@@ -84,9 +84,9 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a 
-                  href="https://byxcollection.xyz" 
-                  target="_blank" 
+                <a
+                  href="https://byxcollection.xyz"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-caption hover:text-foreground transition-colors"
                 >
@@ -94,9 +94,9 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a 
-                  href="https://recanon.xyz" 
-                  target="_blank" 
+                <a
+                  href="https://recanon.xyz"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-caption hover:text-foreground transition-colors"
                 >
@@ -104,9 +104,9 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a 
-                  href="https://nexartsciencelab.xyz" 
-                  target="_blank" 
+                <a
+                  href="https://nexartsciencelab.xyz"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-caption hover:text-foreground transition-colors"
                 >
@@ -121,9 +121,9 @@ const Footer = () => {
             <h4 className="text-xs font-mono text-foreground mb-4 tracking-wide">Foundation</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a 
-                  href="https://github.com/nexart-protocol" 
-                  target="_blank" 
+                <a
+                  href="https://github.com/nexart-protocol"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-caption hover:text-foreground transition-colors"
                 >
@@ -131,9 +131,9 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a 
-                  href="https://x.com/nexart_xyz" 
-                  target="_blank" 
+                <a
+                  href="https://x.com/nexart_xyz"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-caption hover:text-foreground transition-colors"
                 >
@@ -150,7 +150,7 @@ const Footer = () => {
             <p>Code Mode Protocol v1.2.0 · SDK v1.8.4 — Locked & Stable</p>
             <p className="text-muted-foreground/70 mt-1">Changes require a protocol version increment.</p>
           </div>
-          <p>© {new Date().getFullYear()} NexArt Foundation</p>
+          <p>© {new Date().getFullYear()} NexArt </p>
         </div>
       </div>
     </footer>
