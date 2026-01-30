@@ -17,19 +17,25 @@ const faqItems = [
       "Most generative systems, including simulations, models, and creative tools, cannot prove that the same inputs will always produce the same outputs. NexArt solves this by enforcing deterministic execution and producing cryptographic proofs that bind code, inputs, runtime, and output together.",
   },
   {
-    question: "Is NexArt only for generative art?",
+    question: "What can I use NexArt for?",
     answer: (
       <>
         <p className="mb-3">
-          No. While NexArt originated in generative art, the underlying system is general-purpose. It can be used for:
+          NexArt is a general-purpose deterministic execution and verification system. It is designed for any workflow
+          where results must be reproducible, portable, and independently verifiable.
         </p>
         <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-          <li>Financial simulations and risk models</li>
-          <li>Scientific or research visualizations</li>
-          <li>Game world generation</li>
-          <li>Deterministic AI-assisted pipelines</li>
-          <li>Any system where reproducibility and auditability matter</li>
+          <li>Generative art and creative systems</li>
+          <li>Financial simulations and risk or stress models</li>
+          <li>Scientific, academic, or research visualizations</li>
+          <li>Procedural game worlds and environment generation</li>
+          <li>Deterministic AI-assisted pipelines and model outputs</li>
+          <li>Any system where auditability and replayability matter</li>
         </ul>
+        <p className="mt-3">
+          If the same inputs must always produce the same outputs — today or years from now — NexArt is a suitable
+          foundation.
+        </p>
       </>
     ),
   },
