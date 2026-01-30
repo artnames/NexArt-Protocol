@@ -134,6 +134,12 @@ const Pricing = () => {
               deterministic PNG and a verifiable snapshot (<code>.snapshot.json</code>).
             </p>
           </div>
+          <p className="text-caption text-sm mt-4">
+            For details on execution isolation, sandboxing, and audit guarantees, see{" "}
+            <Link to="/security" className="underline underline-offset-2 hover:text-foreground">
+              Security Architecture
+            </Link>.
+          </p>
         </section>
 
         {/* Plan Cards */}
