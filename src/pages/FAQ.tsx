@@ -24,17 +24,28 @@ const faqItems = [
           NexArt is a general-purpose deterministic execution and verification system. It is designed for any workflow
           where results must be reproducible, portable, and independently verifiable.
         </p>
-        <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-          <li>Generative art and creative systems</li>
-          <li>Financial simulations and risk or stress models</li>
-          <li>Scientific, academic, or research visualizations</li>
-          <li>Procedural game worlds and environment generation</li>
-          <li>Deterministic AI-assisted pipelines and model outputs</li>
-          <li>Any system where auditability and replayability matter</li>
+        <ul className="space-y-2 text-muted-foreground mb-3">
+          <li>
+            <strong className="text-foreground">Generative systems</strong> — Seal code + seed + VAR → canonical PNG + output hash
+          </li>
+          <li>
+            <strong className="text-foreground">Financial simulations</strong> — Certify a stress test / risk calc so an auditor can replay the exact run
+          </li>
+          <li>
+            <strong className="text-foreground">Scientific & research workflows</strong> — Reproducible visualizations and simulations for peer review
+          </li>
+          <li>
+            <strong className="text-foreground">Game world generation</strong> — Regenerate worlds from a seed instead of storing full world state
+          </li>
+          <li>
+            <strong className="text-foreground">Deterministic AI-assisted pipelines</strong> — Pin AI outputs into deterministic execution to prevent drift
+          </li>
+          <li>
+            <strong className="text-foreground">Any workflow where results may be challenged later</strong> — If someone might ask "prove it", NexArt is the tool
+          </li>
         </ul>
-        <p className="mt-3">
-          If the same inputs must always produce the same outputs, today or years from now, NexArt is a suitable
-          foundation.
+        <p>
+          If it matters enough that someone might question it later, NexArt is designed so you can re-run it.
         </p>
       </>
     ),
@@ -91,6 +102,20 @@ const faqItems = [
       "Execution happens off-chain for performance and cost reasons. However, outputs or execution proofs can optionally be anchored onchain (e.g. on Base) by storing a hash or Merkle root. This provides tamper-proof timestamping without high gas costs.",
   },
   {
+    question: "What guarantees does NexArt provide?",
+    answer: (
+      <>
+        <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+          <li>Deterministic execution (same inputs → same output hash)</li>
+          <li>Canonical runtime fingerprinting (runtime hash headers)</li>
+          <li>Snapshot-based replay and independent verification</li>
+          <li>Optional onchain anchoring (hash / Merkle root) for tamper-evidence</li>
+          <li>Account-level quota enforcement with clear 429 when exceeded</li>
+        </ul>
+      </>
+    ),
+  },
+  {
     question: "How does NexArt handle protocol versions?",
     answer: (
       <>
@@ -120,6 +145,28 @@ const faqItems = [
           <li>Quota applies only to successful certified renders</li>
         </ul>
         <p>Quota status is returned via response headers on every request.</p>
+      </>
+    ),
+  },
+  {
+    question: "How much does NexArt cost in practice?",
+    answer: (
+      <>
+        <p className="mb-3">
+          Pricing is based on certified executions (successful canonical renders). Quota is account-level and shared across API keys.
+        </p>
+        <ul className="list-disc list-inside space-y-1 text-muted-foreground mb-3">
+          <li>A single certified render is typically ~100–300ms</li>
+          <li>Certifying a procedural world seed or simulation step is usually fractions of a cent at Pro-level pricing</li>
+          <li>Verification and replay cost the same as a render (they re-execute the snapshot)</li>
+        </ul>
+        <p>
+          See{" "}
+          <Link to="/pricing" className="text-link hover:text-link-hover underline underline-offset-2">
+            Pricing
+          </Link>
+          {" "}for the exact plan limits and key limits.
+        </p>
       </>
     ),
   },
@@ -169,6 +216,21 @@ const faqItems = [
     ),
   },
   {
+    question: "Why is NexArt useful for game world generation?",
+    answer: (
+      <>
+        <p className="mb-3">
+          You regenerate from a seed at a fraction of the cost of storing or syncing full world state.
+        </p>
+        <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+          <li>Seed-based regeneration can drastically reduce storage and sync costs</li>
+          <li>Worlds can be proven unchanged over time (hash verification)</li>
+          <li>Builders can certify world generation for tournaments, fairness, or anti-tamper</li>
+        </ul>
+      </>
+    ),
+  },
+  {
     question: "Who should use NexArt?",
     answer: (
       <>
@@ -179,6 +241,25 @@ const faqItems = [
           <li>Fintech and DeFi teams needing replayable simulations</li>
           <li>Researchers who need reproducible visual outputs</li>
           <li>Platforms that want audit-grade generative pipelines</li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    question: "Where can I see demos?",
+    answer: (
+      <>
+        <p className="mb-3">
+          The CLI verify and replay commands demonstrate end-to-end verification today. Additional demos are in development:
+        </p>
+        <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+          <li>World Builder demo (coming soon)</li>
+          <li>Fintech / risk replay demo (coming soon)</li>
+          <li>Certified render + verify demo (CLI) — available now via{" "}
+            <Link to="/builders/quickstart" className="text-link hover:text-link-hover underline underline-offset-2">
+              Quickstart
+            </Link>
+          </li>
         </ul>
       </>
     ),
