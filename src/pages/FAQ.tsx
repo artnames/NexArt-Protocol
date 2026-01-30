@@ -33,7 +33,7 @@ const faqItems = [
           <li>Any system where auditability and replayability matter</li>
         </ul>
         <p className="mt-3">
-          If the same inputs must always produce the same outputs — today or years from now — NexArt is a suitable
+          If the same inputs must always produce the same outputs, today or years from now, NexArt is a suitable
           foundation.
         </p>
       </>
