@@ -81,6 +81,10 @@ const Determinism = () => {
             The protocol uses semantic versioning. Each canonical unit records the protocol version it was created against. This version is immutable: once set, it cannot be changed.
           </p>
           
+          <p className="text-caption text-sm">
+            Protocol versions define guarantees; runtime versions are implementations that adhere to those guarantees.
+          </p>
+          
           <p>
             The protocol is committed to long-term support for previous versions. Backward compatibility is the default. Implementations are expected to maintain compatibility with older versions as new features are added.
           </p>

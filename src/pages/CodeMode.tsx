@@ -11,7 +11,7 @@ const CodeMode = () => {
         <title>Code Mode | NexArt Protocol</title>
         <meta
           name="description"
-          content="Code Mode is a protocol-enforced execution surface under NexArt Protocol v1.2.0. Deterministic, standardized runtime for generative art."
+          content="Code Mode is a protocol-enforced execution surface under NexArt Protocol v1.2.0. Deterministic, standardized runtime for generative systems."
         />
       </Helmet>
 
@@ -116,7 +116,7 @@ const CodeMode = () => {
               </Badge>
             </div>
             <p className="text-body text-sm mb-4">
-              Defines how Code Mode executes under Protocol v1.2.0, including Static and Loop rendering, determinism guarantees, and NFT minting.
+              Defines how Code Mode executes under Protocol v1.2.0, including Static and Loop rendering, determinism guarantees, and certified outputs.
             </p>
             <p className="text-caption text-xs">
               Execution surface: frozen
@@ -154,7 +154,7 @@ const CodeMode = () => {
         {/* Quota Notice */}
         <div className="mt-10 p-4 border border-border rounded-sm bg-muted/30">
           <p className="text-body text-sm">
-            Canonical execution via the NexArt Canonical Renderer is subject to account-level quotas. Quotas apply per account across all API keys and do not affect local or preview execution.
+            Canonical execution via the NexArt Canonical Renderer is subject to account-level quotas. Quotas apply per account across all API keys and do not affect local or preview execution. Protocol versions define guarantees; runtime versions are implementations that adhere to those guarantees.
           </p>
         </div>
       </PageContent>
