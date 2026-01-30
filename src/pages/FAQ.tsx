@@ -253,21 +253,36 @@ const faqItems = [
     ),
   },
   {
-    question: "Where can I see demos?",
+    question: "Where can I see real demos?",
     answer: (
       <>
         <p className="mb-3">
-          The CLI verify and replay commands demonstrate end-to-end verification today. Additional demos are in development:
+          NexArt has live, production-grade demos across multiple domains demonstrating deterministic execution, certification, and replay:
         </p>
-        <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-          <li>World Builder demo (coming soon)</li>
-          <li>Fintech / risk replay demo (coming soon)</li>
-          <li>Certified render + verify demo (CLI) — available now via{" "}
-            <Link to="/builders/quickstart" className="text-link hover:text-link-hover underline underline-offset-2">
-              Quickstart
-            </Link>
+        <ul className="list-disc list-inside space-y-2 text-muted-foreground mb-3">
+          <li>
+            <a href="https://velocity.recanon.xyz/" target="_blank" rel="noreferrer" className="text-link hover:text-link-hover underline underline-offset-2">Certified Velocity Decision</a>
+            {" "}— Deterministic risk execution and replay (fintech / controls)
+          </li>
+          <li>
+            <a href="https://byxcollection.xyz" target="_blank" rel="noreferrer" className="text-link hover:text-link-hover underline underline-offset-2">ByX Collection</a>
+            {" "}— Creative coding and generative systems built on NexArt
+          </li>
+          <li>
+            <a href="https://frontierra.xyz" target="_blank" rel="noreferrer" className="text-link hover:text-link-hover underline underline-offset-2">Frontierra</a>
+            {" "}— Deterministic open-world generation for games
+          </li>
+          <li>
+            <a href="https://nexartsciencelab.xyz" target="_blank" rel="noreferrer" className="text-link hover:text-link-hover underline underline-offset-2">NexArt Science Lab</a>
+            {" "}— Reproducible scientific and research models
           </li>
         </ul>
+        <p>
+          The NexArt CLI already supports certified execution, verification, and replay. Get started via the{" "}
+          <Link to="/builders/quickstart" className="text-link hover:text-link-hover underline underline-offset-2">
+            Quickstart guide
+          </Link>.
+        </p>
       </>
     ),
   },
