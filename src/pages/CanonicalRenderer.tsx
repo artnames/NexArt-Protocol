@@ -11,13 +11,13 @@ const CanonicalRenderer = () => {
         <title>NexArt Canonical Renderer</title>
         <meta
           name="description"
-          content="The NexArt Canonical Renderer is a reference implementation of the protocol's deterministic rendering pipeline."
+          content="The NexArt Canonical Renderer is certification and verification infrastructure for deterministic generative systems."
         />
       </Helmet>
 
       <PageHeader
         title="NexArt Canonical Renderer"
-        subtitle="A reference implementation of the NexArt protocol's deterministic rendering pipeline."
+        subtitle="Certification and verification infrastructure for deterministic generative systems."
       />
 
       <PageContent>
@@ -28,13 +28,13 @@ const CanonicalRenderer = () => {
           </h2>
           <div className="prose prose-lg max-w-none">
             <p className="text-body mb-4">
-              The Canonical Renderer is a reference implementation of the NexArt protocol's rendering pipeline. It converts a NexArt snapshot into an image.
+              The Canonical Renderer is certification and verification infrastructure for deterministic generative systems. It converts a NexArt snapshot into an image with cryptographic proof of execution.
             </p>
             <p className="text-body mb-4">
               The renderer is fully deterministic: identical input always produces identical output. Given the same snapshot and seed, the renderer will produce byte-for-byte identical image data across any number of invocations.
             </p>
             <p className="text-body">
-              Each render operation returns both the image bytes and a cryptographic hash of the output. This hash serves as a verifiable fingerprint, allowing any party to independently confirm that a given image was produced from a specific snapshot.
+              Each render operation returns both the image bytes and a cryptographic hash of the output. This hash serves as a verifiable fingerprint, allowing any party to independently confirm that a given image was produced from a specific snapshot—whether for NFT minting, audit verification, or research reproducibility.
             </p>
           </div>
         </section>
@@ -64,7 +64,7 @@ const CanonicalRenderer = () => {
           </h2>
           <div className="prose prose-lg max-w-none">
             <p className="text-body mb-4">
-              The reference renderer is suitable for early builders, testing, previews, and small-scale production use. No setup is required — builders can send snapshots and receive rendered images immediately.
+              The reference renderer is suitable for early builders, testing, previews, and small-scale production use. No setup is required — builders can send snapshots and receive certified images immediately.
             </p>
             <p className="text-body mb-4">
               The reference node is operated on a best-effort basis. While we aim for consistent availability, there are no hard guarantees around uptime or throughput. Builders with production requirements that demand specific performance characteristics should consider running their own renderer.

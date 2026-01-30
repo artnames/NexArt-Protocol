@@ -8,26 +8,26 @@ const Protocol = () => {
   return (
     <PageLayout>
       <Helmet>
-        <title>NexArt Protocol - Generative Art Standard</title>
-        <meta name="description" content="NexArt Protocol defines a canonical execution layer for generative art. Deterministic, verifiable, and open to third-party builders." />
+        <title>NexArt Protocol - Deterministic Execution Standard</title>
+        <meta name="description" content="NexArt Protocol defines a canonical execution layer for deterministic generative systems. Verifiable, reproducible, and open to third-party builders." />
       </Helmet>
       
       <PageHeader 
         title="NexArt Protocol"
-        subtitle="A canonical execution standard for generative art systems."
+        subtitle="A canonical execution standard for deterministic generative systems."
       />
       
       <PageContent>
         <div className="prose-protocol">
           <p>
-            NexArt is both a creative application and a generative art protocol. This page explains what the protocol is, why it exists, and how it enables a new class of verifiable, permanent generative artwork.
+            NexArt is both a creative application and a deterministic execution protocol. This page explains what the protocol is, why it exists, and how it enables verifiable, permanent generative systems across art, simulations, and research.
           </p>
 
           <section className="mt-12">
             <h2>What Is the NexArt Protocol</h2>
             
             <p>
-              The NexArt Protocol is a specification for creating, executing, and verifying generative art systems. It defines how generative code should be structured, what execution guarantees it provides, and how outputs can be independently verified.
+              The NexArt Protocol is a specification for creating, executing, and verifying deterministic generative systems. It defines how generative code should be structured, what execution guarantees it provides, and how outputs can be independently verified.
             </p>
             
             <p>
@@ -50,7 +50,7 @@ const Protocol = () => {
             <h2>What Is Code Mode</h2>
             
             <p>
-              Code Mode is defined exclusively by the <code className="text-caption">@nexart/codemode-sdk</code>, which is the single source of truth for deterministic execution semantics. It is a restricted, deterministic runtime for generative art—similar to p5.js in syntax, but constrained to ensure reproducibility.
+              Code Mode is defined exclusively by the <code className="text-caption">@nexart/codemode-sdk</code>, which is the single source of truth for deterministic execution semantics. It is a restricted, deterministic runtime—similar to p5.js in syntax, but constrained to ensure reproducibility.
             </p>
             
             <p>
@@ -65,11 +65,11 @@ const Protocol = () => {
             </ul>
             
             <p>
-              This makes Code Mode suitable for NFT minting, long-term archival, and independent verification.
+              This makes Code Mode suitable for NFT minting, long-term archival, simulations, and independent verification.
             </p>
 
             <p className="text-caption text-sm">
-              SDK v1.8.4 supports optional passive builder identity via manifest registration, without affecting execution or determinism.
+              Protocol versions define guarantees; runtime versions are implementations that adhere to those guarantees. SDK v1.8.4 supports optional passive builder identity via manifest registration, without affecting execution or determinism.
             </p>
           </section>
 
@@ -77,11 +77,11 @@ const Protocol = () => {
             <h2>Why Determinism Matters</h2>
             
             <p>
-              For generative art to be collectible, it must be trustworthy. Collectors need assurance that the artwork they purchase will look the same tomorrow, next year, and decades from now.
+              For generative systems to be trustworthy, they must be verifiable. Whether for art collectors, financial auditors, or research peers, there must be assurance that the output will be the same tomorrow, next year, and decades from now.
             </p>
             
             <p>
-              Determinism provides this guarantee. When a NexArt system is minted:
+              Determinism provides this guarantee. When a NexArt system is certified:
             </p>
             
             <ul>
@@ -104,11 +104,11 @@ const Protocol = () => {
             <h2>The Canonical Renderer</h2>
             
             <p>
-              The Canonical Renderer is the authoritative execution environment for NexArt systems. It is a Node.js-based runtime that produces cryptographically verified outputs.
+              The Canonical Renderer is the authoritative execution environment for NexArt systems. It is a Node.js-based runtime that produces cryptographically verified outputs suitable for certification, archival, and verification workflows.
             </p>
             
             <p>
-              When a system is minted through a protocol-compliant application:
+              When a system is certified through a protocol-compliant application:
             </p>
             
             <ol>
@@ -143,10 +143,10 @@ const Protocol = () => {
               <div className="border border-border p-6 rounded-sm">
                 <h3 className="text-base font-medium text-foreground mb-3">Canonical Renderer</h3>
                 <p className="text-caption text-sm mb-2">
-                  The authoritative execution environment.
+                  The authoritative execution environment for certification and verification.
                 </p>
                 <p className="text-caption text-sm">
-                  Produces verified outputs with cryptographic proofs. Required for minting.
+                  Produces verified outputs with cryptographic proofs. Required for minting, audits, and archival.
                 </p>
               </div>
               
@@ -156,7 +156,7 @@ const Protocol = () => {
                   Applications that implement the protocol correctly. Protocol-compliant apps must not alter execution semantics or introduce fallback rendering paths.
                 </p>
                 <p className="text-caption text-sm">
-                  Can create, preview, and mint NexArt systems using the SDK and Canonical Renderer.
+                  Can create, preview, and certify NexArt systems using the SDK and Canonical Renderer.
                 </p>
               </div>
             </div>

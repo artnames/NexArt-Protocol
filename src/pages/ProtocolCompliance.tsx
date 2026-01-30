@@ -19,7 +19,7 @@ const ProtocolCompliance = () => {
       <PageContent>
         <div className="prose-protocol">
           <p>
-            Third-party applications can implement the NexArt Protocol to create, preview, and mint generative art systems. This page defines what compliance means and the different levels of integration.
+            Third-party applications can implement the NexArt Protocol to create, preview, and certify deterministic generative systems. This page defines what compliance means and the different levels of integration.
           </p>
 
           <section className="mt-12">
@@ -107,21 +107,25 @@ const ProtocolCompliance = () => {
           </section>
 
           <section className="mt-12">
-            <h2>Why Canonical Minting Matters</h2>
+            <h2>Why Canonical Certification Matters</h2>
             
             <p>
-              Level 1 compliance is sufficient for creation and exploration, but Level 2 is required for minting because:
+              Level 1 compliance is sufficient for creation and exploration, but Level 2 is required for certification because:
             </p>
             
             <ul>
               <li><strong>Determinism verification</strong> — Only the Canonical Renderer produces outputs that can be independently verified</li>
               <li><strong>Hash permanence</strong> — The output hash becomes the permanent proof of authenticity</li>
-              <li><strong>Collector trust</strong> — Collectors can verify that the NFT matches the original system</li>
+              <li><strong>Audit-grade trust</strong> — Any party can verify that the output matches the original system</li>
               <li><strong>Long-term archival</strong> — Canonical outputs are the authoritative record</li>
             </ul>
             
             <p>
               A preview rendered in the browser may look identical, but it lacks the cryptographic proof that makes verification possible.
+            </p>
+            
+            <p className="text-caption text-sm mt-4">
+              Minting is one application of certification; the same guarantees apply to simulations, audits, and verification workflows.
             </p>
           </section>
 
@@ -139,7 +143,7 @@ const ProtocolCompliance = () => {
                   <span className="text-xs font-mono px-2 py-1 bg-foreground text-background rounded-sm">LEVEL 2</span>
                 </div>
                 <p className="text-caption text-sm mb-2">
-                  The official NexArt application. Full protocol implementation with SDK and Canonical Renderer integration.
+                  Reference application for generative art creation with full SDK and Canonical Renderer integration.
                 </p>
                 <p className="text-xs text-muted-foreground">
                   <a href="https://nexart.xyz" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-caption">
@@ -154,7 +158,7 @@ const ProtocolCompliance = () => {
                   <span className="text-xs font-mono px-2 py-1 bg-foreground text-background rounded-sm">LEVEL 2</span>
                 </div>
                 <p className="text-caption text-sm mb-2">
-                  A protocol-compliant platform for generative collections. Artists define systems, collectors mint unique outputs.
+                  Generative collection platform with certified minting.
                 </p>
                 <p className="text-xs text-muted-foreground">
                   <a href="https://byxcollection.xyz" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-caption">
@@ -168,15 +172,9 @@ const ProtocolCompliance = () => {
                   <h3 className="text-base font-medium text-foreground">Recanon</h3>
                   <span className="text-xs font-mono px-2 py-1 bg-foreground text-background rounded-sm">LEVEL 2</span>
                 </div>
-                <p className="text-caption text-sm mb-3">
-                  A protocol-compliant application focused on certified canonical rendering and independent verification of NexArt systems.
+                <p className="text-caption text-sm mb-2">
+                  Canonical verification and replay client.
                 </p>
-                <p className="text-caption text-xs mb-2">Supports:</p>
-                <ul className="text-caption text-xs space-y-1 list-disc list-inside mb-3">
-                  <li>Certified execution</li>
-                  <li>Hash verification</li>
-                  <li>Re-execution and audit workflows</li>
-                </ul>
                 <p className="text-xs text-muted-foreground">
                   <a href="https://recanon.xyz" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-caption">
                     recanon.xyz
@@ -187,20 +185,11 @@ const ProtocolCompliance = () => {
               <div className="border border-border p-6 rounded-sm">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-base font-medium text-foreground">NexArt Science Lab</h3>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono px-2 py-1 bg-muted text-muted-foreground rounded-sm">LEVEL 1</span>
-                    <span className="text-xs text-caption">(LEVEL 2 planned)</span>
-                  </div>
+                  <span className="text-xs font-mono px-2 py-1 bg-foreground text-background rounded-sm">LEVEL 2</span>
                 </div>
-                <p className="text-caption text-sm mb-3">
-                  A protocol-compliant environment for deterministic scientific and research visualizations built on the NexArt Protocol.
+                <p className="text-caption text-sm mb-2">
+                  Deterministic research and simulation environment.
                 </p>
-                <p className="text-caption text-xs mb-2">Use cases include:</p>
-                <ul className="text-caption text-xs space-y-1 list-disc list-inside mb-3">
-                  <li>Reproducible simulations</li>
-                  <li>Deterministic visual models</li>
-                  <li>Research-grade visual outputs</li>
-                </ul>
                 <p className="text-xs text-muted-foreground">
                   <a href="https://nexartsciencelab.xyz" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-caption">
                     nexartsciencelab.xyz
@@ -268,7 +257,7 @@ const ProtocolCompliance = () => {
                   </tr>
                   <tr>
                     <td><code>C5</code></td>
-                    <td>Account quota exceeded</td>
+                    <td>Account quota exceeded (distinct from rate limiting)</td>
                     <td><code>429</code></td>
                   </tr>
                   <tr>
@@ -301,7 +290,7 @@ const ProtocolCompliance = () => {
             </div>
             
             <p className="text-caption text-sm mt-4">
-              C10 confirms that <code>protocolVersion</code> is lenient (optional) but always resolved and recorded. The canonical renderer defaults to its current version when omitted.
+              C10 confirms that <code>protocolVersion</code> is lenient (optional) but always resolved and recorded. The canonical renderer defaults to its current version when omitted. C5 and C7 both return <code>429</code>; quota enforcement (C5) is account-level and distinct from rate limiting (C7).
             </p>
           </section>
 
