@@ -11,6 +11,7 @@ import ProtocolCompliance from "./pages/ProtocolCompliance";
 import CanonicalUnit from "./pages/CanonicalUnit";
 import Modes from "./pages/Modes";
 import Determinism from "./pages/Determinism";
+import Security from "./pages/Security";
 import Glossary from "./pages/Glossary";
 import NonGoals from "./pages/NonGoals";
 import Builders from "./pages/Builders";
@@ -60,6 +61,7 @@ const App = () => (
               <Route path="/canonical-unit" element={<CanonicalUnit />} />
               <Route path="/modes" element={<Modes />} />
               <Route path="/determinism" element={<Determinism />} />
+              <Route path="/security" element={<Security />} />
               <Route path="/glossary" element={<Glossary />} />
               <Route path="/non-goals" element={<NonGoals />} />
               <Route path="/builders" element={<Builders />} />

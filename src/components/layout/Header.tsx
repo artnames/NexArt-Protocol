@@ -59,6 +59,7 @@ const navGroups = [
       { href: "/glossary", label: "Glossary" },
       { href: "/non-goals", label: "Non-Goals" },
       { href: "/governance", label: "Governance" },
+      { href: "/security", label: "Security" },
     ],
   },
 ];

@@ -302,6 +302,12 @@ const ProtocolCompliance = () => {
               </a>{" "}
               for details.
             </p>
+            <p className="text-caption mb-4">
+              For details on execution isolation, sandboxing, and audit guarantees, see{" "}
+              <a href="/security" className="text-body underline underline-offset-2 hover:text-foreground">
+                Security Architecture
+              </a>.
+            </p>
             <p className="text-caption">
               For technical details on SDK integration, see the{" "}
               <a href="/builders" className="text-body underline underline-offset-2 hover:text-foreground">

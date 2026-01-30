@@ -196,6 +196,13 @@ const faqItems = [
           <li>Deterministic execution prevents timing or entropy attacks</li>
           <li>Full audit trail via usage logs and snapshots</li>
         </ul>
+        <p>
+          A detailed{" "}
+          <Link to="/security" className="text-link hover:text-link-hover underline underline-offset-2">
+            Security Architecture
+          </Link>
+          {" "}page is available.
+        </p>
       </>
     ),
   },
