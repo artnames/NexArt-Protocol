@@ -14,7 +14,7 @@ const faqItems = [
   {
     question: "What problem does NexArt solve?",
     answer:
-      "Most generative systems, including simulations, models, and creative tools — cannot prove that the same inputs will always produce the same outputs. NexArt solves this by enforcing deterministic execution and producing cryptographic proofs that bind code, inputs, runtime, and output together.",
+      "Most generative systems, including simulations, models, and creative tools, cannot prove that the same inputs will always produce the same outputs. NexArt solves this by enforcing deterministic execution and producing cryptographic proofs that bind code, inputs, runtime, and output together.",
   },
   {
     question: "Is NexArt only for generative art?",
