@@ -52,7 +52,25 @@ const Terms = () => {
           <h2>4. Quotas, Metering, and Plans</h2>
           
           <p>
-            Certified runs may be capped by plan. We may enforce rate limits or temporarily suspend access to protect service reliability. Plan details may change over time.
+            Certified runs may be capped by plan. We may enforce rate limits or temporarily suspend access to protect service reliability. Plan details may change over time. Plan limits are enforced at the account level and shared across all API keys associated with the account.
+          </p>
+
+          <h2>4A. Billing, Renewals, and Cancellation</h2>
+          
+          <p>
+            Paid plans are billed in advance on a recurring basis (monthly or annually, depending on the plan selected). Subscriptions automatically renew unless cancelled before the end of the current billing period.
+          </p>
+          
+          <p>
+            Cancellation takes effect at the end of the current billing period. Access to certified services remains available until that time.
+          </p>
+          
+          <p>
+            Payments are processed by a third-party payment provider (Stripe). NexArt does not store full payment card details.
+          </p>
+          
+          <p>
+            Except where required by law, fees are non-refundable and unused certified runs do not roll over between billing periods.
           </p>
 
           <h2>5. Intellectual Property</h2>
