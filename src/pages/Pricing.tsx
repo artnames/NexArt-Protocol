@@ -36,11 +36,7 @@ const plans: PlanConfig[] = [
     monthlyPrice: null,
     limit: "100 certified runs / month",
     keyLimit: "Up to 2 active API keys",
-    features: [
-      "Shared canonical node",
-      "Hard cap",
-      "No SLA",
-    ],
+    features: ["Shared canonical node", "Hard cap", "No SLA"],
     note: "Not intended for production.",
     cta: "Start Free",
     ctaAction: "dashboard",
@@ -52,13 +48,9 @@ const plans: PlanConfig[] = [
     tagline: "Serious Indie & Startups",
     annualPrice: "$6,000",
     monthlyPrice: "$600",
-    limit: "~5,000 certified runs / month",
+    limit: "5,000 certified runs / month",
     keyLimit: "Up to 5 active API keys",
-    features: [
-      "Commercial CodeMode usage",
-      "Priority access to canonical node",
-      "Email support",
-    ],
+    features: ["Commercial CodeMode usage", "Priority access to canonical node", "Email support"],
     note: null,
     cta: "Subscribe",
     ctaAction: "checkout",
@@ -70,12 +62,9 @@ const plans: PlanConfig[] = [
     tagline: "Cushion Tier",
     annualPrice: "$18,000",
     monthlyPrice: "$1,800",
-    limit: "~50,000 certified runs / month",
+    limit: "50,000 certified runs / month",
     keyLimit: "Up to 10 active API keys",
-    features: [
-      "Multiple environments",
-      "Priority queue",
-    ],
+    features: ["Multiple environments", "Priority queue"],
     note: null,
     cta: "Subscribe",
     ctaAction: "checkout",
@@ -89,12 +78,7 @@ const plans: PlanConfig[] = [
     monthlyPrice: null,
     limit: "Custom limits (by contract)",
     keyLimit: "Contract-based terms",
-    features: [
-      "Private or dedicated node option",
-      "Audit retention",
-      "Version guarantees",
-      "SLAs",
-    ],
+    features: ["Private or dedicated node option", "Audit retention", "Version guarantees", "SLAs"],
     note: null,
     cta: "Talk to Sales",
     ctaAction: "contact",
@@ -143,7 +127,7 @@ const Pricing = () => {
 
     // Map plan name to API plan value
     const planMap: Record<string, string> = {
-      "Pro": "pro",
+      Pro: "pro",
       "Pro+ / Team": "pro_plus",
     };
 
@@ -233,8 +217,8 @@ const Pricing = () => {
             Run deterministic systems locally using the SDK and CLI at no cost.
           </p>
           <p className="text-lg text-body max-w-3xl mb-8">
-            When you need verifiable, auditable, reproducible guarantees, certification is provided 
-            via the canonical renderer.
+            When you need verifiable, auditable, reproducible guarantees, certification is provided via the canonical
+            renderer.
           </p>
           <div className="flex gap-3 flex-wrap">
             <Button asChild size="lg">
@@ -259,15 +243,16 @@ const Pricing = () => {
           </ul>
           <div className="bg-muted/50 border border-border rounded-md p-4">
             <p className="text-sm text-foreground">
-              <strong>A certified run</strong> is one canonical renderer execution that returns a 
-              deterministic PNG and a verifiable snapshot (<code>.snapshot.json</code>).
+              <strong>A certified run</strong> is one canonical renderer execution that returns a deterministic PNG and
+              a verifiable snapshot (<code>.snapshot.json</code>).
             </p>
           </div>
           <p className="text-caption text-sm mt-4">
             For details on execution isolation, sandboxing, and audit guarantees, see{" "}
             <Link to="/security" className="underline underline-offset-2 hover:text-foreground">
               Security Architecture
-            </Link>.
+            </Link>
+            .
           </p>
         </section>
 
@@ -299,23 +284,25 @@ const Pricing = () => {
                 </button>
               </div>
               <p className="text-xs text-muted-foreground">
-                {billingCycle === "annual" 
-                  ? "Annual includes a 2 month discount." 
+                {billingCycle === "annual"
+                  ? "Annual includes a 2 month discount."
                   : "Monthly is available for flexibility."}
               </p>
             </div>
           </div>
           <div className="grid gap-6 md:grid-cols-2">
             {plans.map((plan) => (
-              <Card 
-                key={plan.name} 
-                className={`flex flex-col ${plan.highlight ? 'border-primary ring-1 ring-primary/20' : ''}`}
+              <Card
+                key={plan.name}
+                className={`flex flex-col ${plan.highlight ? "border-primary ring-1 ring-primary/20" : ""}`}
               >
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-xl">{plan.name}</CardTitle>
                     {plan.highlight && (
-                      <Badge variant="default" className="text-xs">Most Popular</Badge>
+                      <Badge variant="default" className="text-xs">
+                        Most Popular
+                      </Badge>
                     )}
                   </div>
                   <CardDescription>{plan.tagline}</CardDescription>
@@ -325,17 +312,13 @@ const Pricing = () => {
                     <span className="text-3xl font-semibold text-foreground">{getDisplayPrice(plan)}</span>
                   </div>
                   <div className="mb-4 pb-4 border-b border-border">
-                    <p className="text-sm font-medium text-foreground">
-                      {plan.limit}
-                    </p>
+                    <p className="text-sm font-medium text-foreground">{plan.limit}</p>
                     {plan.showCertificationNote && (
                       <p className="text-xs text-muted-foreground mt-0.5">
                         Includes certification on the canonical renderer.
                       </p>
                     )}
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {plan.keyLimit}
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">{plan.keyLimit}</p>
                   </div>
                   <ul className="space-y-2 text-sm text-body flex-1">
                     {plan.features.map((feature, i) => (
@@ -345,11 +328,9 @@ const Pricing = () => {
                       </li>
                     ))}
                   </ul>
-                  {plan.note && (
-                    <p className="text-xs text-caption italic mt-4">{plan.note}</p>
-                  )}
+                  {plan.note && <p className="text-xs text-caption italic mt-4">{plan.note}</p>}
                   {plan.ctaAction === "checkout" ? (
-                    <Button 
+                    <Button
                       variant="default"
                       className="w-full mt-6"
                       onClick={() => handleCheckout(plan.name)}
@@ -358,7 +339,7 @@ const Pricing = () => {
                       {checkoutLoading === plan.name ? "Loading..." : plan.cta}
                     </Button>
                   ) : (
-                    <Button 
+                    <Button
                       variant={plan.ctaAction === "dashboard" ? "outline" : "default"}
                       className="w-full mt-6"
                       asChild
@@ -377,9 +358,7 @@ const Pricing = () => {
         {/* Account-Level Enforcement */}
         <section className="mb-16">
           <h2 className="text-2xl font-serif text-foreground mb-4">Account-level enforcement</h2>
-          <p className="text-body mb-4">
-            Quotas are enforced at the account level by the canonical renderer.
-          </p>
+          <p className="text-body mb-4">Quotas are enforced at the account level by the canonical renderer.</p>
           <ul className="list-disc list-inside text-body space-y-1">
             <li>Limits are shared across all API keys in an account</li>
             <li>API keys do not increase usage limits</li>
@@ -389,8 +368,8 @@ const Pricing = () => {
           </ul>
           <div className="bg-muted/50 border border-border rounded-md p-4 mt-4">
             <p className="text-sm text-foreground">
-              <strong>Note:</strong> API keys are used for authentication and environment separation only. 
-              They do not carry quota. Creating additional API keys does not increase your monthly limit.
+              <strong>Note:</strong> API keys are used for authentication and environment separation only. They do not
+              carry quota. Creating additional API keys does not increase your monthly limit.
             </p>
           </div>
         </section>
@@ -410,12 +389,8 @@ const Pricing = () => {
         {/* Upgrade Philosophy */}
         <section className="mb-8">
           <h2 className="text-2xl font-serif text-foreground mb-4">Upgrade philosophy</h2>
-          <p className="text-body mb-2">
-            Same SDK. Same CLI. Same code.
-          </p>
-          <p className="text-body">
-            Paid plans unlock assurance, not features. No refactor required.
-          </p>
+          <p className="text-body mb-2">Same SDK. Same CLI. Same code.</p>
+          <p className="text-body">Paid plans unlock assurance, not features. No refactor required.</p>
         </section>
 
         {/* Bottom CTA */}
@@ -428,11 +403,7 @@ const Pricing = () => {
               <Link to="/builders/quickstart">CLI Quickstart</Link>
             </Button>
             {user && (
-              <Button 
-                variant="outline" 
-                onClick={handleManageBilling}
-                disabled={portalLoading}
-              >
+              <Button variant="outline" onClick={handleManageBilling} disabled={portalLoading}>
                 {portalLoading ? "Loading..." : "Manage Billing"}
               </Button>
             )}
