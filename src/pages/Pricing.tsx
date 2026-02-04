@@ -16,8 +16,6 @@ interface PlanConfig {
   tagline: string;
   annualPrice: string;
   monthlyPrice: string | null;
-  annualPriceDetail: string;
-  monthlyPriceDetail: string;
   limit: string;
   keyLimit: string;
   features: string[];
@@ -25,6 +23,7 @@ interface PlanConfig {
   cta: string;
   ctaAction: "dashboard" | "contact";
   highlight: boolean;
+  showCertificationNote: boolean;
 }
 
 const plans: PlanConfig[] = [
@@ -33,8 +32,6 @@ const plans: PlanConfig[] = [
     tagline: "Evaluation & CI",
     annualPrice: "$0",
     monthlyPrice: null,
-    annualPriceDetail: "",
-    monthlyPriceDetail: "",
     limit: "100 certified runs / month",
     keyLimit: "Up to 2 active API keys",
     features: [
@@ -46,14 +43,13 @@ const plans: PlanConfig[] = [
     cta: "Start Free",
     ctaAction: "dashboard",
     highlight: false,
+    showCertificationNote: false,
   },
   {
     name: "Pro",
     tagline: "Serious Indie & Startups",
     annualPrice: "$6,000",
     monthlyPrice: "$600",
-    annualPriceDetail: "/ year",
-    monthlyPriceDetail: "/ month",
     limit: "~5,000 certified runs / month",
     keyLimit: "Up to 5 active API keys",
     features: [
@@ -65,14 +61,13 @@ const plans: PlanConfig[] = [
     cta: "Contact",
     ctaAction: "contact",
     highlight: false,
+    showCertificationNote: true,
   },
   {
     name: "Pro+ / Team",
     tagline: "Cushion Tier",
     annualPrice: "$18,000",
     monthlyPrice: "$1,800",
-    annualPriceDetail: "/ year",
-    monthlyPriceDetail: "/ month",
     limit: "~50,000 certified runs / month",
     keyLimit: "Up to 10 active API keys",
     features: [
@@ -83,14 +78,13 @@ const plans: PlanConfig[] = [
     cta: "Contact",
     ctaAction: "contact",
     highlight: true,
+    showCertificationNote: true,
   },
   {
     name: "Enterprise",
     tagline: "Infrastructure Dependency",
     annualPrice: "From $50,000",
     monthlyPrice: null,
-    annualPriceDetail: "/ year",
-    monthlyPriceDetail: "",
     limit: "Custom limits (by contract)",
     keyLimit: "Contract-based terms",
     features: [
@@ -103,6 +97,7 @@ const plans: PlanConfig[] = [
     cta: "Talk to Sales",
     ctaAction: "contact",
     highlight: false,
+    showCertificationNote: false,
   },
 ];
 
@@ -110,18 +105,19 @@ const Pricing = () => {
   const { user } = useAuth();
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("annual");
 
-  const getPrice = (plan: PlanConfig) => {
+  const getDisplayPrice = (plan: PlanConfig) => {
     if (plan.monthlyPrice === null) {
-      return plan.annualPrice;
+      // Free or Enterprise: show as-is with proper formatting
+      if (plan.annualPrice === "$0") {
+        return "$0";
+      }
+      return `${plan.annualPrice} / year`;
     }
-    return billingCycle === "annual" ? plan.annualPrice : plan.monthlyPrice;
-  };
-
-  const getPriceDetail = (plan: PlanConfig) => {
-    if (plan.monthlyPrice === null) {
-      return plan.annualPriceDetail;
+    // Pro or Pro+: show based on toggle
+    if (billingCycle === "annual") {
+      return `${plan.annualPrice} / year`;
     }
-    return billingCycle === "annual" ? plan.annualPriceDetail : plan.monthlyPriceDetail;
+    return `${plan.monthlyPrice} / month`;
   };
 
   return (
@@ -212,7 +208,9 @@ const Pricing = () => {
                 </button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Annual includes a 2 month discount.
+                {billingCycle === "annual" 
+                  ? "Annual includes a 2 month discount." 
+                  : "Monthly is available for flexibility."}
               </p>
             </div>
           </div>
@@ -233,15 +231,17 @@ const Pricing = () => {
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col">
                   <div className="mb-4">
-                    <span className="text-3xl font-semibold text-foreground">{getPrice(plan)}</span>
-                    {getPriceDetail(plan) && (
-                      <span className="text-body ml-1">{getPriceDetail(plan)}</span>
-                    )}
+                    <span className="text-3xl font-semibold text-foreground">{getDisplayPrice(plan)}</span>
                   </div>
                   <div className="mb-4 pb-4 border-b border-border">
                     <p className="text-sm font-medium text-foreground">
                       {plan.limit}
                     </p>
+                    {plan.showCertificationNote && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Includes certification on the canonical renderer.
+                      </p>
+                    )}
                     <p className="text-xs text-muted-foreground mt-1">
                       {plan.keyLimit}
                     </p>
@@ -270,9 +270,6 @@ const Pricing = () => {
               </Card>
             ))}
           </div>
-          <p className="text-sm text-muted-foreground mt-6">
-            Monthly is available for flexibility. Annual is discounted.
-          </p>
         </section>
 
         {/* Account-Level Enforcement */}
