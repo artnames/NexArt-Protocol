@@ -115,42 +115,64 @@ Deno.serve(async (req) => {
     const sql = getDbConnection();
 
     try {
-      // Check if user already has a stripe_customer_id
-      let stripeCustomerId: string | null = null;
-      
-      const accountResult = await sql`
-        SELECT stripe_customer_id FROM accounts WHERE user_id = ${userId}::uuid LIMIT 1
-      `;
-      
-      if (accountResult.length > 0 && accountResult[0].stripe_customer_id) {
-        stripeCustomerId = accountResult[0].stripe_customer_id;
-        console.log(`Reusing existing Stripe customer: ${stripeCustomerId}`);
-      } else {
-        // Check if customer exists in Stripe by email
-        const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
-        
-        if (customers.data.length > 0) {
-          stripeCustomerId = customers.data[0].id;
-          console.log(`Found existing Stripe customer by email: ${stripeCustomerId}`);
-        } else {
-          // Create new Stripe customer
-          const customer = await stripe.customers.create({
-            email: userEmail,
-            metadata: { user_id: userId }
-          });
-          stripeCustomerId = customer.id;
-          console.log(`Created new Stripe customer: ${stripeCustomerId}`);
+        // Resolve Stripe customer for the *current* Stripe mode (test vs live)
+        // NOTE: Stored IDs in our DB may belong to the other mode if secrets were switched.
+        let stripeCustomerId: string | null = null;
+        let dbStripeCustomerId: string | null = null;
+
+        const accountResult = await sql`
+          SELECT stripe_customer_id FROM accounts WHERE user_id = ${userId}::uuid LIMIT 1
+        `;
+
+        if (accountResult.length > 0 && accountResult[0].stripe_customer_id) {
+          dbStripeCustomerId = String(accountResult[0].stripe_customer_id);
+          try {
+            const retrieved = await stripe.customers.retrieve(dbStripeCustomerId);
+            const deleted = (retrieved as unknown as { deleted?: boolean }).deleted;
+            if (!deleted) {
+              stripeCustomerId = dbStripeCustomerId;
+              console.log(`Reusing existing Stripe customer: ${stripeCustomerId}`);
+            } else {
+              console.warn('Stored Stripe customer is deleted; will recreate', { dbStripeCustomerId });
+            }
+          } catch (e) {
+            // Common when switching between sk_live and sk_test
+            const msg = (e as Error)?.message || String(e);
+            console.warn('Stored Stripe customer not found in current mode; will recreate', {
+              dbStripeCustomerId,
+              message: msg,
+            });
+          }
         }
 
-        // Store stripe_customer_id in accounts table
-        await sql`
-          INSERT INTO accounts (user_id, stripe_customer_id, plan, monthly_limit, status, created_at, updated_at)
-          VALUES (${userId}::uuid, ${stripeCustomerId}, 'free', 100, 'active', now(), now())
-          ON CONFLICT (user_id) DO UPDATE SET 
-            stripe_customer_id = EXCLUDED.stripe_customer_id,
-            updated_at = now()
-        `;
-      }
+        if (!stripeCustomerId) {
+          // Check if customer exists in Stripe by email (in the current mode)
+          const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
+
+          if (customers.data.length > 0) {
+            stripeCustomerId = customers.data[0].id;
+            console.log(`Found existing Stripe customer by email: ${stripeCustomerId}`);
+          } else {
+            // Create new Stripe customer (in the current mode)
+            const customer = await stripe.customers.create({
+              email: userEmail,
+              metadata: { user_id: userId },
+            });
+            stripeCustomerId = customer.id;
+            console.log(`Created new Stripe customer: ${stripeCustomerId}`);
+          }
+        }
+
+        // Persist resolved customer id (safe: conflict update only touches stripe_customer_id + updated_at)
+        if (!accountResult.length || dbStripeCustomerId !== stripeCustomerId) {
+          await sql`
+            INSERT INTO accounts (user_id, stripe_customer_id, plan, monthly_limit, status, created_at, updated_at)
+            VALUES (${userId}::uuid, ${stripeCustomerId}, 'free', 100, 'active', now(), now())
+            ON CONFLICT (user_id) DO UPDATE SET 
+              stripe_customer_id = EXCLUDED.stripe_customer_id,
+              updated_at = now()
+          `;
+        }
 
       await sql.end();
 
