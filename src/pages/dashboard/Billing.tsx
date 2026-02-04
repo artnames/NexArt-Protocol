@@ -176,6 +176,25 @@ export default function Billing() {
                   </span>
                 </div>
                 
+                {/* Cancellation Notice */}
+                {accountPlan?.status === 'canceling' && accountPlan?.currentPeriodEnd && (
+                  <div className="flex items-start gap-2 p-3 bg-destructive/10 border border-destructive/30 rounded-md">
+                    <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-destructive">
+                        Cancels on {new Date(accountPlan.currentPeriodEnd).toLocaleDateString('en-US', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
+                      </p>
+                      <p className="text-xs text-destructive/80">
+                        You keep access until then. Resubscribe anytime to continue.
+                      </p>
+                    </div>
+                  </div>
+                )}
+                
                 {/* Usage Progress */}
                 {accountPlan && (
                   <div className="space-y-2">

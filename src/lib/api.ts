@@ -17,6 +17,8 @@ export interface AccountPlan {
   maxKeys: number;
   keysUsed: number;
   keysRemaining: number;
+  status: string;
+  currentPeriodEnd: string | null;
 }
 
 export interface UsageSummary {
