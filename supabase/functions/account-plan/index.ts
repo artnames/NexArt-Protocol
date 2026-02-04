@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
     try {
       // Check if accounts table exists and get plan, otherwise derive from user metadata or default to free
       const accountResult = await sql`
-        SELECT plan, monthly_limit 
+        SELECT plan, monthly_limit, status, current_period_end 
         FROM accounts 
         WHERE user_id = ${userId}::uuid
         LIMIT 1
@@ -82,10 +82,16 @@ Deno.serve(async (req) => {
 
       let plan = 'free';
       let monthlyLimit = PLAN_LIMITS.free;
+      let status = 'active';
+      let currentPeriodEnd: string | null = null;
 
       if (accountResult.length > 0) {
         plan = accountResult[0].plan;
         monthlyLimit = accountResult[0].monthly_limit || PLAN_LIMITS[plan] || PLAN_LIMITS.free;
+        status = accountResult[0].status || 'active';
+        if (accountResult[0].current_period_end) {
+          currentPeriodEnd = new Date(accountResult[0].current_period_end).toISOString();
+        }
       }
 
       // Get current month usage aggregated across ALL user's keys
@@ -113,7 +119,7 @@ Deno.serve(async (req) => {
 
       await sql.end();
 
-      console.log(`Account plan for user ${userId}: ${plan}, used: ${used}/${monthlyLimit}, keys: ${keysUsed}/${maxKeys}`);
+      console.log(`Account plan for user ${userId}: ${plan}, status: ${status}, used: ${used}/${monthlyLimit}, keys: ${keysUsed}/${maxKeys}`);
 
       return new Response(JSON.stringify({
         plan,
@@ -124,6 +130,8 @@ Deno.serve(async (req) => {
         maxKeys,
         keysUsed,
         keysRemaining,
+        status,
+        currentPeriodEnd,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });

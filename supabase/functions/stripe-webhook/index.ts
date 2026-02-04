@@ -139,8 +139,8 @@ Deno.serve(async (req) => {
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
         const subscriptionId = subscription.id;
-        const status = normalizeStatus(subscription.status);
         const currentPeriodEnd = new Date(subscription.current_period_end * 1000);
+        const cancelAtPeriodEnd = subscription.cancel_at_period_end;
         
         const priceId = subscription.items.data[0]?.price?.id;
         
@@ -156,7 +156,17 @@ Deno.serve(async (req) => {
           break;
         }
 
-        console.log(`[STRIPE-WEBHOOK] Subscription ${event.type}: id=${subscriptionId}, status=${status}, plan=${planInfo.plan}, limit=${planInfo.monthlyLimit}`);
+        // Determine status: if cancel_at_period_end is true, set 'canceling'
+        // Otherwise normalize the Stripe status
+        let status: string;
+        if (cancelAtPeriodEnd && (subscription.status === 'active' || subscription.status === 'trialing')) {
+          status = 'canceling';
+          console.log(`[STRIPE-WEBHOOK] Subscription marked for cancellation at period end: ${subscriptionId}`);
+        } else {
+          status = normalizeStatus(subscription.status);
+        }
+
+        console.log(`[STRIPE-WEBHOOK] Subscription ${event.type}: id=${subscriptionId}, status=${status}, plan=${planInfo.plan}, limit=${planInfo.monthlyLimit}, cancel_at_period_end=${cancelAtPeriodEnd}`);
 
         const sql = getDbConnection();
         try {
@@ -187,11 +197,14 @@ Deno.serve(async (req) => {
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
+        const subscriptionId = subscription.id;
+        const periodEnd = new Date(subscription.current_period_end * 1000);
 
-        console.log(`[STRIPE-WEBHOOK] Subscription deleted for customer ${customerId}`);
+        console.log(`[STRIPE-WEBHOOK] Subscription deleted for customer ${customerId}, subscription: ${subscriptionId}`);
 
         const sql = getDbConnection();
         try {
+          // Downgrade to free plan - subscription is fully canceled
           const result = await sql`
             UPDATE accounts 
             SET plan = 'free',
@@ -199,7 +212,7 @@ Deno.serve(async (req) => {
                 status = 'canceled',
                 stripe_subscription_id = NULL,
                 stripe_price_id = NULL,
-                current_period_end = NULL,
+                current_period_end = ${periodEnd},
                 updated_at = now()
             WHERE stripe_customer_id = ${customerId}
             RETURNING user_id
