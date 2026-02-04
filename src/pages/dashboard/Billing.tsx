@@ -8,7 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Check, Zap, Users, Building, Mail, CreditCard, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getAccountPlan, listKeys, AccountPlan, ApiKey, parseApiError, getFriendlyErrorMessage, ApiError } from "@/lib/api";
+import {
+  getAccountPlan,
+  listKeys,
+  AccountPlan,
+  ApiKey,
+  parseApiError,
+  getFriendlyErrorMessage,
+  ApiError,
+} from "@/lib/api";
 
 const plans = [
   {
@@ -19,11 +27,7 @@ const plans = [
     description: "Evaluation & CI",
     limit: "100 certified runs / month",
     icon: Zap,
-    features: [
-      "Shared canonical node",
-      "Hard cap",
-      "No SLA",
-    ],
+    features: ["Shared canonical node", "Hard cap", "No SLA"],
     note: "Not intended for production.",
     cta: "Current Plan",
     ctaAction: "none",
@@ -35,13 +39,9 @@ const plans = [
     price: "$6,000",
     period: "/ year",
     description: "Serious Indie & Startups",
-    limit: "~5,000 certified runs / month",
+    limit: "5,000 certified runs / month",
     icon: Zap,
-    features: [
-      "Commercial CodeMode usage",
-      "Priority access to canonical node",
-      "Email support",
-    ],
+    features: ["Commercial CodeMode usage", "Priority access to canonical node", "Email support"],
     note: null,
     cta: "Contact",
     ctaAction: "contact",
@@ -53,12 +53,9 @@ const plans = [
     price: "$18,000",
     period: "/ year",
     description: "Cushion Tier",
-    limit: "~50,000 certified runs / month",
+    limit: "50,000 certified runs / month",
     icon: Users,
-    features: [
-      "Multiple environments",
-      "Priority queue",
-    ],
+    features: ["Multiple environments", "Priority queue"],
     note: null,
     cta: "Contact",
     ctaAction: "contact",
@@ -72,12 +69,7 @@ const plans = [
     description: "Infrastructure Dependency",
     limit: "Unlimited (by contract scope)",
     icon: Building,
-    features: [
-      "Private or dedicated node option",
-      "Audit retention",
-      "Version guarantees",
-      "SLAs",
-    ],
+    features: ["Private or dedicated node option", "Audit retention", "Version guarantees", "SLAs"],
     note: null,
     cta: "Talk to Sales",
     ctaAction: "contact",
@@ -94,14 +86,11 @@ export default function Billing() {
 
   useEffect(() => {
     if (!user) return;
-    
+
     async function loadData() {
       setLoadError(null);
       try {
-        const [planData, keysData] = await Promise.all([
-          getAccountPlan(),
-          listKeys(),
-        ]);
+        const [planData, keysData] = await Promise.all([getAccountPlan(), listKeys()]);
         setAccountPlan(planData);
         setKeys(keysData);
       } catch (error) {
@@ -122,11 +111,9 @@ export default function Billing() {
     return <Navigate to="/auth" replace />;
   }
 
-  const currentPlan = accountPlan?.plan || 'free';
+  const currentPlan = accountPlan?.plan || "free";
   const activeKeys = keys.filter((k) => k.status === "active");
-  const usagePercent = accountPlan 
-    ? Math.min(100, (accountPlan.used / accountPlan.monthlyLimit) * 100)
-    : 0;
+  const usagePercent = accountPlan ? Math.min(100, (accountPlan.used / accountPlan.monthlyLimit) * 100) : 0;
 
   return (
     <>
@@ -134,7 +121,7 @@ export default function Billing() {
         <title>Billing | NexArt Dashboard</title>
         <meta name="description" content="Manage your NexArt subscription and view pricing plans." />
       </Helmet>
-      
+
       <DashboardLayout title="Billing">
         {loading ? (
           <div className="text-caption">Loading...</div>
@@ -162,9 +149,7 @@ export default function Billing() {
                   <CreditCard className="h-5 w-5" />
                   Account Plan
                 </CardTitle>
-                <CardDescription>
-                  Plan and quota are shared across all your API keys
-                </CardDescription>
+                <CardDescription>Plan and quota are shared across all your API keys</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4">
@@ -175,17 +160,18 @@ export default function Billing() {
                     {(accountPlan?.monthlyLimit || 100).toLocaleString()} certified runs / month
                   </span>
                 </div>
-                
+
                 {/* Cancellation Notice */}
-                {accountPlan?.status === 'canceling' && accountPlan?.currentPeriodEnd && (
+                {accountPlan?.status === "canceling" && accountPlan?.currentPeriodEnd && (
                   <div className="flex items-start gap-2 p-3 bg-destructive/10 border border-destructive/30 rounded-md">
                     <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
                     <div>
                       <p className="text-sm font-medium text-destructive">
-                        Cancels on {new Date(accountPlan.currentPeriodEnd).toLocaleDateString('en-US', { 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
+                        Cancels on{" "}
+                        {new Date(accountPlan.currentPeriodEnd).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
                         })}
                       </p>
                       <p className="text-xs text-destructive/80">
@@ -194,7 +180,7 @@ export default function Billing() {
                     </div>
                   </div>
                 )}
-                
+
                 {/* Usage Progress */}
                 {accountPlan && (
                   <div className="space-y-2">
@@ -205,9 +191,7 @@ export default function Billing() {
                       </span>
                     </div>
                     <Progress value={usagePercent} className="h-2" />
-                    <p className="text-xs text-caption">
-                      {accountPlan.remaining.toLocaleString()} runs remaining
-                    </p>
+                    <p className="text-xs text-caption">{accountPlan.remaining.toLocaleString()} runs remaining</p>
                   </div>
                 )}
 
@@ -230,8 +214,7 @@ export default function Billing() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-body">
-                  Billing is currently handled manually. To upgrade or change your plan, 
-                  contact us directly.
+                  Billing is currently handled manually. To upgrade or change your plan, contact us directly.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button asChild>
@@ -254,20 +237,19 @@ export default function Billing() {
               </CardHeader>
               <CardContent className="text-body space-y-4">
                 <p>
-                  <strong>Execution is free.</strong> Run the SDK and CLI locally without limits — 
-                  no API key required for local execution.
+                  <strong>Execution is free.</strong> Run the SDK and CLI locally without limits — no API key required
+                  for local execution.
                 </p>
                 <p>
-                  <strong>Certification is what you pay for.</strong> When you need auditable, 
-                  reproducible proof that your artwork was executed deterministically, use the 
-                  canonical renderer. That's what plans meter.
+                  <strong>Certification is what you pay for.</strong> When you need auditable, reproducible proof that
+                  your artwork was executed deterministically, use the canonical renderer. That's what plans meter.
                 </p>
                 <p className="text-caption text-sm">
                   Same SDK. Same CLI. Same code. Paid plans unlock assurance, not features.
                 </p>
                 <p className="text-caption text-sm border-l-2 border-primary/30 pl-3">
-                  <strong>Note:</strong> Creating multiple API keys does not increase your quota. 
-                  All keys share your account's monthly limit.
+                  <strong>Note:</strong> Creating multiple API keys does not increase your quota. All keys share your
+                  account's monthly limit.
                 </p>
               </CardContent>
             </Card>
@@ -278,7 +260,10 @@ export default function Billing() {
                 const Icon = plan.icon;
                 const isCurrent = plan.id === currentPlan;
                 return (
-                  <Card key={plan.name} className={`flex flex-col ${plan.highlight ? 'border-primary ring-1 ring-primary/20' : ''} ${isCurrent ? 'bg-primary/5' : ''}`}>
+                  <Card
+                    key={plan.name}
+                    className={`flex flex-col ${plan.highlight ? "border-primary ring-1 ring-primary/20" : ""} ${isCurrent ? "bg-primary/5" : ""}`}
+                  >
                     <CardHeader>
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
@@ -286,14 +271,14 @@ export default function Billing() {
                           <Badge variant="outline">{plan.name}</Badge>
                         </div>
                         {plan.highlight && (
-                          <Badge variant="default" className="text-xs">Most Popular</Badge>
+                          <Badge variant="default" className="text-xs">
+                            Most Popular
+                          </Badge>
                         )}
                       </div>
                       <CardTitle className="text-2xl">
                         {plan.price}
-                        {plan.period && (
-                          <span className="text-sm font-normal text-caption ml-1">{plan.period}</span>
-                        )}
+                        {plan.period && <span className="text-sm font-normal text-caption ml-1">{plan.period}</span>}
                       </CardTitle>
                       <CardDescription>{plan.description}</CardDescription>
                     </CardHeader>
@@ -307,9 +292,7 @@ export default function Billing() {
                           </li>
                         ))}
                       </ul>
-                      {plan.note && (
-                        <p className="text-xs text-caption italic mt-4">{plan.note}</p>
-                      )}
+                      {plan.note && <p className="text-xs text-caption italic mt-4">{plan.note}</p>}
                     </CardContent>
                     <div className="p-6 pt-0">
                       {isCurrent ? (
