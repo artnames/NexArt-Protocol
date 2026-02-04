@@ -213,3 +213,24 @@ export async function getRecentUsage(): Promise<UsageEvent[]> {
   const data = await handleFunctionResponse<{ events: UsageEvent[] }>("usage-recent");
   return data.events;
 }
+
+// Stripe checkout and portal functions
+export interface StripeCheckoutResponse {
+  url: string;
+}
+
+export interface StripePortalResponse {
+  url: string;
+}
+
+export async function createStripeCheckout(plan: "pro" | "pro_plus", cadence: "annual" | "monthly"): Promise<StripeCheckoutResponse> {
+  return handleFunctionResponse<StripeCheckoutResponse>("stripe-checkout", {
+    body: { plan, cadence },
+  });
+}
+
+export async function createStripePortal(): Promise<StripePortalResponse> {
+  return handleFunctionResponse<StripePortalResponse>("stripe-portal", {
+    body: {},
+  });
+}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 type BillingCycle = "annual" | "monthly";
 
@@ -21,7 +23,7 @@ interface PlanConfig {
   features: string[];
   note: string | null;
   cta: string;
-  ctaAction: "dashboard" | "contact";
+  ctaAction: "dashboard" | "contact" | "checkout";
   highlight: boolean;
   showCertificationNote: boolean;
 }
@@ -58,8 +60,8 @@ const plans: PlanConfig[] = [
       "Email support",
     ],
     note: null,
-    cta: "Contact",
-    ctaAction: "contact",
+    cta: "Subscribe",
+    ctaAction: "checkout",
     highlight: false,
     showCertificationNote: true,
   },
@@ -75,8 +77,8 @@ const plans: PlanConfig[] = [
       "Priority queue",
     ],
     note: null,
-    cta: "Contact",
-    ctaAction: "contact",
+    cta: "Subscribe",
+    ctaAction: "checkout",
     highlight: true,
     showCertificationNote: true,
   },
@@ -104,6 +106,19 @@ const plans: PlanConfig[] = [
 const Pricing = () => {
   const { user } = useAuth();
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("annual");
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  // Show toast for billing success/cancel
+  useState(() => {
+    const billing = searchParams.get("billing");
+    if (billing === "success") {
+      toast.success("Subscription activated! Your plan will be updated shortly.");
+    } else if (billing === "cancel") {
+      toast.info("Checkout canceled. No changes were made.");
+    }
+  });
 
   const getDisplayPrice = (plan: PlanConfig) => {
     if (plan.monthlyPrice === null) {
@@ -118,6 +133,82 @@ const Pricing = () => {
       return `${plan.annualPrice} / year`;
     }
     return `${plan.monthlyPrice} / month`;
+  };
+
+  const handleCheckout = async (planName: string) => {
+    if (!user) {
+      toast.error("Please sign in to subscribe.");
+      return;
+    }
+
+    // Map plan name to API plan value
+    const planMap: Record<string, string> = {
+      "Pro": "pro",
+      "Pro+ / Team": "pro_plus",
+    };
+
+    const plan = planMap[planName];
+    if (!plan) {
+      toast.error("Invalid plan selected.");
+      return;
+    }
+
+    setCheckoutLoading(planName);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("stripe-checkout", {
+        body: { plan, cadence: billingCycle },
+      });
+
+      if (error) {
+        throw new Error(error.message || "Failed to create checkout session");
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
+    } catch (err) {
+      const error = err as Error;
+      console.error("Checkout error:", error);
+      toast.error(error.message || "Failed to start checkout. Please try again.");
+    } finally {
+      setCheckoutLoading(null);
+    }
+  };
+
+  const handleManageBilling = async () => {
+    if (!user) {
+      toast.error("Please sign in to manage billing.");
+      return;
+    }
+
+    setPortalLoading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("stripe-portal", {
+        body: {},
+      });
+
+      if (error) {
+        throw new Error(error.message || "Failed to open billing portal");
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else if (data?.error === "NOT_FOUND") {
+        toast.info("No billing account found. Subscribe to a plan first.");
+      } else {
+        throw new Error("No portal URL returned");
+      }
+    } catch (err) {
+      const error = err as Error;
+      console.error("Portal error:", error);
+      toast.error(error.message || "Failed to open billing portal. Please try again.");
+    } finally {
+      setPortalLoading(false);
+    }
   };
 
   return (
@@ -257,15 +348,26 @@ const Pricing = () => {
                   {plan.note && (
                     <p className="text-xs text-caption italic mt-4">{plan.note}</p>
                   )}
-                  <Button 
-                    variant={plan.ctaAction === "dashboard" ? "outline" : "default"}
-                    className="w-full mt-6"
-                    asChild
-                  >
-                    <Link to={plan.ctaAction === "dashboard" ? (user ? "/dashboard/api-keys" : "/auth") : "/contact"}>
-                      {plan.cta}
-                    </Link>
-                  </Button>
+                  {plan.ctaAction === "checkout" ? (
+                    <Button 
+                      variant="default"
+                      className="w-full mt-6"
+                      onClick={() => handleCheckout(plan.name)}
+                      disabled={checkoutLoading === plan.name}
+                    >
+                      {checkoutLoading === plan.name ? "Loading..." : plan.cta}
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant={plan.ctaAction === "dashboard" ? "outline" : "default"}
+                      className="w-full mt-6"
+                      asChild
+                    >
+                      <Link to={plan.ctaAction === "dashboard" ? (user ? "/dashboard/api-keys" : "/auth") : "/contact"}>
+                        {plan.cta}
+                      </Link>
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -325,6 +427,15 @@ const Pricing = () => {
             <Button variant="outline" asChild>
               <Link to="/builders/quickstart">CLI Quickstart</Link>
             </Button>
+            {user && (
+              <Button 
+                variant="outline" 
+                onClick={handleManageBilling}
+                disabled={portalLoading}
+              >
+                {portalLoading ? "Loading..." : "Manage Billing"}
+              </Button>
+            )}
           </div>
         </div>
       </PageContent>
