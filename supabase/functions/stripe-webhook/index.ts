@@ -56,63 +56,69 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Initialize Stripe
+  const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+  const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
+  
+  if (!stripeKey || !webhookSecret) {
+    console.error('[STRIPE-WEBHOOK] Missing STRIPE_SECRET_KEY or STRIPE_WEBHOOK_SECRET');
+    return new Response(JSON.stringify({ error: 'CONFIG', message: 'Webhook not configured' }), { 
+      status: 500, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
+  }
+
+  const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+
+  // Get signature from headers
+  const signature = req.headers.get('stripe-signature');
+  if (!signature) {
+    console.error('[STRIPE-WEBHOOK] Missing stripe-signature header');
+    return new Response(JSON.stringify({ error: 'VALIDATION', message: 'Missing signature' }), { 
+      status: 400, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
+  }
+
+  // CRITICAL: Get raw body for verification - do NOT parse as JSON first
+  const body = await req.text();
+
+  // Verify webhook signature using async method for Deno
+  let event: Stripe.Event;
   try {
-    // Initialize Stripe
-    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
-    const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
-    
-    if (!stripeKey || !webhookSecret) {
-      console.error('Missing STRIPE_SECRET_KEY or STRIPE_WEBHOOK_SECRET');
-      return new Response(JSON.stringify({ error: 'CONFIG', message: 'Webhook not configured' }), { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      });
-    }
+    // Deno uses async Web Crypto API - must use constructEventAsync with SubtleCryptoProvider
+    event = await stripe.webhooks.constructEventAsync(
+      body,
+      signature,
+      webhookSecret,
+      undefined,
+      Stripe.createSubtleCryptoProvider()
+    );
+  } catch (err) {
+    const error = err as Error;
+    console.error('[STRIPE-WEBHOOK] Signature verification failed:', error.message);
+    return new Response(JSON.stringify({ error: 'VALIDATION', message: 'Invalid signature' }), { 
+      status: 400, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
+  }
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+  console.log(`[STRIPE-WEBHOOK] Received event: ${event.type}, id: ${event.id}`);
 
-    // Get signature from headers
-    const signature = req.headers.get('stripe-signature');
-    if (!signature) {
-      console.error('Missing stripe-signature header');
-      return new Response(JSON.stringify({ error: 'VALIDATION', message: 'Missing signature' }), { 
-        status: 400, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      });
-    }
+  // Handle known event types, return 200 for unhandled
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const customerId = session.customer as string;
+        const subscriptionId = session.subscription as string;
+        const userId = session.metadata?.user_id;
 
-    // Get raw body for verification
-    const body = await req.text();
+        console.log(`[STRIPE-WEBHOOK] Checkout completed: customer=${customerId}, subscription=${subscriptionId}, user=${userId}`);
 
-    // Verify webhook signature
-    let event: Stripe.Event;
-    try {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-    } catch (err) {
-      const error = err as Error;
-      console.error('Webhook signature verification failed:', error.message);
-      return new Response(JSON.stringify({ error: 'VALIDATION', message: 'Invalid signature' }), { 
-        status: 400, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      });
-    }
-
-    console.log(`Received webhook event: ${event.type}, id: ${event.id}`);
-
-    const sql = getDbConnection();
-
-    try {
-      switch (event.type) {
-        case 'checkout.session.completed': {
-          const session = event.data.object as Stripe.Checkout.Session;
-          const customerId = session.customer as string;
-          const subscriptionId = session.subscription as string;
-          const userId = session.metadata?.user_id;
-
-          console.log(`Checkout completed: customer=${customerId}, subscription=${subscriptionId}, user=${userId}`);
-
-          if (userId && customerId) {
-            // Ensure stripe_customer_id is stored (may already be there from checkout creation)
+        if (userId && customerId) {
+          const sql = getDbConnection();
+          try {
             await sql`
               UPDATE accounts 
               SET stripe_customer_id = ${customerId},
@@ -120,37 +126,40 @@ Deno.serve(async (req) => {
                   updated_at = now()
               WHERE user_id = ${userId}::uuid
             `;
-            console.log(`Updated account with customer ${customerId} for user ${userId}`);
+            console.log(`[STRIPE-WEBHOOK] Updated account with customer ${customerId} for user ${userId}`);
+          } finally {
+            await sql.end();
           }
+        }
+        break;
+      }
+
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object as Stripe.Subscription;
+        const customerId = subscription.customer as string;
+        const subscriptionId = subscription.id;
+        const status = normalizeStatus(subscription.status);
+        const currentPeriodEnd = new Date(subscription.current_period_end * 1000);
+        
+        const priceId = subscription.items.data[0]?.price?.id;
+        
+        if (!priceId) {
+          console.error(`[STRIPE-WEBHOOK] No price found in subscription ${subscriptionId}`);
           break;
         }
 
-        case 'customer.subscription.created':
-        case 'customer.subscription.updated': {
-          const subscription = event.data.object as Stripe.Subscription;
-          const customerId = subscription.customer as string;
-          const subscriptionId = subscription.id;
-          const status = normalizeStatus(subscription.status);
-          const currentPeriodEnd = new Date(subscription.current_period_end * 1000);
-          
-          // Get the price from the first subscription item
-          const priceId = subscription.items.data[0]?.price?.id;
-          
-          if (!priceId) {
-            console.error(`No price found in subscription ${subscriptionId}`);
-            break;
-          }
+        const planInfo = mapPriceToPlan(priceId);
+        
+        if (!planInfo) {
+          console.error(`[STRIPE-WEBHOOK] Unknown price ID: ${priceId} for subscription ${subscriptionId}`);
+          break;
+        }
 
-          const planInfo = mapPriceToPlan(priceId);
-          
-          if (!planInfo) {
-            console.error(`Unknown price ID: ${priceId} for subscription ${subscriptionId}`);
-            break;
-          }
+        console.log(`[STRIPE-WEBHOOK] Subscription ${event.type}: id=${subscriptionId}, status=${status}, plan=${planInfo.plan}, limit=${planInfo.monthlyLimit}`);
 
-          console.log(`Subscription ${event.type}: id=${subscriptionId}, status=${status}, plan=${planInfo.plan}, limit=${planInfo.monthlyLimit}`);
-
-          // Update account by stripe_customer_id
+        const sql = getDbConnection();
+        try {
           const result = await sql`
             UPDATE accounts 
             SET plan = ${planInfo.plan},
@@ -165,20 +174,24 @@ Deno.serve(async (req) => {
           `;
 
           if (result.length > 0) {
-            console.log(`Updated account for customer ${customerId}: plan=${planInfo.plan}, status=${status}`);
+            console.log(`[STRIPE-WEBHOOK] Updated account for customer ${customerId}: plan=${planInfo.plan}, status=${status}`);
           } else {
-            console.warn(`No account found for customer ${customerId}`);
+            console.warn(`[STRIPE-WEBHOOK] No account found for customer ${customerId}`);
           }
-          break;
+        } finally {
+          await sql.end();
         }
+        break;
+      }
 
-        case 'customer.subscription.deleted': {
-          const subscription = event.data.object as Stripe.Subscription;
-          const customerId = subscription.customer as string;
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object as Stripe.Subscription;
+        const customerId = subscription.customer as string;
 
-          console.log(`Subscription deleted for customer ${customerId}`);
+        console.log(`[STRIPE-WEBHOOK] Subscription deleted for customer ${customerId}`);
 
-          // Downgrade to free plan
+        const sql = getDbConnection();
+        try {
           const result = await sql`
             UPDATE accounts 
             SET plan = 'free',
@@ -193,47 +206,49 @@ Deno.serve(async (req) => {
           `;
 
           if (result.length > 0) {
-            console.log(`Downgraded account for customer ${customerId} to free plan`);
+            console.log(`[STRIPE-WEBHOOK] Downgraded account for customer ${customerId} to free plan`);
           } else {
-            console.warn(`No account found for customer ${customerId}`);
+            console.warn(`[STRIPE-WEBHOOK] No account found for customer ${customerId}`);
           }
-          break;
+        } finally {
+          await sql.end();
         }
+        break;
+      }
 
-        case 'invoice.payment_failed': {
-          const invoice = event.data.object as Stripe.Invoice;
-          const customerId = invoice.customer as string;
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = invoice.customer as string;
 
-          console.log(`Payment failed for customer ${customerId}`);
+        console.log(`[STRIPE-WEBHOOK] Payment failed for customer ${customerId}`);
 
-          // Mark as past_due but do NOT downgrade plan
+        const sql = getDbConnection();
+        try {
           await sql`
             UPDATE accounts 
             SET status = 'past_due',
                 updated_at = now()
             WHERE stripe_customer_id = ${customerId}
           `;
-          break;
+        } finally {
+          await sql.end();
         }
-
-        default:
-          console.log(`Unhandled event type: ${event.type}`);
+        break;
       }
 
-      await sql.end();
-
-      return new Response(JSON.stringify({ received: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-
-    } catch (dbError) {
-      await sql.end();
-      throw dbError;
+      default:
+        // Return 200 for unhandled events (log and ignore)
+        console.log(`[STRIPE-WEBHOOK] Unhandled event type: ${event.type} - acknowledging`);
     }
+
+    return new Response(JSON.stringify({ received: true }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
 
   } catch (err) {
     const error = err as Error;
-    console.error('Error processing webhook:', error.message);
+    console.error('[STRIPE-WEBHOOK] Error processing event:', error.message);
     
     return new Response(JSON.stringify({ 
       error: 'INTERNAL', 
