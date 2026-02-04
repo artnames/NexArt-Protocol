@@ -57,6 +57,12 @@ const Privacy = () => {
             We share data only with service providers that help us operate NexArt (e.g., Supabase, Railway, hosting providers). We do not sell personal data.
           </p>
 
+          <h3>Payments</h3>
+          
+          <p>
+            Payment processing is handled by Stripe. Stripe may process personal and transactional data in accordance with its own privacy policy. NexArt does not store full payment card details.
+          </p>
+
           <h2>Retention</h2>
           
           <p>
