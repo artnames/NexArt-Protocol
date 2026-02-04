@@ -154,9 +154,12 @@ Deno.serve(async (req) => {
 
       await sql.end();
 
-      // Get URLs from env
-      const successUrl = Deno.env.get('STRIPE_SUCCESS_URL') || `${req.headers.get('origin')}/pricing?billing=success`;
-      const cancelUrl = Deno.env.get('STRIPE_CANCEL_URL') || `${req.headers.get('origin')}/pricing?billing=cancel`;
+      // Get URLs from env or construct from origin/referer
+      const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/$/, '') || Deno.env.get('APP_URL') || 'https://nexart-protocol-docs.lovable.app';
+      const successUrl = Deno.env.get('STRIPE_SUCCESS_URL') || `${origin}/pricing?billing=success`;
+      const cancelUrl = Deno.env.get('STRIPE_CANCEL_URL') || `${origin}/pricing?billing=cancel`;
+      
+      console.log(`Using success URL: ${successUrl}, cancel URL: ${cancelUrl}`);
 
       // Create Stripe Checkout Session
       const session = await stripe.checkout.sessions.create({
