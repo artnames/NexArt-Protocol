@@ -154,12 +154,62 @@ Deno.serve(async (req) => {
 
       await sql.end();
 
-      // Get URLs from env or construct from origin/referer
-      const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/$/, '') || Deno.env.get('APP_URL') || 'https://nexart-protocol-docs.lovable.app';
-      const successUrl = Deno.env.get('STRIPE_SUCCESS_URL') || `${origin}/pricing?billing=success`;
-      const cancelUrl = Deno.env.get('STRIPE_CANCEL_URL') || `${origin}/pricing?billing=cancel`;
-      
-      console.log(`Using success URL: ${successUrl}, cancel URL: ${cancelUrl}`);
+      // Resolve redirect URLs (Stripe requires absolute http(s) URLs)
+      const envSuccessUrl = Deno.env.get('STRIPE_SUCCESS_URL');
+      const envCancelUrl = Deno.env.get('STRIPE_CANCEL_URL');
+
+      const originHeader = req.headers.get('origin');
+      const refererHeader = req.headers.get('referer');
+
+      let baseOrigin: string | null = originHeader ?? null;
+      if (!baseOrigin && refererHeader) {
+        try {
+          baseOrigin = new URL(refererHeader).origin;
+        } catch {
+          baseOrigin = null;
+        }
+      }
+      baseOrigin = baseOrigin || Deno.env.get('APP_URL') || 'https://nexart-protocol-docs.lovable.app';
+
+      const validateAbsoluteUrl = (value: string | null | undefined): string | null => {
+        if (!value) return null;
+        try {
+          const u = new URL(value);
+          if (!['http:', 'https:'].includes(u.protocol)) return null;
+          return u.toString();
+        } catch {
+          return null;
+        }
+      };
+
+      const successUrl = validateAbsoluteUrl(envSuccessUrl) || `${baseOrigin}/pricing?billing=success`;
+      const cancelUrl = validateAbsoluteUrl(envCancelUrl) || `${baseOrigin}/pricing?billing=cancel`;
+
+      // Final validation to avoid Stripe "Not a valid URL"
+      if (!validateAbsoluteUrl(successUrl) || !validateAbsoluteUrl(cancelUrl)) {
+        console.error('CONFIG: Invalid success/cancel URL', {
+          originHeader,
+          refererHeader,
+          baseOrigin,
+          envSuccessUrl,
+          envCancelUrl,
+          successUrl,
+          cancelUrl,
+        });
+        return new Response(JSON.stringify({ error: 'CONFIG', message: 'Invalid success/cancel URL configuration' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (envSuccessUrl && !validateAbsoluteUrl(envSuccessUrl)) {
+        console.warn('Invalid STRIPE_SUCCESS_URL; falling back to computed URL', { envSuccessUrl, baseOrigin });
+      }
+      if (envCancelUrl && !validateAbsoluteUrl(envCancelUrl)) {
+        console.warn('Invalid STRIPE_CANCEL_URL; falling back to computed URL', { envCancelUrl, baseOrigin });
+      }
+
+      console.log('Checkout redirect URLs resolved', { successUrl, cancelUrl });
 
       // Create Stripe Checkout Session
       const session = await stripe.checkout.sessions.create({
