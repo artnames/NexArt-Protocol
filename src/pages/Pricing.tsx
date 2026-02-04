@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
@@ -8,12 +9,32 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 
-const plans = [
+type BillingCycle = "annual" | "monthly";
+
+interface PlanConfig {
+  name: string;
+  tagline: string;
+  annualPrice: string;
+  monthlyPrice: string | null;
+  annualPriceDetail: string;
+  monthlyPriceDetail: string;
+  limit: string;
+  keyLimit: string;
+  features: string[];
+  note: string | null;
+  cta: string;
+  ctaAction: "dashboard" | "contact";
+  highlight: boolean;
+}
+
+const plans: PlanConfig[] = [
   {
     name: "Free",
     tagline: "Evaluation & CI",
-    price: "$0",
-    priceDetail: "",
+    annualPrice: "$0",
+    monthlyPrice: null,
+    annualPriceDetail: "",
+    monthlyPriceDetail: "",
     limit: "100 certified runs / month",
     keyLimit: "Up to 2 active API keys",
     features: [
@@ -29,8 +50,10 @@ const plans = [
   {
     name: "Pro",
     tagline: "Serious Indie & Startups",
-    price: "$6,000",
-    priceDetail: "/ year",
+    annualPrice: "$6,000",
+    monthlyPrice: "$600",
+    annualPriceDetail: "/ year",
+    monthlyPriceDetail: "/ month",
     limit: "~5,000 certified runs / month",
     keyLimit: "Up to 5 active API keys",
     features: [
@@ -46,8 +69,10 @@ const plans = [
   {
     name: "Pro+ / Team",
     tagline: "Cushion Tier",
-    price: "$18,000",
-    priceDetail: "/ year",
+    annualPrice: "$18,000",
+    monthlyPrice: "$1,800",
+    annualPriceDetail: "/ year",
+    monthlyPriceDetail: "/ month",
     limit: "~50,000 certified runs / month",
     keyLimit: "Up to 10 active API keys",
     features: [
@@ -62,8 +87,10 @@ const plans = [
   {
     name: "Enterprise",
     tagline: "Infrastructure Dependency",
-    price: "From $50,000",
-    priceDetail: "/ year",
+    annualPrice: "From $50,000",
+    monthlyPrice: null,
+    annualPriceDetail: "/ year",
+    monthlyPriceDetail: "",
     limit: "Custom limits (by contract)",
     keyLimit: "Contract-based terms",
     features: [
@@ -81,6 +108,21 @@ const plans = [
 
 const Pricing = () => {
   const { user } = useAuth();
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>("annual");
+
+  const getPrice = (plan: PlanConfig) => {
+    if (plan.monthlyPrice === null) {
+      return plan.annualPrice;
+    }
+    return billingCycle === "annual" ? plan.annualPrice : plan.monthlyPrice;
+  };
+
+  const getPriceDetail = (plan: PlanConfig) => {
+    if (plan.monthlyPrice === null) {
+      return plan.annualPriceDetail;
+    }
+    return billingCycle === "annual" ? plan.annualPriceDetail : plan.monthlyPriceDetail;
+  };
 
   return (
     <PageLayout>
@@ -144,7 +186,36 @@ const Pricing = () => {
 
         {/* Plan Cards */}
         <section className="mb-16">
-          <h2 className="text-2xl font-serif text-foreground mb-6">Plans</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <h2 className="text-2xl font-serif text-foreground">Plans</h2>
+            <div className="flex flex-col items-start sm:items-end gap-2">
+              <div className="inline-flex items-center rounded-lg border border-border bg-muted/50 p-1">
+                <button
+                  onClick={() => setBillingCycle("annual")}
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                    billingCycle === "annual"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Annual
+                </button>
+                <button
+                  onClick={() => setBillingCycle("monthly")}
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                    billingCycle === "monthly"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Monthly
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Annual includes a 2 month discount.
+              </p>
+            </div>
+          </div>
           <div className="grid gap-6 md:grid-cols-2">
             {plans.map((plan) => (
               <Card 
@@ -162,9 +233,9 @@ const Pricing = () => {
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col">
                   <div className="mb-4">
-                    <span className="text-3xl font-semibold text-foreground">{plan.price}</span>
-                    {plan.priceDetail && (
-                      <span className="text-body ml-1">{plan.priceDetail}</span>
+                    <span className="text-3xl font-semibold text-foreground">{getPrice(plan)}</span>
+                    {getPriceDetail(plan) && (
+                      <span className="text-body ml-1">{getPriceDetail(plan)}</span>
                     )}
                   </div>
                   <div className="mb-4 pb-4 border-b border-border">
@@ -199,6 +270,9 @@ const Pricing = () => {
               </Card>
             ))}
           </div>
+          <p className="text-sm text-muted-foreground mt-6">
+            Monthly is available for flexibility. Annual is discounted.
+          </p>
         </section>
 
         {/* Account-Level Enforcement */}
