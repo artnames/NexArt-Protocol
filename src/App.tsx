@@ -28,6 +28,7 @@ import CanonicalRenderer from "./pages/CanonicalRenderer";
 import GetStarted from "./pages/docs/GetStarted";
 import CLI from "./pages/docs/CLI";
 import RendererAPI from "./pages/docs/RendererAPI";
+import AIAgentContract from "./pages/docs/AIAgentContract";
 import BuildersCLI from "./pages/builders/CLI";
 import BuildersQuickstart from "./pages/builders/Quickstart";
 import BuildersCertification from "./pages/builders/Certification";
@@ -78,6 +79,7 @@ const App = () => (
               <Route path="/docs/get-started" element={<GetStarted />} />
               <Route path="/docs/cli" element={<CLI />} />
               <Route path="/docs/renderer-api" element={<RendererAPI />} />
+              <Route path="/docs/ai-agent-contract" element={<AIAgentContract />} />
               <Route path="/builders/cli" element={<BuildersCLI />} />
               <Route path="/builders/quickstart" element={<BuildersQuickstart />} />
               <Route path="/builders/certification" element={<BuildersCertification />} />
