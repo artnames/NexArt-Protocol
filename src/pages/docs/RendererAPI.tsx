@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
@@ -33,6 +34,16 @@ const RendererAPI = () => {
               <li><a href="#error-codes" className="text-link hover:text-link-hover underline underline-offset-2">Error Codes</a></li>
             </ul>
           </nav>
+
+          <div className="mb-8 p-4 bg-muted/50 rounded-lg border border-border">
+            <p className="text-sm">
+              <strong>For AI agents and automated tools:</strong> See the{" "}
+              <Link to="/docs/ai-agent-contract" className="text-link hover:text-link-hover underline underline-offset-2">
+                AI Agent Contract
+              </Link>{" "}
+              for unambiguous API semantics optimized for programmatic clients.
+            </p>
+          </div>
 
           <h2>Endpoint</h2>
 
