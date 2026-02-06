@@ -166,7 +166,10 @@ export default function Auth() {
         // Validate OAuth URL before redirect (security: prevent open redirect)
         if (data?.url) {
           const oauthUrl = new URL(data.url);
-          const allowedHosts = ["accounts.google.com"];
+          const allowedHosts = [
+            "accounts.google.com",
+            "tnvckrssolgjrtcfhnwm.supabase.co",
+          ];
           if (!allowedHosts.some((host) => oauthUrl.hostname === host)) {
             throw new Error("Invalid OAuth redirect URL");
           }
