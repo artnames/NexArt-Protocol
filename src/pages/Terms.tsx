@@ -1,15 +1,15 @@
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 
 const Terms = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>Terms of Service - NexArt Protocol</title>
-        <meta name="description" content="Terms of Service for NexArt Protocol & Dashboard. Read our terms governing use of the NexArt services." />
-      </Helmet>
+      <SEOHead 
+        title="Terms of Service"
+        description="Terms of Service for NexArt Protocol & Dashboard. Read our terms governing use of the NexArt services."
+      />
       
       <PageHeader 
         title="Terms of Service"

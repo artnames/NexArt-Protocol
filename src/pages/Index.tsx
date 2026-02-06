@@ -2,16 +2,16 @@ import { Link } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { Button } from "@/components/ui/button";
 
 const Index = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>NexArt Protocol — Deterministic Generative Media Infrastructure</title>
-        <meta name="description" content="NexArt is a protocol and SDK for reproducible, verifiable generative output — on-chain or off-chain. Same input. Same output. Everywhere." />
-      </Helmet>
+      <SEOHead 
+        title="Deterministic Generative Media Infrastructure"
+        description="NexArt is a protocol and SDK for reproducible, verifiable generative output — on-chain or off-chain. Same input. Same output. Everywhere."
+      />
       
       <PageHeader 
         title="Deterministic Generative Media Infrastructure"

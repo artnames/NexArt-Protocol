@@ -1,15 +1,15 @@
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 
 const Modes = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>Modes - NexArt Protocol</title>
-        <meta name="description" content="The creation primitives of NexArt: SoundArt, Code Mode, Shapes, Fluids, Noise, and Artnames. Each mode is first-class." />
-      </Helmet>
+      <SEOHead 
+        title="Modes"
+        description="The creation primitives of NexArt: SoundArt, Code Mode, Shapes, Fluids, Noise, and Artnames. Each mode is first-class."
+      />
       
       <PageHeader 
         title="Modes"

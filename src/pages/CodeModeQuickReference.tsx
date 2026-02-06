@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
@@ -7,10 +7,10 @@ import PageContent from "@/components/layout/PageContent";
 const CodeModeQuickReference = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>Code Mode Quick Reference — NexArt Protocol</title>
-        <meta name="description" content="A printable one-page guide for writing correct Static and Loop sketches in NexArt Code Mode." />
-      </Helmet>
+      <SEOHead 
+        title="Code Mode Quick Reference"
+        description="A printable one-page guide for writing correct Static and Loop sketches in NexArt Code Mode."
+      />
       
       <PageHeader
         title="Code Mode Mental Model — Quick Reference"

@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -272,13 +271,7 @@ export default function ApiKeys() {
   const hasNoActiveKeys = activeKeys.length === 0;
 
   return (
-    <>
-      <Helmet>
-        <title>API Keys | NexArt Dashboard</title>
-        <meta name="description" content="Manage your NexArt API keys for certified execution." />
-      </Helmet>
-      
-      <DashboardLayout title="API Keys">
+    <DashboardLayout title="API Keys">
         <div className="space-y-6">
           {/* Error State */}
           {loadError && (
@@ -687,7 +680,6 @@ export default function ApiKeys() {
             </CardContent>
           </Card>
         </div>
-      </DashboardLayout>
-    </>
+    </DashboardLayout>
   );
 }

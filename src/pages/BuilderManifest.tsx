@@ -1,17 +1,14 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
 const BuilderManifest = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Helmet>
-        <title>Builder Manifest (Draft v0) | NexArt Protocol</title>
-        <meta
-          name="description"
-          content="Specification for the NexArt Builder Manifest - a declarative JSON file for app identity and SDK usage attribution."
-        />
-      </Helmet>
+      <SEOHead 
+        title="Builder Manifest (Draft v0)"
+        description="Specification for the NexArt Builder Manifest - a declarative JSON file for app identity and SDK usage attribution."
+      />
 
       <Header />
 

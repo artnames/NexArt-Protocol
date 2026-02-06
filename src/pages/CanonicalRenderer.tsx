@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
@@ -7,13 +7,10 @@ import PageContent from "@/components/layout/PageContent";
 const CanonicalRenderer = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>NexArt Canonical Renderer</title>
-        <meta
-          name="description"
-          content="The NexArt Canonical Renderer is certification and verification infrastructure for deterministic generative systems."
-        />
-      </Helmet>
+      <SEOHead 
+        title="Canonical Renderer"
+        description="The NexArt Canonical Renderer is certification and verification infrastructure for deterministic generative systems."
+      />
 
       <PageHeader
         title="NexArt Canonical Renderer"

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { useLocation } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
@@ -84,9 +84,10 @@ const Contact = () => {
   if (isSuccess) {
     return (
       <PageLayout>
-        <Helmet>
-          <title>Message Sent — NexArt Protocol</title>
-        </Helmet>
+        <SEOHead 
+          title="Message Sent"
+          description="Thanks — we'll get back to you shortly."
+        />
 
         <PageHeader
           title="Message Sent"
@@ -110,13 +111,10 @@ const Contact = () => {
 
   return (
     <PageLayout>
-      <Helmet>
-        <title>Contact Us — NexArt Protocol</title>
-        <meta
-          name="description"
-          content="Get in touch with the NexArt team for API access, partnership inquiries, or support."
-        />
-      </Helmet>
+      <SEOHead 
+        title="Contact Us"
+        description="Get in touch with the NexArt team for API access, partnership inquiries, or support."
+      />
 
       <PageHeader
         title="Contact Us"

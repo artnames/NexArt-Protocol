@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
@@ -11,13 +11,10 @@ const BuildersCertification = () => {
 
   return (
     <PageLayout>
-      <Helmet>
-        <title>Canonical Certification — NexArt Protocol</title>
-        <meta
-          name="description"
-          content="What canonical certification means in the NexArt protocol. Deterministic execution, verifiable snapshots, and reproducibility guarantees."
-        />
-      </Helmet>
+      <SEOHead 
+        title="Canonical Certification"
+        description="What canonical certification means in the NexArt protocol. Deterministic execution, verifiable snapshots, and reproducibility guarantees."
+      />
 
       <PageHeader
         title="Canonical Certification"

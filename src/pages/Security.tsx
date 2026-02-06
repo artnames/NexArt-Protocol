@@ -1,7 +1,7 @@
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import SecurityArchitectureDiagram from "@/components/security/SecurityArchitectureDiagram";
 const soc2Mapping = [
@@ -30,13 +30,10 @@ const soc2Mapping = [
 const Security = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>Security Architecture — NexArt Protocol</title>
-        <meta
-          name="description"
-          content="How NexArt enforces deterministic, sandboxed, and auditable execution. Security architecture aligned with SOC2-style controls."
-        />
-      </Helmet>
+      <SEOHead 
+        title="Security Architecture"
+        description="How NexArt enforces deterministic, sandboxed, and auditable execution. Security architecture aligned with SOC2-style controls."
+      />
 
       <PageHeader
         title="Security Architecture"

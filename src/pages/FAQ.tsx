@@ -1,7 +1,7 @@
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
@@ -309,13 +309,10 @@ const faqItems = [
 const FAQ = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>FAQ — NexArt Protocol</title>
-        <meta
-          name="description"
-          content="Frequently asked questions about the NexArt Protocol, deterministic execution, certified renders, and the Canonical Renderer."
-        />
-      </Helmet>
+      <SEOHead 
+        title="FAQ"
+        description="Frequently asked questions about the NexArt Protocol, deterministic execution, certified renders, and the Canonical Renderer."
+      />
 
       <PageHeader
         title="Frequently Asked Questions"

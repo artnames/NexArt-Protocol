@@ -2,7 +2,7 @@ import { ReactNode, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import CanonicalHead from "@/components/seo/CanonicalHead";
+import SEOHead from "@/components/seo/SEOHead";
 import { 
   LayoutDashboard, 
   Key, 
@@ -57,7 +57,11 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
 
   return (
     <div className="min-h-screen bg-background">
-      <CanonicalHead />
+      <SEOHead 
+        title={`${title} — Dashboard`} 
+        description="Manage your NexArt API keys and view usage statistics."
+        noindex={true}
+      />
       {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

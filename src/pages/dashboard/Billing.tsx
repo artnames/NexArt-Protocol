@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Navigate, Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -116,13 +115,7 @@ export default function Billing() {
   const usagePercent = accountPlan ? Math.min(100, (accountPlan.used / accountPlan.monthlyLimit) * 100) : 0;
 
   return (
-    <>
-      <Helmet>
-        <title>Billing | NexArt Dashboard</title>
-        <meta name="description" content="Manage your NexArt subscription and view pricing plans." />
-      </Helmet>
-
-      <DashboardLayout title="Billing">
+    <DashboardLayout title="Billing">
         {loading ? (
           <div className="text-caption">Loading...</div>
         ) : (
@@ -350,7 +343,6 @@ export default function Billing() {
             </Card>
           </div>
         )}
-      </DashboardLayout>
-    </>
+    </DashboardLayout>
   );
 }

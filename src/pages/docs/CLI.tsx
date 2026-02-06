@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
@@ -6,13 +6,10 @@ import PageContent from "@/components/layout/PageContent";
 const CLI = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>CLI Documentation — NexArt Protocol</title>
-        <meta
-          name="description"
-          content="NexArt CLI documentation — install, render, and verify deterministic generative artwork."
-        />
-      </Helmet>
+      <SEOHead 
+        title="CLI Documentation"
+        description="NexArt CLI documentation — install, render, and verify deterministic generative artwork."
+      />
 
       <PageHeader
         title="NexArt CLI"

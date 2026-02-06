@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { Link, useSearchParams } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
@@ -197,13 +197,10 @@ const Pricing = () => {
 
   return (
     <PageLayout>
-      <Helmet>
-        <title>Pricing — NexArt Protocol</title>
-        <meta
-          name="description"
-          content="Deterministic execution is free. Certified determinism is what you pay for. NexArt certification-based pricing."
-        />
-      </Helmet>
+      <SEOHead 
+        title="Pricing"
+        description="Deterministic execution is free. Certified determinism is what you pay for. NexArt certification-based pricing."
+      />
 
       <PageHeader
         title="Pricing"

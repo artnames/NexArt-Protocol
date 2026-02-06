@@ -1,16 +1,16 @@
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
 
 const Protocol = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>NexArt Protocol - Deterministic Execution Standard</title>
-        <meta name="description" content="NexArt Protocol defines a canonical execution layer for deterministic generative systems. Verifiable, reproducible, and open to third-party builders." />
-      </Helmet>
+      <SEOHead 
+        title="Protocol — Deterministic Execution Standard"
+        description="NexArt Protocol defines a canonical execution layer for deterministic generative systems. Verifiable, reproducible, and open to third-party builders."
+      />
       
       <PageHeader 
         title="NexArt Protocol"

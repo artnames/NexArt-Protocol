@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
@@ -7,10 +7,10 @@ import PageContent from "@/components/layout/PageContent";
 const HowCodeModeThinks = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>How Code Mode Thinks — NexArt Protocol</title>
-        <meta name="description" content="A conceptual guide for artists to understand how NexArt Code Mode executes, predict artwork behavior, and write correct generative sketches from first principles." />
-      </Helmet>
+      <SEOHead 
+        title="How Code Mode Thinks"
+        description="A conceptual guide for artists to understand how NexArt Code Mode executes, predict artwork behavior, and write correct generative sketches from first principles."
+      />
       
       <PageHeader
         title="How Code Mode Thinks"

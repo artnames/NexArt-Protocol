@@ -1,15 +1,15 @@
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 
 const Determinism = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>Determinism & Versioning - NexArt Protocol</title>
-        <meta name="description" content="What NexArt guarantees and what it does not. Reproducibility, best-effort systems, and version stability." />
-      </Helmet>
+      <SEOHead 
+        title="Determinism & Versioning"
+        description="What NexArt guarantees and what it does not. Reproducibility, best-effort systems, and version stability."
+      />
       
       <PageHeader 
         title="Determinism & Versioning"

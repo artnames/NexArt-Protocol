@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
@@ -11,13 +11,10 @@ const BuildersQuickstart = () => {
 
   return (
     <PageLayout>
-      <Helmet>
-        <title>Quickstart — NexArt Builders</title>
-        <meta
-          name="description"
-          content="Get your first certified run in under 5 minutes. Install the CLI, authenticate, run a sketch, and verify the snapshot."
-        />
-      </Helmet>
+      <SEOHead 
+        title="Quickstart — Builders"
+        description="Get your first certified run in under 5 minutes. Install the CLI, authenticate, run a sketch, and verify the snapshot."
+      />
 
       <PageHeader
         title="Quickstart"
