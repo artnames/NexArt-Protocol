@@ -71,6 +71,9 @@ const Security = () => {
             </p>
           </section>
 
+          {/* Security Architecture Diagram */}
+          <SecurityArchitectureDiagram />
+
           {/* Threat Model */}
           <section className="mb-12">
             <h2>Threat Model</h2>
