@@ -13,13 +13,6 @@ const SecurityArchitectureDiagram = () => {
           aria-labelledby="security-diagram-title security-diagram-desc"
           className="text-foreground"
         >
-          width="100%"
-          height="auto"
-          style={{ maxWidth: "1100px" }}
-          role="img"
-          aria-labelledby="security-diagram-title security-diagram-desc"
-          className="text-foreground"
-        >
           <title id="security-diagram-title">NexArt Security Architecture Diagram</title>
           <desc id="security-diagram-desc">
             A diagram showing the flow from input sources through the canonical renderer to artifact output and verification metadata, with a certification boundary separating execution from paid certification services.
