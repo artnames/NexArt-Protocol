@@ -1,38 +1,10 @@
-import { useRef, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-
 const SecurityArchitectureDiagram = () => {
-  const svgRef = useRef<SVGSVGElement>(null);
-
-  const handleDownload = useCallback(() => {
-    if (!svgRef.current) return;
-    
-    const svgElement = svgRef.current;
-    const serializer = new XMLSerializer();
-    let svgString = serializer.serializeToString(svgElement);
-    
-    // Add XML declaration and standalone SVG styles
-    svgString = '<?xml version="1.0" encoding="UTF-8"?>\n' + svgString;
-    
-    const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "nexart-security-architecture.svg";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }, []);
-
   return (
     <div className="my-12">
       <h2 className="text-2xl mt-16 mb-6 text-foreground font-serif">Security Architecture Diagram</h2>
-      
+
       <div className="flex justify-center">
         <svg
-          ref={svgRef}
           viewBox="0 0 1100 420"
           width="100%"
           height="auto"
@@ -456,10 +428,10 @@ const SecurityArchitectureDiagram = () => {
               opacity="0.7"
             />
             <text x="950" y="258" textAnchor="middle" fill="currentColor" fontSize="11">
-              Snapshot JSON returned to
+              Snapshot JSON returned to client
             </text>
-            <text x="950" y="275" textAnchor="middle" fill="currentColor" fontSize="11">
-              client (not stored)
+            <text x="950" y="276" textAnchor="middle" fill="currentColor" fontSize="11">
+              (client-retained, not stored by NexArt)
             </text>
           </g>
 
@@ -489,10 +461,12 @@ const SecurityArchitectureDiagram = () => {
         </svg>
       </div>
 
-      <div className="flex justify-center mt-4">
-        <Button variant="outline" size="sm" onClick={handleDownload}>
-          Download SVG
-        </Button>
+      <div className="mt-6 text-center">
+        <p className="text-sm font-medium text-foreground mb-2">Legend</p>
+        <p className="text-xs text-muted-foreground">Solid arrows indicate execution flow</p>
+        <p className="text-xs text-muted-foreground">
+          Dashed boundary indicates certification, metering, and billing boundary
+        </p>
       </div>
     </div>
   );
