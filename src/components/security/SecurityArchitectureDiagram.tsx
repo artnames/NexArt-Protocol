@@ -456,10 +456,10 @@ const SecurityArchitectureDiagram = () => {
               opacity="0.7"
             />
             <text x="950" y="258" textAnchor="middle" fill="currentColor" fontSize="11">
-              Snapshot JSON returned to
+              Snapshot JSON returned to client
             </text>
-            <text x="950" y="275" textAnchor="middle" fill="currentColor" fontSize="11">
-              client (not stored)
+            <text x="950" y="276" textAnchor="middle" fill="currentColor" fontSize="11">
+              (client-retained, not stored by NexArt)
             </text>
           </g>
 
