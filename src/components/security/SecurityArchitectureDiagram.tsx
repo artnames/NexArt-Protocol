@@ -1,39 +1,18 @@
-import { useRef, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-
 const SecurityArchitectureDiagram = () => {
-  const svgRef = useRef<SVGSVGElement>(null);
-
-  const handleDownload = useCallback(() => {
-    if (!svgRef.current) return;
-    
-    const svgElement = svgRef.current;
-    const serializer = new XMLSerializer();
-    let svgString = serializer.serializeToString(svgElement);
-    
-    // Add XML declaration and standalone SVG styles
-    svgString = '<?xml version="1.0" encoding="UTF-8"?>\n' + svgString;
-    
-    const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "nexart-security-architecture.svg";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }, []);
-
   return (
     <div className="my-12">
       <h2 className="text-2xl mt-16 mb-6 text-foreground font-serif">Security Architecture Diagram</h2>
-      
+
       <div className="flex justify-center">
         <svg
-          ref={svgRef}
           viewBox="0 0 1100 420"
+          width="100%"
+          height="auto"
+          style={{ maxWidth: "1100px" }}
+          role="img"
+          aria-labelledby="security-diagram-title security-diagram-desc"
+          className="text-foreground"
+        >
           width="100%"
           height="auto"
           style={{ maxWidth: "1100px" }}
