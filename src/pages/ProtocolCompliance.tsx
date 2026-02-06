@@ -1,15 +1,15 @@
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 
 const ProtocolCompliance = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>Protocol Compliance - NexArt Protocol</title>
-        <meta name="description" content="What it means to be NexArt Protocol compliant. Compliance levels, requirements, and examples of protocol-compliant applications." />
-      </Helmet>
+      <SEOHead 
+        title="Protocol Compliance"
+        description="What it means to be NexArt Protocol compliant. Compliance levels, requirements, and examples of protocol-compliant applications."
+      />
       
       <PageHeader 
         title="Protocol Compliance"

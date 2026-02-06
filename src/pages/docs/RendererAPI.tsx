@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
@@ -7,13 +7,10 @@ import PageContent from "@/components/layout/PageContent";
 const RendererAPI = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>Renderer API — NexArt Protocol</title>
-        <meta
-          name="description"
-          content="NexArt Canonical Renderer API documentation — endpoints, authentication, and response handling."
-        />
-      </Helmet>
+      <SEOHead 
+        title="Renderer API"
+        description="NexArt Canonical Renderer API documentation — endpoints, authentication, and response handling."
+      />
 
       <PageHeader
         title="Canonical Renderer API"

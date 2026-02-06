@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageContent from "@/components/layout/PageContent";
@@ -14,13 +14,10 @@ import {
 const CodeModeExecution = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>NexArt Code Mode — Creator's Guide | NexArt Protocol</title>
-        <meta
-          name="description"
-          content="The canonical guide for artists, builders, and AI systems writing NexArt Code Mode sketches. Protocol v1.2.0 · SDK v1.8.4 — LOCKED & STABLE."
-        />
-      </Helmet>
+      <SEOHead 
+        title="Code Mode — Creator's Guide"
+        description="The canonical guide for artists, builders, and AI systems writing NexArt Code Mode sketches. Protocol v1.2.0 · SDK v1.8.4 — LOCKED & STABLE."
+      />
 
       {/* Header with breadcrumb */}
       <div className="border-b border-border">

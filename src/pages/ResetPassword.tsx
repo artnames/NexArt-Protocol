@@ -1,26 +1,19 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { z } from "zod";
 
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
 
-const useCanonicalUrl = () => {
-  const location = useLocation();
-  const path = location.pathname === "/" ? "" : location.pathname;
-  return `https://nexart.io${path}`;
-};
-
 export default function ResetPassword() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const canonicalUrl = useCanonicalUrl();
   const [loading, setLoading] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -92,6 +85,7 @@ export default function ResetPassword() {
   if (checkingSession) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
+        <SEOHead title="Loading" noindex={true} />
         <p className="text-muted-foreground">Loading...</p>
       </div>
     );
@@ -100,10 +94,11 @@ export default function ResetPassword() {
   if (!isValidSession) {
     return (
       <>
-        <Helmet>
-          <title>Invalid Link | NexArt</title>
-          <link rel="canonical" href={canonicalUrl} />
-        </Helmet>
+        <SEOHead 
+          title="Invalid Link"
+          description="This password reset link is invalid or has expired."
+          noindex={true}
+        />
         <div className="min-h-screen flex items-center justify-center bg-background px-4">
           <Card className="w-full max-w-md">
             <CardHeader>
@@ -125,11 +120,11 @@ export default function ResetPassword() {
 
   return (
     <>
-      <Helmet>
-        <title>Reset Password | NexArt</title>
-        <meta name="description" content="Set a new password for your NexArt account." />
-        <link rel="canonical" href={canonicalUrl} />
-      </Helmet>
+      <SEOHead 
+        title="Reset Password"
+        description="Set a new password for your NexArt account."
+        noindex={true}
+      />
       
       <div className="min-h-screen flex items-center justify-center bg-background px-4">
         <div className="w-full max-w-md">

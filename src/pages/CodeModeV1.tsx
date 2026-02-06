@@ -2,16 +2,16 @@ import { Link } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { Badge } from "@/components/ui/badge";
 
 const CodeModeV1 = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>Code Mode v1 — GSL Language Draft - NexArt Protocol</title>
-        <meta name="description" content="Proposed protocol-level specification for Code Mode v1 (NexArt Generative System Language). Design proposal only — not implemented, not enforced." />
-      </Helmet>
+      <SEOHead 
+        title="Code Mode v1 — GSL Language Draft"
+        description="Proposed protocol-level specification for Code Mode v1 (NexArt Generative System Language). Design proposal only — not implemented, not enforced."
+      />
       
       <PageHeader 
         title="Code Mode v1 — GSL Language Draft"

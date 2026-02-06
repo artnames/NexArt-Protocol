@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Navigate, Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -100,13 +99,7 @@ export default function Usage() {
   const hasNoUsage = !usageMonth || usageMonth.total === 0;
 
   return (
-    <>
-      <Helmet>
-        <title>Usage | NexArt Dashboard</title>
-        <meta name="description" content="View your NexArt usage statistics and request logs." />
-      </Helmet>
-      
-      <DashboardLayout title="Usage">
+    <DashboardLayout title="Usage">
         {loading ? (
           <div className="text-caption">Loading...</div>
         ) : (
@@ -228,8 +221,7 @@ export default function Usage() {
             </Card>
           </div>
         )}
-      </DashboardLayout>
-    </>
+    </DashboardLayout>
   );
 }
 

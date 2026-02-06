@@ -1,18 +1,15 @@
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 
 const Governance = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>Governance & Direction - NexArt Protocol</title>
-        <meta
-          name="description"
-          content="How the NexArt protocol evolves. Long-term stewardship, deliberate change, and separation of protocol from product."
-        />
-      </Helmet>
+      <SEOHead 
+        title="Governance & Direction"
+        description="How the NexArt protocol evolves. Long-term stewardship, deliberate change, and separation of protocol from product."
+      />
 
       <PageHeader title="Governance & Direction" subtitle="How the protocol evolves." />
 

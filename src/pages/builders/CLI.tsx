@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
@@ -11,13 +11,10 @@ const BuildersCLI = () => {
 
   return (
     <PageLayout>
-      <Helmet>
-        <title>CLI Reference — NexArt Builders</title>
-        <meta
-          name="description"
-          content="NexArt CLI reference. Install, authenticate, run certified renders, and verify snapshots."
-        />
-      </Helmet>
+      <SEOHead 
+        title="CLI Reference — Builders"
+        description="NexArt CLI reference. Install, authenticate, run certified renders, and verify snapshots."
+      />
 
       <PageHeader
         title="CLI Reference"

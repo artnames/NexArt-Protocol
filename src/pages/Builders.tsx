@@ -1,15 +1,15 @@
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 
 const Builders = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>Builders - NexArt Protocol</title>
-        <meta name="description" content="Build generative systems on top of the NexArt protocol. Official SDKs, documentation, and resources for developers and artists." />
-      </Helmet>
+      <SEOHead 
+        title="Builders"
+        description="Build generative systems on top of the NexArt protocol. Official SDKs, documentation, and resources for developers and artists."
+      />
       
       <PageHeader 
         title="Builders"

@@ -1,15 +1,15 @@
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 
 const Privacy = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>Privacy Policy - NexArt Protocol</title>
-        <meta name="description" content="Privacy Policy for NexArt Protocol & Dashboard. Learn how we collect, use, and protect your data." />
-      </Helmet>
+      <SEOHead 
+        title="Privacy Policy"
+        description="Privacy Policy for NexArt Protocol & Dashboard. Learn how we collect, use, and protect your data."
+      />
       
       <PageHeader 
         title="Privacy Policy"

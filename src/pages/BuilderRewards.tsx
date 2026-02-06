@@ -1,17 +1,14 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
 const BuilderRewards = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Helmet>
-        <title>Builder Rewards (Draft v0) | NexArt Protocol</title>
-        <meta
-          name="description"
-          content="Protocol-aligned recognition for real NexArt builders. Draft specification for future builder rewards."
-        />
-      </Helmet>
+      <SEOHead 
+        title="Builder Rewards (Draft v0)"
+        description="Protocol-aligned recognition for real NexArt builders. Draft specification for future builder rewards."
+      />
 
       <Header />
 

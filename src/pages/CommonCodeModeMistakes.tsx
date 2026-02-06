@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
@@ -7,10 +7,10 @@ import PageContent from "@/components/layout/PageContent";
 const CommonCodeModeMistakes = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>Common Code Mode Mistakes — NexArt Protocol</title>
-        <meta name="description" content="Diagnose why your artwork behaves unexpectedly in NexArt Code Mode. Understand failure patterns and learn the mental shifts to fix them." />
-      </Helmet>
+      <SEOHead 
+        title="Common Code Mode Mistakes"
+        description="Diagnose why your artwork behaves unexpectedly in NexArt Code Mode. Understand failure patterns and learn the mental shifts to fix them."
+      />
       
       <PageHeader
         title="Common Code Mode Mistakes (and Why They Happen)"

@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
@@ -7,13 +7,10 @@ import PageContent from "@/components/layout/PageContent";
 const GetStarted = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>Get Started — NexArt Protocol</title>
-        <meta
-          name="description"
-          content="Get started with NexArt — a deterministic rendering protocol for reproducible, verifiable generative output."
-        />
-      </Helmet>
+      <SEOHead 
+        title="Get Started"
+        description="Get started with NexArt — a deterministic rendering protocol for reproducible, verifiable generative output."
+      />
 
       <PageHeader
         title="Get Started with NexArt"

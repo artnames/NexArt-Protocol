@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -16,7 +16,6 @@ const passwordSchema = z.string().min(6, "Password must be at least 6 characters
 
 export default function Auth() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -24,9 +23,6 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-
-  // Build canonical URL
-  const canonicalUrl = `https://nexart.io${location.pathname === "/" ? "" : location.pathname}`;
 
   // Redirect if already logged in
   useEffect(() => {
@@ -203,11 +199,11 @@ export default function Auth() {
 
   return (
     <>
-      <Helmet>
-        <title>Sign In | NexArt Dashboard</title>
-        <meta name="description" content="Sign in to manage your NexArt API keys and view usage statistics." />
-        <link rel="canonical" href={canonicalUrl} />
-      </Helmet>
+      <SEOHead 
+        title="Sign In — Dashboard"
+        description="Sign in to manage your NexArt API keys and view usage statistics."
+        noindex={true}
+      />
       
       <div className="min-h-screen flex items-center justify-center bg-background px-4">
         <div className="w-full max-w-md">

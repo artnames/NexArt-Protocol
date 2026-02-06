@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
@@ -6,13 +6,10 @@ import PageContent from "@/components/layout/PageContent";
 const Glossary = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>Glossary – NexArt Protocol</title>
-        <meta
-          name="description"
-          content="Clear, unambiguous definitions for key terms used throughout the NexArt protocol documentation."
-        />
-      </Helmet>
+      <SEOHead 
+        title="Glossary"
+        description="Clear, unambiguous definitions for key terms used throughout the NexArt protocol documentation."
+      />
 
       <PageHeader
         title="Glossary"

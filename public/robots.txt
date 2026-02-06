@@ -1,3 +1,6 @@
+# Robots.txt for nexart.io
+# Allow all major crawlers to index the site
+
 User-agent: Googlebot
 Allow: /
 
@@ -12,3 +15,27 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+# Allow crawling of all assets required for rendering
+Allow: /assets/
+Allow: /*.js$
+Allow: /*.css$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.svg$
+Allow: /*.woff2$
+
+# Disallow OAuth, auth callback, and preview paths
+Disallow: /auth/callback
+Disallow: /auth/reset-password
+Disallow: /*?code=
+Disallow: /*?error=
+Disallow: /*?access_token=
+Disallow: /*?refresh_token=
+
+# Disallow dashboard (requires authentication)
+Disallow: /dashboard
+Disallow: /dashboard/
+
+# Sitemap location
+Sitemap: https://nexart.io/sitemap.xml

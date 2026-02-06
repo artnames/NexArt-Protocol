@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import PageContent from "@/components/layout/PageContent";
@@ -7,13 +7,10 @@ import { Badge } from "@/components/ui/badge";
 const CodeMode = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>Code Mode | NexArt Protocol</title>
-        <meta
-          name="description"
-          content="Code Mode is a protocol-enforced execution surface under NexArt Protocol v1.2.0. Deterministic, standardized runtime for generative systems."
-        />
-      </Helmet>
+      <SEOHead 
+        title="Code Mode"
+        description="Code Mode is a protocol-enforced execution surface under NexArt Protocol v1.2.0. Deterministic, standardized runtime for generative systems."
+      />
 
       {/* Header */}
       <div className="border-b border-border">

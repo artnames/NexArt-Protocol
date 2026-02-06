@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
@@ -6,13 +6,10 @@ import PageContent from "@/components/layout/PageContent";
 const NonGoals = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>Non-Goals – NexArt Protocol</title>
-        <meta
-          name="description"
-          content="What the NexArt protocol explicitly does not aim to do. Clear boundaries for builders, contributors, and observers."
-        />
-      </Helmet>
+      <SEOHead 
+        title="Non-Goals"
+        description="What the NexArt protocol explicitly does not aim to do. Clear boundaries for builders, contributors, and observers."
+      />
 
       <PageHeader
         title="Non-Goals"

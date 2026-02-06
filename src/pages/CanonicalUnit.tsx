@@ -1,15 +1,15 @@
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 
 const CanonicalUnit = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>Canonical Unit - NexArt Protocol</title>
-        <meta name="description" content="The core protocol object of NexArt. What a system contains, what it excludes, and why this abstraction exists." />
-      </Helmet>
+      <SEOHead 
+        title="Canonical Unit"
+        description="The core protocol object of NexArt. What a system contains, what it excludes, and why this abstraction exists."
+      />
       
       <PageHeader 
         title="Canonical Unit"

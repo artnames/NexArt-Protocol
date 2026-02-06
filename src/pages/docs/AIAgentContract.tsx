@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/seo/SEOHead";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
@@ -7,13 +7,10 @@ import { Link } from "react-router-dom";
 const AIAgentContract = () => {
   return (
     <PageLayout>
-      <Helmet>
-        <title>AI Agent Contract — NexArt Protocol</title>
-        <meta
-          name="description"
-          content="NexArt Canonical Renderer contract for AI agents, CI systems, and programmatic clients. Unambiguous API semantics for automated execution."
-        />
-      </Helmet>
+      <SEOHead 
+        title="AI Agent Contract"
+        description="NexArt Canonical Renderer contract for AI agents, CI systems, and programmatic clients. Unambiguous API semantics for automated execution."
+      />
 
       <PageHeader
         title="NexArt Canonical Renderer — AI Agent Contract"
