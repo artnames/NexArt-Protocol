@@ -74,7 +74,7 @@ const Governance = () => {
           <h2>Future Stewardship</h2>
 
           <p>
-            Long-term stewardship of the protocol will be handled by the NexArt Foundation—a stewardship structure that
+            Long-term stewardship of the protocol will be handled by the NexArt Foundation, a stewardship structure that
             is being formed.
           </p>
 
@@ -88,7 +88,7 @@ const Governance = () => {
           </ul>
 
           <p>
-            Details about the Foundation—its legal structure, membership, and processes—will be developed as the
+            Details about the Foundation, its legal structure, membership, and processes will be developed as the
             protocol matures.
           </p>
 
