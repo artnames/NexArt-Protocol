@@ -214,6 +214,10 @@ const Security = () => {
               NexArt persists only the minimum metadata required for auditability, quota enforcement, and billing. No
               customer payloads, code, or artifacts are retained by NexArt infrastructure.
             </p>
+            <p className="mt-4">
+              NexArt acts as a stateless processor of deterministic execution, not a system of record or data controller
+              for customer payloads.
+            </p>
           </section>
 
           {/* API Key & Access Control */}

@@ -489,10 +489,12 @@ const SecurityArchitectureDiagram = () => {
         </svg>
       </div>
 
-      <div className="flex justify-center mt-4">
-        <Button variant="outline" size="sm" onClick={handleDownload}>
-          Download SVG
-        </Button>
+      <div className="mt-6 text-center">
+        <p className="text-sm font-medium text-foreground mb-2">Legend</p>
+        <p className="text-xs text-muted-foreground">Solid arrows indicate execution flow</p>
+        <p className="text-xs text-muted-foreground">
+          Dashed boundary indicates certification, metering, and billing boundary
+        </p>
       </div>
     </div>
   );
