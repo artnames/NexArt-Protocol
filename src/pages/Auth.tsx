@@ -144,19 +144,52 @@ export default function Auth() {
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`,
-      },
-    });
+    
+    try {
+      // Detect if we're on a custom domain (not Lovable preview)
+      const isCustomDomain =
+        !window.location.hostname.includes("lovable.app") &&
+        !window.location.hostname.includes("lovableproject.com");
 
-    if (error) {
+      if (isCustomDomain) {
+        // Bypass auth-bridge to show correct branding on consent screen
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: `${window.location.origin}/dashboard`,
+            skipBrowserRedirect: true,
+          },
+        });
+
+        if (error) throw error;
+
+        // Validate OAuth URL before redirect (security: prevent open redirect)
+        if (data?.url) {
+          const oauthUrl = new URL(data.url);
+          const allowedHosts = ["accounts.google.com"];
+          if (!allowedHosts.some((host) => oauthUrl.hostname === host)) {
+            throw new Error("Invalid OAuth redirect URL");
+          }
+          window.location.href = data.url;
+        }
+      } else {
+        // For Lovable domains, use normal flow (auth-bridge handles it)
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: `${window.location.origin}/dashboard`,
+          },
+        });
+
+        if (error) throw error;
+      }
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Google sign in failed",
         description: error.message,
       });
+    } finally {
       setGoogleLoading(false);
     }
   };
