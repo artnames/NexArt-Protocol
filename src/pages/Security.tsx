@@ -3,7 +3,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import PageContent from "@/components/layout/PageContent";
 import { Helmet } from "react-helmet-async";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-
+import SecurityArchitectureDiagram from "@/components/security/SecurityArchitectureDiagram";
 const soc2Mapping = [
   {
     area: "Security",
@@ -70,6 +70,9 @@ const Security = () => {
               and infrastructure use cases.
             </p>
           </section>
+
+          {/* Security Architecture Diagram */}
+          <SecurityArchitectureDiagram />
 
           {/* Threat Model */}
           <section className="mb-12">
