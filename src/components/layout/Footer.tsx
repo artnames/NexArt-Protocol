@@ -136,7 +136,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Foundation */}
+          {/* Follow us */}
           <div>
             <h4 className="text-xs font-mono text-foreground mb-4 tracking-wide">Foundation</h4>
             <ul className="space-y-2 text-sm">
@@ -157,7 +157,18 @@ const Footer = () => {
                   rel="noopener noreferrer"
                   className="text-caption hover:text-foreground transition-colors"
                 >
-                  X / Twitter
+                  X
+                </a>
+              </li>
+              </li>
+              <li>
+                <a
+                  href="https://www.linkedin.com/company/nexartprotocol/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-caption hover:text-foreground transition-colors"
+                >
+                  linkedIn
                 </a>
               </li>
             </ul>
