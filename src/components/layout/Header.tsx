@@ -41,6 +41,7 @@ const navGroups = [
       { href: "/code-mode", label: "Code Mode" },
       { href: "/canonical-renderer", label: "Renderer" },
       { href: "/protocol-compliance", label: "Compliance" },
+      { href: "/protocol/ai-execution-integrity", label: "AI Integrity (Draft)" },
     ],
   },
   {

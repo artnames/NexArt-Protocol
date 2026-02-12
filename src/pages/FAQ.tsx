@@ -41,6 +41,12 @@ const faqItems = [
             <strong className="text-foreground">Deterministic AI-assisted pipelines</strong> — Pin AI outputs into deterministic execution to prevent drift
           </li>
           <li>
+            <strong className="text-foreground">AI execution with audit-grade integrity</strong> — Capture, seal, and audit AI/LLM runs (see{" "}
+            <Link to="/protocol/ai-execution-integrity" className="text-link hover:text-link-hover underline underline-offset-2">
+              AI Execution Integrity
+            </Link>{" "}surface)
+          </li>
+          <li>
             <strong className="text-foreground">Any workflow where results may be challenged later</strong> — If someone might ask "prove it", NexArt is the tool
           </li>
         </ul>
