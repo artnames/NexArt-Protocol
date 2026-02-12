@@ -69,7 +69,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Apps */}
+          {/* Built with NexArt */}
           <div>
             <h4 className="text-xs font-mono text-foreground mb-4 tracking-wide">Apps</h4>
             <ul className="space-y-2 text-sm">
@@ -95,6 +95,16 @@ const Footer = () => {
               </li>
               <li>
                 <a
+                  href="https://velocity.recanon.xyz"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-caption hover:text-foreground transition-colors"
+                >
+                  Velocity
+                </a>
+              </li>
+              <li>
+                <a
                   href="https://recanon.xyz"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -111,6 +121,16 @@ const Footer = () => {
                   className="text-caption hover:text-foreground transition-colors"
                 >
                   Science Lab
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://frontierra.xyz"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-caption hover:text-foreground transition-colors"
+                >
+                  Frontierra
                 </a>
               </li>
             </ul>
