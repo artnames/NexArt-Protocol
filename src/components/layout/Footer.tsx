@@ -167,7 +167,7 @@ const Footer = () => {
                   rel="noopener noreferrer"
                   className="text-caption hover:text-foreground transition-colors"
                 >
-                  linkedIn
+                  LinkedIn
                 </a>
               </li>
             </ul>
