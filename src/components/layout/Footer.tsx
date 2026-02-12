@@ -160,7 +160,6 @@ const Footer = () => {
                   X
                 </a>
               </li>
-              </li>
               <li>
                 <a
                   href="https://www.linkedin.com/company/nexartprotocol/"
