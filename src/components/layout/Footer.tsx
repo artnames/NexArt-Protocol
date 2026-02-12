@@ -71,7 +71,7 @@ const Footer = () => {
 
           {/* Built with NexArt */}
           <div>
-            <h4 className="text-xs font-mono text-foreground mb-4 tracking-wide">Apps</h4>
+            <h4 className="text-xs font-mono text-foreground mb-4 tracking-wide">Built with Nexart</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <a
@@ -138,7 +138,7 @@ const Footer = () => {
 
           {/* Follow us */}
           <div>
-            <h4 className="text-xs font-mono text-foreground mb-4 tracking-wide">Foundation</h4>
+            <h4 className="text-xs font-mono text-foreground mb-4 tracking-wide">Follow us</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <a
