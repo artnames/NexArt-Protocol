@@ -27,18 +27,21 @@ const AIExecutionIntegrity = () => {
         <div className="prose-protocol">
           {/* Status Banner */}
           <div className="border border-yellow-600/30 bg-yellow-50/50 dark:bg-yellow-950/20 rounded-sm px-4 py-3 text-sm text-yellow-800 dark:text-yellow-300 mb-10">
-            Draft v0.1 — Additive execution surface. Code Mode Protocol v1.2.0 remains unchanged.
+            Draft v0.1 — Additive execution surface. Code Mode Protocol v1.2.0 remains unchanged and is not modified by this draft.
           </div>
 
           {/* Overview */}
           <section>
             <h2>Overview</h2>
             <p>
-              NexArt AI Execution Integrity is an execution surface built on{" "}
+              NexArt AI Execution Integrity is an additive execution surface built on{" "}
               <Link to="/protocol" className="text-body underline underline-offset-2 hover:text-foreground">
                 Protocol v1.2.0
               </Link>{" "}
-              that standardizes how AI and LLM runs are captured, sealed, and audited.
+              that standardizes how AI and LLM runs are captured, sealed, hashed, and independently audited.
+            </p>
+            <p>
+              This surface guarantees that a specific AI execution occurred with specific inputs, parameters, and outputs — and that this record cannot be altered without detection.
             </p>
             <p>This surface:</p>
             <ul>
@@ -59,8 +62,8 @@ const AIExecutionIntegrity = () => {
             <ul>
               <li><strong>Input + output integrity</strong> — Cryptographic binding between request parameters and response</li>
               <li><strong>Parameter binding</strong> — Model, temperature, seed, and all execution parameters are sealed into the record</li>
-              <li><strong>Replay inspection</strong> — Any party can inspect the full execution context after the fact</li>
-              <li><strong>Optional canonical re-certification</strong> — The Canonical Node can attest to the record without modifying it</li>
+              <li><strong>Full execution transparency</strong> — Any party can inspect the complete execution context after the fact</li>
+              <li><strong>Optional canonical re-certification</strong> — The Canonical Node can attest to the record without re-running the execution or modifying the original output</li>
             </ul>
 
             <h3 className="text-sm font-mono text-caption mt-8 mb-4 tracking-wide uppercase">
@@ -70,6 +73,7 @@ const AIExecutionIntegrity = () => {
               <li><strong>Model provider behavior stability</strong> — Providers may update weights, routing, or inference behavior without notice</li>
               <li><strong>Business truth validation</strong> — The system certifies execution integrity, not the correctness of outputs</li>
               <li><strong>Future re-execution match</strong> — Without provider-side determinism, re-running the same prompt may produce different outputs</li>
+              <li><strong>Deterministic LLM reproduction</strong> — If a provider does not support deterministic inference, identical prompts may produce different outputs in future runs</li>
             </ul>
           </section>
 
@@ -84,9 +88,11 @@ const AIExecutionIntegrity = () => {
   "type": "ai.execution.v1",
   "protocolVersion": "1.2.0",
   "executionSurface": "ai",
+  "executionId": "<uuid>",
+  "timestamp": "<iso8601>",
   "prompt": "<string>",
   "input": "<string | object>",
-  "inputHash": "<sha256>",
+  "inputHash": "<sha256:hex>",
   "provider": "<string>",
   "model": "<string>",
   "modelVersion": "<string | null>",
@@ -97,13 +103,13 @@ const AIExecutionIntegrity = () => {
     "seed": "<number | null>"
   },
   "output": "<string | object>",
-  "outputHash": "<sha256>",
+  "outputHash": "<sha256:hex>",
   "sdkVersion": "<string | null>",
   "appId": "<string | null>"
 }`}
             </pre>
             <p className="text-caption text-sm mt-3">
-              Fields marked as <code className="text-caption">null</code> are optional. All other fields are required for a valid snapshot.
+              All fields are required unless explicitly documented as nullable. Fields that may be null must still be present in the snapshot for structural consistency.
             </p>
           </section>
 
@@ -117,7 +123,8 @@ const AIExecutionIntegrity = () => {
               <li><strong>Canonical JSON serialization</strong> — Keys are sorted lexicographically, no whitespace</li>
               <li><strong>UTF-8 exact string hashing</strong> — Input and output are hashed as raw UTF-8 byte sequences</li>
               <li><strong>Stable key ordering</strong> — Object keys are deterministically ordered before serialization</li>
-              <li><strong>Hash algorithm</strong> — <code className="text-caption">sha256(canonicalized_value)</code>, hex-encoded</li>
+              <li><strong>Hash algorithm</strong> — <code className="text-caption">sha256(canonicalized_value)</code>, hex-encoded, prefixed with <code className="text-caption">sha256:</code></li>
+              <li><strong>No provider-side formatting trusted</strong> — Objects must be canonicalized before hashing</li>
             </ul>
           </section>
 
@@ -128,10 +135,13 @@ const AIExecutionIntegrity = () => {
               A <strong>Certified Execution Record (CER)</strong> seals the execution metadata and hashes into a single verifiable unit. The CER includes the snapshot, timestamps, and the certifying node identity.
             </p>
             <p>
+              Certification attests to the integrity of the execution record, not the correctness or truthfulness of the output.
+            </p>
+            <p>
               The Canonical Node can optionally <strong>re-certify</strong> an existing CER. Re-certification:
             </p>
             <ul>
-              <li>Does not modify the original execution record</li>
+              <li>Does not modify the original execution record or its provenance</li>
               <li>Adds a canonical attestation layer with the node's signature and timestamp</li>
               <li>Enables third-party trust anchoring without altering execution provenance</li>
             </ul>
@@ -145,9 +155,11 @@ const AIExecutionIntegrity = () => {
   "type": "ai.execution.v1",
   "protocolVersion": "1.2.0",
   "executionSurface": "ai",
+  "executionId": "b7e2c3a1-9f4d-4e8b-a1c6-3d5e7f9a2b4c",
+  "timestamp": "2025-06-15T14:32:07.841Z",
   "prompt": "Summarize the key risks in Q4 earnings.",
   "input": "Revenue declined 12% YoY...",
-  "inputHash": "a3f8c1...d94e",
+  "inputHash": "sha256:a3f8c1...d94e",
   "provider": "openai",
   "model": "gpt-4o",
   "modelVersion": "2025-01-15",
@@ -158,7 +170,7 @@ const AIExecutionIntegrity = () => {
     "seed": 42
   },
   "output": "Key risks identified: (1) Revenue contraction...",
-  "outputHash": "e7b2a0...f31c",
+  "outputHash": "sha256:e7b2a0...f31c",
   "sdkVersion": "1.8.4",
   "appId": "velocity-risk-engine"
 }`}
@@ -173,12 +185,14 @@ const AIExecutionIntegrity = () => {
   "type": "ai.execution.v1",
   "protocolVersion": "1.2.0",
   "executionSurface": "ai",
+  "executionId": "d4f1a8c3-2b7e-4d9f-b3a5-6c8e1f0d2a4b",
+  "timestamp": "2025-06-15T15:01:44.209Z",
   "prompt": "Classify the sentiment of this review.",
   "input": {
     "text": "The product exceeded expectations.",
     "locale": "en-US"
   },
-  "inputHash": "b4d1e2...8a7f",
+  "inputHash": "sha256:b4d1e2...8a7f",
   "provider": "anthropic",
   "model": "claude-sonnet-4-20250514",
   "modelVersion": null,
@@ -193,11 +207,19 @@ const AIExecutionIntegrity = () => {
     "confidence": 0.97,
     "labels": ["satisfaction", "quality"]
   },
-  "outputHash": "c9f3d4...2b1e",
+  "outputHash": "sha256:c9f3d4...2b1e",
   "sdkVersion": null,
   "appId": null
 }`}
             </pre>
+          </section>
+
+          {/* Relationship to CER */}
+          <section className="mt-12">
+            <h2>Relationship to Certified Execution Records (CER)</h2>
+            <p>
+              AI Execution Integrity snapshots can be sealed into a Certified Execution Record (CER), following the same certification structure used by Code Mode. This keeps verification tooling consistent across deterministic and non-deterministic execution surfaces.
+            </p>
           </section>
 
           {/* Footer link */}
