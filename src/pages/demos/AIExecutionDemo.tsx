@@ -188,12 +188,12 @@ const AIExecutionDemo = () => {
     <PageLayout>
       <SEOHead
         title="AI Execution Integrity Demo"
-        description="Generate a tamper-evident record of an AI run: input, parameters, output, hashes, and certificate. Entirely client-side, no API keys required."
+        description="Create an audit-ready record of an AI run: inputs, parameters, outputs, and cryptographic hashes — sealed into a Certified Execution Record (CER)."
       />
 
       <PageHeader
         title="AI Execution Integrity Demo"
-        subtitle="Generate a tamper-evident record of an AI run: input + parameters + output + hashes + certificate."
+        subtitle="Create an audit-ready record of an AI run: inputs, parameters, outputs, and cryptographic hashes — sealed into a Certified Execution Record (CER)."
       />
 
       <PageContent>
@@ -201,7 +201,7 @@ const AIExecutionDemo = () => {
           {/* Section 1: Form */}
           <section>
             <h2>1. Enter an Example AI Run</h2>
-            <p>Fill in the fields below to simulate an AI execution. No actual API calls are made — this runs entirely in your browser.</p>
+            <p>Enter an example AI interaction to generate a CER. No provider calls are made — this demo runs locally and shows how integrity records are formed and verified.</p>
 
             <div className="space-y-5 mt-6">
               {/* executionId */}
@@ -299,7 +299,7 @@ const AIExecutionDemo = () => {
           <section className="mt-12">
             <h2>2. Generate Record</h2>
             <p>
-              Creates a snapshot, verifies it, seals it into a Certified Execution Record (CER), and verifies the bundle. All operations happen in your browser using{" "}
+              Generates a canonical snapshot, seals it into a CER, and verifies both. Verification checks that the hashes match exactly and that the certificate hash was computed correctly. All operations happen in your browser using{" "}
               <code>@nexart/ai-execution</code>.
             </p>
 
@@ -323,23 +323,42 @@ const AIExecutionDemo = () => {
                 {/* Hash cards */}
                 <div className="grid grid-cols-1 gap-3">
                   <div className="border border-border rounded-sm p-4">
-                    <p className="text-xs font-mono text-caption uppercase tracking-wider mb-1">Input Hash</p>
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-xs font-mono text-caption uppercase tracking-wider">Input Hash</p>
+                      <button onClick={() => copyToClipboard(snapshot.inputHash)} className="p-1 rounded hover:bg-muted transition-colors" title="Copy Input Hash">
+                        <Copy className="h-3 w-3 text-caption" />
+                      </button>
+                    </div>
                     <p className="text-sm font-mono break-all">{snapshot.inputHash}</p>
                   </div>
                   <div className="border border-border rounded-sm p-4">
-                    <p className="text-xs font-mono text-caption uppercase tracking-wider mb-1">Output Hash</p>
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-xs font-mono text-caption uppercase tracking-wider">Output Hash</p>
+                      <button onClick={() => copyToClipboard(snapshot.outputHash)} className="p-1 rounded hover:bg-muted transition-colors" title="Copy Output Hash">
+                        <Copy className="h-3 w-3 text-caption" />
+                      </button>
+                    </div>
                     <p className="text-sm font-mono break-all">{snapshot.outputHash}</p>
                   </div>
                   <div className="border border-border rounded-sm p-4">
-                    <p className="text-xs font-mono text-caption uppercase tracking-wider mb-1">Certificate Hash</p>
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-xs font-mono text-caption uppercase tracking-wider">Certificate Hash</p>
+                      <button onClick={() => copyToClipboard(bundle.certificateHash)} className="p-1 rounded hover:bg-muted transition-colors" title="Copy Certificate Hash">
+                        <Copy className="h-3 w-3 text-caption" />
+                      </button>
+                    </div>
                     <p className="text-sm font-mono break-all">{bundle.certificateHash}</p>
                   </div>
+                  <p className="text-xs text-caption font-mono mt-1">Hash format: sha256: — Certificate hash excludes meta fields (by design).</p>
                 </div>
 
                 {/* Verification badges */}
-                <div className="border border-border rounded-sm p-4 space-y-2">
-                  <VerifyBadge label="Snapshot Verified" result={snapshotResult} />
-                  <VerifyBadge label="CER Verified" result={cerResult} />
+                <div className="border border-border rounded-sm p-4 space-y-3">
+                  <VerifyBadge label="Snapshot integrity" result={snapshotResult} />
+                  <VerifyBadge label="Certificate integrity" result={cerResult} />
+                  <p className="text-xs text-caption mt-2">
+                    Integrity status reflects whether the record is internally consistent. PASS means the snapshot hashes match the recorded values and the certificate hash matches the sealed payload. FAIL means one or more fields no longer match their expected hashes (possible tampering or corruption). ERROR indicates verification could not be completed due to missing fields or invalid formatting.
+                  </p>
                 </div>
 
                 {/* Download */}
@@ -353,7 +372,7 @@ const AIExecutionDemo = () => {
                 {/* Canonical JSON accordion */}
                 <Accordion type="single" collapsible>
                   <AccordionItem value="snapshot-json">
-                    <AccordionTrigger className="text-sm font-mono">Canonical Snapshot JSON</AccordionTrigger>
+                    <AccordionTrigger className="text-sm font-mono">Canonical snapshot (audit payload)</AccordionTrigger>
                     <AccordionContent>
                       <div className="relative">
                         <button
@@ -396,13 +415,13 @@ const AIExecutionDemo = () => {
             <section className="mt-12">
               <h2>4. Tamper Check</h2>
               <p>
-                Toggle the switch to simulate a tampered record — one character of the output is modified in memory — then re-verify to see the integrity check fail.
+                Simulate evidence tampering. This modifies one character in memory and re-runs verification to demonstrate detection.
               </p>
 
               <div className="border border-border rounded-sm p-4 mt-4 space-y-4">
                 <div className="flex items-center gap-3">
                   <Switch checked={tampered} onCheckedChange={handleTamperToggle} />
-                  <span className="text-sm font-mono">Simulate tamper</span>
+                  <span className="text-sm font-mono">Tamper with record (demo)</span>
                 </div>
 
                 <Button variant="outline" onClick={handleReverify}>
@@ -414,7 +433,7 @@ const AIExecutionDemo = () => {
                     <VerifyBadge label="CER Verified" result={tamperResult} />
                     {!tamperResult.ok && (
                       <p className="text-sm text-destructive mt-2 font-mono">
-                        FAIL: Hash mismatch — record has been modified.
+                        FAIL: Integrity breach detected — the record no longer matches its hashes.
                       </p>
                     )}
                   </div>
@@ -427,7 +446,7 @@ const AIExecutionDemo = () => {
           <section className="mt-12">
             <h2>What This Proves (Plain English)</h2>
             <p>
-              This does not guarantee the model would output the same thing again. It guarantees that this recorded output is cryptographically bound to these inputs and parameters. Any modification to the record — however small — will cause verification to fail.
+              This does not guarantee the model would produce the same output again. It guarantees that this recorded output is cryptographically bound to the recorded inputs and parameters. If any field is altered — even by one character — verification fails.
             </p>
           </section>
 
