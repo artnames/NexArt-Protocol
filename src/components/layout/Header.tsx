@@ -54,6 +54,12 @@ const navGroups = [
     ],
   },
   {
+    label: "Demos",
+    items: [
+      { href: "/demos/ai-execution", label: "AI Execution Integrity" },
+    ],
+  },
+  {
     label: "Reference",
     items: [
       { href: "/faq", label: "FAQ" },

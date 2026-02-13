@@ -157,6 +157,13 @@
     <priority>0.5</priority>
   </url>
 
+  <!-- Demos -->
+  <url>
+    <loc>https://nexart.io/demos/ai-execution</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
   <!-- Commercial -->
   <url>
     <loc>https://nexart.io/pricing</loc>

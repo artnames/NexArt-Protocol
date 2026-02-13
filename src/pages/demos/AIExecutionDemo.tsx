@@ -1,0 +1,461 @@
+import { useState, useCallback, useId } from "react";
+import { createSnapshot, verifySnapshot, sealCer, verifyCer, toCanonicalJson } from "@/lib/ai-execution-browser";
+import type { AiExecutionSnapshotV1, CerAiExecutionBundle, VerificationResult } from "@nexart/ai-execution";
+import { Link } from "react-router-dom";
+import PageLayout from "@/components/layout/PageLayout";
+import PageHeader from "@/components/layout/PageHeader";
+import PageContent from "@/components/layout/PageContent";
+import SEOHead from "@/components/seo/SEOHead";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { CheckCircle2, XCircle, Download, Copy, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
+
+function generateExecId(): string {
+  const hex = Array.from(crypto.getRandomValues(new Uint8Array(8)))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return `exec_${hex}`;
+}
+
+const AIExecutionDemo = () => {
+  // Form state
+  const [executionId, setExecutionId] = useState(generateExecId);
+  const [provider, setProvider] = useState("openai");
+  const [model, setModel] = useState("gpt-4o");
+  const [modelVersion, setModelVersion] = useState("");
+  const [prompt, setPrompt] = useState("You are a helpful assistant.");
+  const [inputText, setInputText] = useState("Summarize the key risks in Q4 earnings.");
+  const [inputIsJson, setInputIsJson] = useState(false);
+  const [temperature, setTemperature] = useState("0");
+  const [maxTokens, setMaxTokens] = useState("1024");
+  const [topP, setTopP] = useState("");
+  const [seed, setSeed] = useState("");
+  const [outputText, setOutputText] = useState("Key risks identified: (1) Revenue contraction of 12% YoY, (2) Margin pressure from increased operating costs, (3) Regulatory uncertainty in EU markets.");
+  const [outputIsJson, setOutputIsJson] = useState(false);
+  const [appId, setAppId] = useState("nexart.io-demo");
+
+  // Results state
+  const [snapshot, setSnapshot] = useState<AiExecutionSnapshotV1 | null>(null);
+  const [bundle, setBundle] = useState<CerAiExecutionBundle | null>(null);
+  const [snapshotResult, setSnapshotResult] = useState<VerificationResult | null>(null);
+  const [cerResult, setCerResult] = useState<VerificationResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Tamper state
+  const [tampered, setTampered] = useState(false);
+  const [tamperResult, setTamperResult] = useState<VerificationResult | null>(null);
+
+  const parseJsonSafe = (text: string): Record<string, unknown> | null => {
+    try {
+      const parsed = JSON.parse(text);
+      if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) return parsed;
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const handleGenerate = useCallback(async () => {
+    setError(null);
+    setTampered(false);
+    setTamperResult(null);
+
+    // Parse input
+    let inputValue: string | Record<string, unknown>;
+    if (inputIsJson) {
+      const parsed = parseJsonSafe(inputText);
+      if (!parsed) { setError("Input is not valid JSON. Disable JSON mode or fix the syntax."); return; }
+      inputValue = parsed;
+    } else {
+      inputValue = inputText;
+    }
+
+    // Parse output
+    let outputValue: string | Record<string, unknown>;
+    if (outputIsJson) {
+      const parsed = parseJsonSafe(outputText);
+      if (!parsed) { setError("Output is not valid JSON. Disable JSON mode or fix the syntax."); return; }
+      outputValue = parsed;
+    } else {
+      outputValue = outputText;
+    }
+
+    const temp = parseFloat(temperature);
+    const mt = parseInt(maxTokens, 10);
+    if (isNaN(temp) || isNaN(mt)) { setError("Temperature and Max Tokens must be valid numbers."); return; }
+
+    try {
+      const snap = await createSnapshot({
+        executionId,
+        provider,
+        model,
+        modelVersion: modelVersion || null,
+        prompt,
+        input: inputValue,
+        parameters: {
+          temperature: temp,
+          maxTokens: mt,
+          topP: topP ? parseFloat(topP) : null,
+          seed: seed ? parseInt(seed, 10) : null,
+        },
+        output: outputValue,
+        appId: appId || null,
+      });
+
+      const sr = await verifySnapshot(snap);
+      const bnd = await sealCer(snap, { meta: { source: "nexart.io", tags: ["demo"] } });
+      const cr = await verifyCer(bnd);
+
+      setSnapshot(snap);
+      setBundle(bnd);
+      setSnapshotResult(sr);
+      setCerResult(cr);
+    } catch (e: any) {
+      setError(e.message || "Failed to generate snapshot.");
+    }
+  }, [executionId, provider, model, modelVersion, prompt, inputText, inputIsJson, temperature, maxTokens, topP, seed, outputText, outputIsJson, appId]);
+
+  const handleTamperToggle = useCallback((checked: boolean) => {
+    setTampered(checked);
+    setTamperResult(null);
+    if (!checked) return;
+    // Tamper will be applied on re-verify
+  }, []);
+
+  const handleReverify = useCallback(async () => {
+    if (!bundle) return;
+    if (tampered) {
+      const tamperedBundle = JSON.parse(JSON.stringify(bundle)) as CerAiExecutionBundle;
+      if (typeof tamperedBundle.snapshot.output === "string") {
+        tamperedBundle.snapshot.output = tamperedBundle.snapshot.output.slice(0, -1) + "X";
+      } else {
+        tamperedBundle.snapshot.output = { ...tamperedBundle.snapshot.output, _tampered: true };
+      }
+      const result = await verifyCer(tamperedBundle);
+      setTamperResult(result);
+    } else {
+      const result = await verifyCer(bundle);
+      setTamperResult(result);
+    }
+  }, [bundle, tampered]);
+
+  const handleDownload = useCallback(() => {
+    if (!bundle) return;
+    const json = JSON.stringify(bundle, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `cer-${bundle.snapshot.executionId}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [bundle]);
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success("Copied to clipboard");
+  };
+
+  const VerifyBadge = ({ label, result }: { label: string; result: VerificationResult | null }) => {
+    if (!result) return null;
+    return (
+      <div className="flex items-center gap-2">
+        {result.ok ? (
+          <CheckCircle2 className="h-5 w-5 text-primary" />
+        ) : (
+          <XCircle className="h-5 w-5 text-destructive" />
+        )}
+        <span className="text-sm font-mono">
+          {label}: <strong>{result.ok ? "PASS" : "FAIL"}</strong>
+        </span>
+        {!result.ok && result.errors.length > 0 && (
+          <span className="text-xs text-destructive ml-1">— {result.errors[0]}</span>
+        )}
+      </div>
+    );
+  };
+
+  const fieldId = useId();
+
+  return (
+    <PageLayout>
+      <SEOHead
+        title="AI Execution Integrity Demo"
+        description="Generate a tamper-evident record of an AI run: input, parameters, output, hashes, and certificate. Entirely client-side, no API keys required."
+      />
+
+      <PageHeader
+        title="AI Execution Integrity Demo"
+        subtitle="Generate a tamper-evident record of an AI run: input + parameters + output + hashes + certificate."
+      />
+
+      <PageContent>
+        <div className="prose-protocol">
+          {/* Section 1: Form */}
+          <section>
+            <h2>1. Enter an Example AI Run</h2>
+            <p>Fill in the fields below to simulate an AI execution. No actual API calls are made — this runs entirely in your browser.</p>
+
+            <div className="space-y-5 mt-6">
+              {/* executionId */}
+              <div className="space-y-1.5">
+                <Label htmlFor={`${fieldId}-execid`} className="text-sm font-mono">executionId</Label>
+                <Input id={`${fieldId}-execid`} value={executionId} onChange={(e) => setExecutionId(e.target.value)} className="font-mono text-sm" />
+              </div>
+
+              {/* provider + model row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-mono">provider</Label>
+                  <Select value={provider} onValueChange={setProvider}>
+                    <SelectTrigger className="font-mono text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-background border border-border z-50">
+                      <SelectItem value="openai">openai</SelectItem>
+                      <SelectItem value="anthropic">anthropic</SelectItem>
+                      <SelectItem value="other">other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`${fieldId}-model`} className="text-sm font-mono">model</Label>
+                  <Input id={`${fieldId}-model`} value={model} onChange={(e) => setModel(e.target.value)} className="font-mono text-sm" />
+                </div>
+              </div>
+
+              {/* modelVersion */}
+              <div className="space-y-1.5">
+                <Label htmlFor={`${fieldId}-mv`} className="text-sm font-mono">modelVersion <span className="text-caption">(optional)</span></Label>
+                <Input id={`${fieldId}-mv`} value={modelVersion} onChange={(e) => setModelVersion(e.target.value)} placeholder="e.g. 2026-01-01" className="font-mono text-sm" />
+              </div>
+
+              {/* prompt */}
+              <div className="space-y-1.5">
+                <Label htmlFor={`${fieldId}-prompt`} className="text-sm font-mono">prompt</Label>
+                <Textarea id={`${fieldId}-prompt`} value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={2} className="font-mono text-sm" />
+              </div>
+
+              {/* input */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor={`${fieldId}-input`} className="text-sm font-mono">input</Label>
+                  <div className="flex items-center gap-2 text-xs text-caption">
+                    <span>Text</span>
+                    <Switch checked={inputIsJson} onCheckedChange={setInputIsJson} />
+                    <span>JSON</span>
+                  </div>
+                </div>
+                <Textarea id={`${fieldId}-input`} value={inputText} onChange={(e) => setInputText(e.target.value)} rows={3} className="font-mono text-sm" />
+              </div>
+
+              {/* parameters */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor={`${fieldId}-temp`} className="text-sm font-mono">temperature</Label>
+                  <Input id={`${fieldId}-temp`} type="number" step="0.1" value={temperature} onChange={(e) => setTemperature(e.target.value)} className="font-mono text-sm" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`${fieldId}-mt`} className="text-sm font-mono">maxTokens</Label>
+                  <Input id={`${fieldId}-mt`} type="number" value={maxTokens} onChange={(e) => setMaxTokens(e.target.value)} className="font-mono text-sm" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`${fieldId}-tp`} className="text-sm font-mono">topP <span className="text-caption text-xs">(opt)</span></Label>
+                  <Input id={`${fieldId}-tp`} type="number" step="0.1" value={topP} onChange={(e) => setTopP(e.target.value)} placeholder="null" className="font-mono text-sm" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`${fieldId}-seed`} className="text-sm font-mono">seed <span className="text-caption text-xs">(opt)</span></Label>
+                  <Input id={`${fieldId}-seed`} type="number" value={seed} onChange={(e) => setSeed(e.target.value)} placeholder="null" className="font-mono text-sm" />
+                </div>
+              </div>
+
+              {/* output */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor={`${fieldId}-output`} className="text-sm font-mono">output</Label>
+                  <div className="flex items-center gap-2 text-xs text-caption">
+                    <span>Text</span>
+                    <Switch checked={outputIsJson} onCheckedChange={setOutputIsJson} />
+                    <span>JSON</span>
+                  </div>
+                </div>
+                <Textarea id={`${fieldId}-output`} value={outputText} onChange={(e) => setOutputText(e.target.value)} rows={3} className="font-mono text-sm" />
+              </div>
+
+              {/* appId */}
+              <div className="space-y-1.5">
+                <Label htmlFor={`${fieldId}-appid`} className="text-sm font-mono">appId</Label>
+                <Input id={`${fieldId}-appid`} value={appId} onChange={(e) => setAppId(e.target.value)} className="font-mono text-sm" />
+              </div>
+            </div>
+          </section>
+
+          {/* Section 2: Generate */}
+          <section className="mt-12">
+            <h2>2. Generate Record</h2>
+            <p>
+              Creates a snapshot, verifies it, seals it into a Certified Execution Record (CER), and verifies the bundle. All operations happen in your browser using{" "}
+              <code>@nexart/ai-execution</code>.
+            </p>
+
+            {error && (
+              <div className="border border-destructive/40 bg-destructive/5 rounded-sm px-4 py-3 text-sm text-destructive mb-4">
+                {error}
+              </div>
+            )}
+
+            <Button onClick={handleGenerate} className="mt-2">
+              Generate Snapshot + CER
+            </Button>
+          </section>
+
+          {/* Section 3: Results */}
+          {snapshot && bundle && (
+            <section className="mt-12">
+              <h2>3. Results</h2>
+
+              <div className="space-y-4 mt-4">
+                {/* Hash cards */}
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="border border-border rounded-sm p-4">
+                    <p className="text-xs font-mono text-caption uppercase tracking-wider mb-1">Input Hash</p>
+                    <p className="text-sm font-mono break-all">{snapshot.inputHash}</p>
+                  </div>
+                  <div className="border border-border rounded-sm p-4">
+                    <p className="text-xs font-mono text-caption uppercase tracking-wider mb-1">Output Hash</p>
+                    <p className="text-sm font-mono break-all">{snapshot.outputHash}</p>
+                  </div>
+                  <div className="border border-border rounded-sm p-4">
+                    <p className="text-xs font-mono text-caption uppercase tracking-wider mb-1">Certificate Hash</p>
+                    <p className="text-sm font-mono break-all">{bundle.certificateHash}</p>
+                  </div>
+                </div>
+
+                {/* Verification badges */}
+                <div className="border border-border rounded-sm p-4 space-y-2">
+                  <VerifyBadge label="Snapshot Verified" result={snapshotResult} />
+                  <VerifyBadge label="CER Verified" result={cerResult} />
+                </div>
+
+                {/* Download */}
+                <div className="flex gap-3">
+                  <Button variant="outline" onClick={handleDownload}>
+                    <Download className="h-4 w-4 mr-1.5" />
+                    Download CER (.json)
+                  </Button>
+                </div>
+
+                {/* Canonical JSON accordion */}
+                <Accordion type="single" collapsible>
+                  <AccordionItem value="snapshot-json">
+                    <AccordionTrigger className="text-sm font-mono">Canonical Snapshot JSON</AccordionTrigger>
+                    <AccordionContent>
+                      <div className="relative">
+                        <button
+                          onClick={() => copyToClipboard(toCanonicalJson(snapshot))}
+                          className="absolute top-2 right-2 p-1.5 rounded hover:bg-muted transition-colors"
+                          title="Copy JSON"
+                        >
+                          <Copy className="h-3.5 w-3.5 text-caption" />
+                        </button>
+                        <pre className="bg-muted/50 border border-border rounded-sm p-4 text-xs font-mono overflow-x-auto whitespace-pre-wrap break-all">
+                          {toCanonicalJson(snapshot)}
+                        </pre>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="bundle-json">
+                    <AccordionTrigger className="text-sm font-mono">Full CER Bundle JSON</AccordionTrigger>
+                    <AccordionContent>
+                      <div className="relative">
+                        <button
+                          onClick={() => copyToClipboard(JSON.stringify(bundle, null, 2))}
+                          className="absolute top-2 right-2 p-1.5 rounded hover:bg-muted transition-colors"
+                          title="Copy JSON"
+                        >
+                          <Copy className="h-3.5 w-3.5 text-caption" />
+                        </button>
+                        <pre className="bg-muted/50 border border-border rounded-sm p-4 text-xs font-mono overflow-x-auto whitespace-pre-wrap break-all">
+                          {JSON.stringify(bundle, null, 2)}
+                        </pre>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </div>
+            </section>
+          )}
+
+          {/* Section 4: Tamper Check */}
+          {bundle && (
+            <section className="mt-12">
+              <h2>4. Tamper Check</h2>
+              <p>
+                Toggle the switch to simulate a tampered record — one character of the output is modified in memory — then re-verify to see the integrity check fail.
+              </p>
+
+              <div className="border border-border rounded-sm p-4 mt-4 space-y-4">
+                <div className="flex items-center gap-3">
+                  <Switch checked={tampered} onCheckedChange={handleTamperToggle} />
+                  <span className="text-sm font-mono">Simulate tamper</span>
+                </div>
+
+                <Button variant="outline" onClick={handleReverify}>
+                  Re-verify
+                </Button>
+
+                {tamperResult && (
+                  <div className={`border rounded-sm p-4 ${tamperResult.ok ? "border-border bg-muted/30" : "border-destructive/30 bg-destructive/5"}`}>
+                    <VerifyBadge label="CER Verified" result={tamperResult} />
+                    {!tamperResult.ok && (
+                      <p className="text-sm text-destructive mt-2 font-mono">
+                        FAIL: Hash mismatch — record has been modified.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Section 5: What this proves */}
+          <section className="mt-12">
+            <h2>What This Proves (Plain English)</h2>
+            <p>
+              This does not guarantee the model would output the same thing again. It guarantees that this recorded output is cryptographically bound to these inputs and parameters. Any modification to the record — however small — will cause verification to fail.
+            </p>
+          </section>
+
+          {/* Section 6: Links */}
+          <section className="mt-12 pt-8 border-t border-border">
+            <h2>Links</h2>
+            <ul>
+              <li>
+                <a href="https://www.npmjs.com/package/@nexart/ai-execution" target="_blank" rel="noopener noreferrer" className="text-body underline underline-offset-2 hover:text-foreground inline-flex items-center gap-1">
+                  NPM: @nexart/ai-execution <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              </li>
+              <li>
+                <a href="https://github.com/artnames/nexart-ai-execution" target="_blank" rel="noopener noreferrer" className="text-body underline underline-offset-2 hover:text-foreground inline-flex items-center gap-1">
+                  GitHub: nexart-ai-execution <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              </li>
+              <li>
+                <Link to="/protocol/ai-execution-integrity" className="text-body underline underline-offset-2 hover:text-foreground">
+                  Protocol: AI Execution Integrity (Draft)
+                </Link>
+              </li>
+            </ul>
+          </section>
+        </div>
+      </PageContent>
+    </PageLayout>
+  );
+};
+
+export default AIExecutionDemo;
