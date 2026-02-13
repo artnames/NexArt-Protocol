@@ -45,6 +45,7 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import FAQ from "./pages/FAQ";
 import AIExecutionIntegrity from "./pages/protocol/AIExecutionIntegrity";
+import AIExecutionDemo from "./pages/demos/AIExecutionDemo";
 
 const queryClient = new QueryClient();
 
@@ -96,6 +97,7 @@ const App = () => (
               <Route path="/terms" element={<Terms />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/protocol/ai-execution-integrity" element={<AIExecutionIntegrity />} />
+              <Route path="/demos/ai-execution" element={<AIExecutionDemo />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

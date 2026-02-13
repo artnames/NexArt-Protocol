@@ -222,6 +222,17 @@ const AIExecutionIntegrity = () => {
             </p>
           </section>
 
+          {/* Demo link */}
+          <section className="mt-12">
+            <h2>Try the Demo</h2>
+            <p>
+              See AI Execution Integrity in action — generate a snapshot, seal a CER, and test tamper detection, entirely in your browser:{" "}
+              <Link to="/demos/ai-execution" className="text-body underline underline-offset-2 hover:text-foreground">
+                AI Execution Integrity Demo
+              </Link>.
+            </p>
+          </section>
+
           {/* Footer link */}
           <section className="mt-12 pt-8 border-t border-border">
             <p className="text-caption">
