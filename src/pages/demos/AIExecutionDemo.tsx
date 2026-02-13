@@ -458,8 +458,8 @@ const AIExecutionDemo = () => {
                   </p>
                 </div>
 
-                {/* Download */}
-                <div className="space-y-2">
+                {/* Download + Audit */}
+                <div className="space-y-4">
                   <div className="flex gap-3">
                     <Button variant="outline" onClick={handleDownload}>
                       <Download className="h-4 w-4 mr-1.5" />
@@ -469,6 +469,23 @@ const AIExecutionDemo = () => {
                   <p className="text-xs text-caption font-mono">
                     Downloads the exact certified bundle. Optional fields are normalized to null (never undefined) for canonical hashing.
                   </p>
+
+                  <div className="border border-border rounded-sm p-4 space-y-3">
+                    <p className="text-xs font-mono uppercase tracking-wider text-caption">Audit in Recânon</p>
+                    <a href="https://recanon.xyz" target="_blank" rel="noopener noreferrer">
+                      <Button>
+                        Open in Recânon
+                        <ExternalLink className="h-4 w-4 ml-1.5" />
+                      </Button>
+                    </a>
+                    <p className="text-sm text-body">
+                      Next step: Download the CER, then open Recânon and upload the JSON to audit it.<br />
+                      <span className="text-caption">Optional: Request canonical attestation (uses node quota).</span>
+                    </p>
+                    <p className="text-xs text-caption font-mono">
+                      Note: Recânon can verify the record; it does not re-run the model or claim output correctness.
+                    </p>
+                  </div>
                 </div>
 
                 {/* Canonical JSON accordion */}
@@ -570,6 +587,11 @@ const AIExecutionDemo = () => {
                 <Link to="/protocol/ai-execution-integrity" className="text-body underline underline-offset-2 hover:text-foreground">
                   Protocol: AI Execution Integrity (Draft)
                 </Link>
+              </li>
+              <li>
+                <a href="https://recanon.xyz" target="_blank" rel="noopener noreferrer" className="text-body underline underline-offset-2 hover:text-foreground inline-flex items-center gap-1">
+                  Audit: Recânon <ExternalLink className="h-3.5 w-3.5" />
+                </a>
               </li>
             </ul>
           </section>
