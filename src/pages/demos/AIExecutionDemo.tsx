@@ -24,6 +24,87 @@ function generateExecId(): string {
   return `exec_${hex}`;
 }
 
+/** Recursively replace undefined with null in any value. */
+function sanitizeDeep<T>(value: T): T {
+  if (value === undefined) return null as unknown as T;
+  if (value === null || typeof value !== "object") return value;
+  if (Array.isArray(value)) return value.map(sanitizeDeep) as unknown as T;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+    out[k] = sanitizeDeep(v);
+  }
+  return out as T;
+}
+
+/** Sanitize demo inputs before feeding to createSnapshot. */
+function sanitizeDemoInput(raw: {
+  executionId: string;
+  provider: string;
+  model: string;
+  modelVersion: string;
+  prompt: string;
+  input: string | Record<string, unknown>;
+  parameters: { temperature: number; maxTokens: number; topP: string; seed: string };
+  output: string | Record<string, unknown>;
+  appId: string;
+}) {
+  return {
+    executionId: raw.executionId.trim() || generateExecId(),
+    provider: raw.provider.trim() || "openai",
+    model: raw.model.trim() || "gpt-4o",
+    modelVersion: raw.modelVersion.trim() || null,
+    prompt: raw.prompt,
+    input: raw.input,
+    parameters: {
+      temperature: raw.parameters.temperature,
+      maxTokens: raw.parameters.maxTokens,
+      topP: raw.parameters.topP ? parseFloat(raw.parameters.topP) : null,
+      seed: raw.parameters.seed ? parseInt(raw.parameters.seed, 10) : null,
+    },
+    output: raw.output,
+    appId: raw.appId.trim() || null,
+  };
+}
+
+interface AttestationCheck {
+  ready: boolean;
+  issues: string[];
+}
+
+/** Evaluate whether a bundle is attestation-ready. */
+function checkAttestationReadiness(bundle: CerAiExecutionBundle): AttestationCheck {
+  const issues: string[] = [];
+  const s = bundle.snapshot;
+
+  // Check for undefined anywhere (post-sanitize this shouldn't happen)
+  const json = JSON.stringify(bundle);
+  // JSON.stringify drops undefined, so check the raw object
+  function findUndefined(obj: unknown, path: string) {
+    if (obj === undefined) { issues.push(`Found undefined at ${path}`); return; }
+    if (obj === null || typeof obj !== "object") return;
+    for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+      findUndefined(v, `${path}.${k}`);
+    }
+  }
+  findUndefined(bundle, "bundle");
+
+  if (!s.provider || typeof s.provider !== "string") issues.push("Missing provider");
+  if (!s.model || typeof s.model !== "string") issues.push("Missing model");
+  if (!s.executionId) issues.push("Missing executionId");
+  if (!s.prompt) issues.push("Missing prompt");
+  if (typeof s.parameters?.temperature !== "number" || !Number.isFinite(s.parameters.temperature))
+    issues.push("Invalid parameters.temperature");
+  if (typeof s.parameters?.maxTokens !== "number" || !Number.isFinite(s.parameters.maxTokens))
+    issues.push("Invalid parameters.maxTokens");
+
+  // Ensure all parameter keys exist
+  for (const key of ["temperature", "maxTokens", "topP", "seed"] as const) {
+    if (!(key in s.parameters)) issues.push(`Missing parameters.${key}`);
+  }
+
+  return { ready: issues.length === 0, issues };
+}
+
 const AIExecutionDemo = () => {
   // Form state
   const [executionId, setExecutionId] = useState(generateExecId);
@@ -62,10 +143,14 @@ const AIExecutionDemo = () => {
     }
   };
 
+  // Attestation readiness state
+  const [attestation, setAttestation] = useState<AttestationCheck | null>(null);
+
   const handleGenerate = useCallback(async () => {
     setError(null);
     setTampered(false);
     setTamperResult(null);
+    setAttestation(null);
 
     // Parse input
     let inputValue: string | Record<string, unknown>;
@@ -92,31 +177,22 @@ const AIExecutionDemo = () => {
     if (isNaN(temp) || isNaN(mt)) { setError("Temperature and Max Tokens must be valid numbers."); return; }
 
     try {
-      const snap = await createSnapshot({
-        executionId,
-        provider,
-        model,
-        modelVersion: modelVersion || null,
-        prompt,
-        input: inputValue,
-        parameters: {
-          temperature: temp,
-          maxTokens: mt,
-          topP: topP ? parseFloat(topP) : null,
-          seed: seed ? parseInt(seed, 10) : null,
-        },
-        output: outputValue,
-        appId: appId || null,
+      const sanitized = sanitizeDemoInput({
+        executionId, provider, model, modelVersion, prompt,
+        input: inputValue, output: outputValue, appId,
+        parameters: { temperature: temp, maxTokens: mt, topP, seed },
       });
 
+      const snap = sanitizeDeep(await createSnapshot(sanitized));
       const sr = await verifySnapshot(snap);
-      const bnd = await sealCer(snap, { meta: { source: "nexart.io", tags: ["demo"] } });
+      const bnd = sanitizeDeep(await sealCer(snap, { meta: { source: "nexart.io", tags: ["demo"] } }));
       const cr = await verifyCer(bnd);
 
       setSnapshot(snap);
       setBundle(bnd);
       setSnapshotResult(sr);
       setCerResult(cr);
+      setAttestation(checkAttestationReadiness(bnd));
     } catch (e: any) {
       setError(e.message || "Failed to generate snapshot.");
     }
@@ -356,17 +432,43 @@ const AIExecutionDemo = () => {
                 <div className="border border-border rounded-sm p-4 space-y-3">
                   <VerifyBadge label="Snapshot integrity" result={snapshotResult} />
                   <VerifyBadge label="Certificate integrity" result={cerResult} />
+                  {attestation && (
+                    <div className="flex items-start gap-2 mt-1">
+                      {attestation.ready ? (
+                        <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
+                      ) : (
+                        <XCircle className="h-5 w-5 text-destructive mt-0.5" />
+                      )}
+                      <div>
+                        <span className="text-sm font-mono">
+                          Attestation-ready: <strong>{attestation.ready ? "YES" : "NO"}</strong>
+                        </span>
+                        {!attestation.ready && attestation.issues.length > 0 && (
+                          <ul className="text-xs text-destructive mt-1 list-disc list-inside">
+                            {attestation.issues.map((issue, i) => (
+                              <li key={i}>{issue}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   <p className="text-xs text-caption mt-2">
                     Integrity status reflects whether the record is internally consistent. PASS means the snapshot hashes match the recorded values and the certificate hash matches the sealed payload. FAIL means one or more fields no longer match their expected hashes (possible tampering or corruption). ERROR indicates verification could not be completed due to missing fields or invalid formatting.
                   </p>
                 </div>
 
                 {/* Download */}
-                <div className="flex gap-3">
-                  <Button variant="outline" onClick={handleDownload}>
-                    <Download className="h-4 w-4 mr-1.5" />
-                    Download CER (.json)
-                  </Button>
+                <div className="space-y-2">
+                  <div className="flex gap-3">
+                    <Button variant="outline" onClick={handleDownload}>
+                      <Download className="h-4 w-4 mr-1.5" />
+                      Download CER (.json)
+                    </Button>
+                  </div>
+                  <p className="text-xs text-caption font-mono">
+                    Downloads the exact certified bundle. Optional fields are normalized to null (never undefined) for canonical hashing.
+                  </p>
                 </div>
 
                 {/* Canonical JSON accordion */}
