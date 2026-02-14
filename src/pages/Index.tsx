@@ -132,7 +132,7 @@ const Index = () => {
             </div>
             <p className="text-sm text-muted-foreground mb-0">
               Shapes, Noise, SoundArt, and Code Mode are fully protocol-enforced. All outputs are deterministic,
-              reproducible, and verifiable — rendered exclusively via the NexArt Code Mode runtime.
+              reproducible, and verifiable, rendered exclusively via the NexArt Code Mode runtime.
             </p>
           </div>
 
