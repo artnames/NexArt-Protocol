@@ -45,7 +45,7 @@ const Index = () => {
 
           <p>
             NexArt solves this by enforcing canonical, deterministic execution at the protocol level. The same seed,
-            parameters, and code will always produce the same output — regardless of where or when it runs.
+            parameters, and code will always produce the same output, regardless of where or when it runs.
           </p>
 
           <div className="bg-muted/50 border border-border rounded-md p-5 my-8">
