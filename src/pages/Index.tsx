@@ -10,12 +10,12 @@ const Index = () => {
     <PageLayout>
       <SEOHead
         title="Deterministic Execution Infrastructure for Generative Systems"
-        description="NexArt is a protocol and SDK for reproducible execution and verifiable outputs — on-chain or off-chain. Same inputs. Same outputs. Provable. Replayable."
+        description="NexArt is a protocol and SDK for reproducible execution and verifiable outputs. Same inputs. Same outputs. Provable. Replayable."
       />
 
       <PageHeader
         title="Deterministic Execution Infrastructure for Generative Systems"
-        subtitle="NexArt is a protocol and SDK for reproducible execution and verifiable outputs — on-chain or off-chain."
+        subtitle="NexArt is a protocol and SDK for reproducible execution and verifiable outputs."
       />
 
       <PageContent>
