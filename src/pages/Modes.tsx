@@ -6,28 +6,28 @@ import SEOHead from "@/components/seo/SEOHead";
 const Modes = () => {
   return (
     <PageLayout>
-      <SEOHead 
-        title="Modes"
-        description="The creation primitives of NexArt: SoundArt, Code Mode, Shapes, Fluids, Noise, and Artnames. Each mode is first-class."
+      <SEOHead
+        title="Modes | Protocol Execution Surfaces"
+        description="NexArt modes are protocol surfaces for authoring deterministic generative systems. SoundArt, Code Mode, Shapes, and Noise are protocol-enforced and executed via the Code Mode runtime."
       />
-      
-      <PageHeader 
-        title="Modes"
-        subtitle="The creation primitives of NexArt."
-      />
-      
+
+      <PageHeader title="Modes" subtitle="The protocol surfaces of NexArt." />
+
       <PageContent>
         <div className="prose-protocol">
           <p>
-            NexArt supports multiple creation modes. Each mode is a distinct way of authoring generative systems, with its own inputs, behaviors, and guarantees. All modes are intended to be first-class: none is more fundamental than another.
+            NexArt supports multiple modes. A mode is a protocol surface for authoring a generative system, with defined
+            inputs, execution semantics, and determinism guarantees. Protocol-enforced modes are executed through the
+            Code Mode runtime and produce canonical units.
           </p>
-          
+
           <p>
-            This page describes each mode at a conceptual level. Implementation details and parameter specifications will be documented separately.
+            This page describes each mode at a conceptual level. Implementation details and parameter specifications are
+            documented separately.
           </p>
 
           <h2>SoundArt</h2>
-          
+
           <div className="bg-primary/10 border border-primary/30 rounded-md p-4 mb-6">
             <div className="flex items-center gap-2 mb-2">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground">
@@ -35,88 +35,109 @@ const Modes = () => {
               </span>
             </div>
             <p className="text-sm text-muted-foreground mb-0">
-              SoundArt is now a fully protocol-enforced mode, rendered exclusively via the NexArt Code Mode runtime. All audio-reactive artworks are deterministic, seeded, and verifiable under the NexArt protocol.
+              SoundArt is a protocol-enforced mode executed via the NexArt Code Mode runtime. Audio-reactive systems are
+              deterministic, seeded, and verifiable under the NexArt protocol.
             </p>
           </div>
-          
+
           <p>
-            <strong>Intent.</strong> SoundArt enables audio-reactive generative systems. Audio input drives visual output through deterministic parameter mapping.
-          </p>
-          
-          <p>
-            <strong>Inputs.</strong> Audio source (normalized into a frozen SoundSnapshot), seed value, and visual generation parameters.
-          </p>
-          
-          <p>
-            <strong>Guarantees.</strong> All SoundArt works are executed through the NexArt Code Mode runtime using deterministic system generation, seeded randomness, and immutable audio snapshots. There are no Canvas2D or legacy rendering paths. Every output is reproducible, verifiable, and protocol-native.
-          </p>
-          
-          <p>
-            <strong>Execution.</strong> Audio features are normalized into a frozen SoundSnapshot, injected into the Code Mode runtime as read-only parameters, and rendered using seeded randomness and deterministic noise functions. Identical audio input and seed always produce identical visual output.
+            <strong>Intent.</strong> SoundArt enables audio-reactive generative systems. Audio input drives output
+            through deterministic parameter mapping.
           </p>
 
-          <h2>SoundArt Protocol Enforcement (v1)</h2>
-          
           <p>
-            This section documents a protocol milestone: SoundArt is now fully protocol-enforced.
+            <strong>Inputs.</strong> Audio source normalized into a frozen SoundSnapshot, a seed value, and visual
+            generation parameters.
           </p>
-          
+
+          <p>
+            <strong>Guarantees.</strong> SoundArt systems execute through the NexArt Code Mode runtime using
+            deterministic system generation, seeded randomness, and frozen audio snapshots. No legacy rendering paths
+            are permitted for protocol-compliant execution. Outputs are reproducible, verifiable, and protocol-native.
+          </p>
+
+          <p>
+            <strong>Execution.</strong> Audio features are normalized into a frozen SoundSnapshot, injected into the
+            Code Mode runtime as read-only parameters, and rendered using seeded randomness and deterministic noise
+            functions. Identical audio input and seed always produce identical output.
+          </p>
+
+          <h2>SoundArt Protocol Enforcement</h2>
+
+          <p>
+            SoundArt is fully protocol-enforced. Execution routes through the NexArt Code Mode engine exclusively, and
+            protocol-compliant flows do not include fallback renderers.
+          </p>
+
           <h3>What Changed</h3>
-          
+
           <p>
-            SoundArt previously operated through custom Canvas renderers and legacy pipelines. As of this enforcement milestone, all SoundArt execution routes through the NexArt Code Mode engine exclusively. No fallback renderers or alternative execution paths remain.
+            SoundArt previously operated through custom canvas renderers and legacy pipelines. With protocol
+            enforcement, all SoundArt execution uses the Code Mode engine as the single execution path.
           </p>
-          
+
           <h3>Why It Matters</h3>
-          
+
           <ul>
-            <li><strong>Determinism</strong> — Audio input produces identical visual output given the same seed, every time</li>
-            <li><strong>Verifiability</strong> — Outputs can be independently verified against the protocol</li>
-            <li><strong>Shared Runtime</strong> — SoundArt and Code Mode share the same execution engine, ensuring uniform behavior</li>
+            <li>
+              <strong>Determinism</strong>, identical audio input and seed produce identical output
+            </li>
+            <li>
+              <strong>Verifiability</strong>, outputs can be independently verified against the protocol
+            </li>
+            <li>
+              <strong>Shared runtime</strong>, SoundArt and Code Mode use the same execution engine
+            </li>
           </ul>
-          
+
           <h3>What This Enables</h3>
-          
+
           <ul>
-            <li>New input types can be added to the protocol using the same runtime</li>
-            <li>Builder SDKs can target a single execution model for all modes</li>
+            <li>New input types can be added using the same runtime</li>
+            <li>Builder SDKs can target a single execution model across modes</li>
             <li>Third-party tools can render SoundArt systems with protocol guarantees</li>
           </ul>
 
           <h2>Code Mode</h2>
-          
+
           <div className="bg-primary/10 border border-primary/30 rounded-md p-4 mb-6">
             <div className="flex items-center gap-2 mb-2">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground">
                 HARD Enforced
               </span>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-foreground/10 text-foreground">
-              Protocol v1.2.0
-            </span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-foreground/10 text-foreground">
+                Protocol v1.2.0
+              </span>
             </div>
             <p className="text-sm text-muted-foreground mb-0">
-              Code Mode is a protocol-enforced execution surface under NexArt Protocol v1.2.0. Sketches are executed deterministically within a restricted, standardized runtime.
+              Code Mode is a protocol-enforced execution surface under NexArt Protocol v1.2.0. Systems execute
+              deterministically within a restricted, standardized runtime.
             </p>
           </div>
-          
+
           <p>
-            <strong>Intent.</strong> Code Mode allows direct specification of generative logic through code. It provides maximum control for technically sophisticated artists.
+            <strong>Intent.</strong> Code Mode allows direct specification of execution logic through code, intended for
+            builders and advanced users.
           </p>
-          
+
           <p>
-            <strong>Inputs.</strong> A code definition conforming to the protocol specification, along with seed values and parameters.
+            <strong>Inputs.</strong> A code definition conforming to the protocol specification, along with seed values
+            and parameters.
           </p>
-          
+
           <p>
-            <strong>Guarantees.</strong> Code Mode execution is deterministic. The protocol enforces deterministic execution through seeded randomness and controlled noise functions. Non-deterministic operations are disallowed. The execution surface is frozen under Protocol v1.2.0.
+            <strong>Guarantees.</strong> Code Mode execution is deterministic. The protocol enforces seeded randomness
+            and controlled noise functions, and disallows non-deterministic operations. The execution surface is frozen
+            under Protocol v1.2.0.
           </p>
-          
+
           <p>
-            <strong>Runtime.</strong> Code Mode is the shared execution environment for all protocol-enforced modes. SoundArt, Shapes, Noise, and Artnames all execute through the Code Mode runtime.
+            <strong>Runtime.</strong> Code Mode is the shared execution environment for protocol-enforced modes.
+            SoundArt, Shapes, and Noise execute through the Code Mode runtime.
           </p>
 
           <h2>Shapes</h2>
-          
+
           <div className="bg-primary/10 border border-primary/30 rounded-md p-4 mb-6">
             <div className="flex items-center gap-2 mb-2">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground">
@@ -124,46 +145,34 @@ const Modes = () => {
               </span>
             </div>
             <p className="text-sm text-muted-foreground mb-0">
-              Shapes is a fully protocol-enforced mode, rendered exclusively via the NexArt Code Mode runtime. All parametric geometric systems are deterministic, reproducible, and verifiable under the NexArt protocol.
+              Shapes is a protocol-enforced mode executed via the NexArt Code Mode runtime. Parametric geometric systems
+              are deterministic, reproducible, and verifiable under the NexArt protocol.
             </p>
           </div>
-          
+
           <p>
-            <strong>Intent.</strong> Shapes provides geometric primitives for visual composition. Systems are built from circles, rectangles, lines, and other basic forms.
-          </p>
-          
-          <p>
-            <strong>Inputs.</strong> A set of shape definitions with position, size, color, and transformation parameters.
-          </p>
-          
-          <p>
-            <strong>Guarantees.</strong> Shapes systems are fully deterministic. The same parameters produce identical output across conforming implementations. All rendering is executed through the NexArt Code Mode runtime with no Canvas2D or legacy rendering paths.
-          </p>
-          
-          <p>
-            <strong>Execution.</strong> Shape definitions are processed by the Code Mode runtime using standardized primitive definitions and rasterization rules. Every output is reproducible, verifiable, and protocol-native.
+            <strong>Intent.</strong> Shapes provides geometric primitives for composition. Systems are built from
+            circles, rectangles, lines, and other basic forms.
           </p>
 
-          <h2>Fluids</h2>
-          
           <p>
-            <strong>Intent.</strong> Fluids simulates liquid dynamics for organic, flowing visuals. Systems exhibit natural-looking motion and interaction.
+            <strong>Inputs.</strong> A set of shape definitions with position, size, color, and transformation
+            parameters.
           </p>
-          
+
           <p>
-            <strong>Inputs.</strong> Simulation parameters (viscosity, density, velocity) and initial conditions.
+            <strong>Guarantees.</strong> Shapes systems are deterministic. The same parameters produce identical output
+            across conforming implementations. Rendering is executed through the Code Mode runtime, and
+            protocol-compliant flows do not include legacy rendering paths.
           </p>
-          
+
           <p>
-            <strong>Guarantees.</strong> Fluids systems are best-effort reproducible. Floating-point differences across hardware may cause simulations to diverge over time, even with identical initial conditions.
-          </p>
-          
-          <p>
-            <strong>Limitations.</strong> Long-running simulations may drift. Checkpointing for archival purposes is a future consideration and is not currently implemented.
+            <strong>Execution.</strong> Shape definitions are processed by the Code Mode runtime using standardized
+            primitive definitions and rasterization rules. Outputs are reproducible, verifiable, and protocol-native.
           </p>
 
           <h2>Noise</h2>
-          
+
           <div className="bg-primary/10 border border-primary/30 rounded-md p-4 mb-6">
             <div className="flex items-center gap-2 mb-2">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground">
@@ -171,50 +180,38 @@ const Modes = () => {
               </span>
             </div>
             <p className="text-sm text-muted-foreground mb-0">
-              Noise is a fully protocol-enforced mode, rendered exclusively via the NexArt Code Mode runtime. All fractal, flow, and cellular noise systems are deterministic, reproducible, and verifiable under the NexArt protocol.
+              Noise is a protocol-enforced mode executed via the NexArt Code Mode runtime. Fractal, flow, and cellular
+              noise systems are deterministic, reproducible, and verifiable under the NexArt protocol.
             </p>
           </div>
-          
+
           <p>
-            <strong>Intent.</strong> Noise generates textures and patterns using procedural noise functions: Perlin, Simplex, Worley, and others.
+            <strong>Intent.</strong> Noise generates textures and patterns using procedural noise functions such as
+            Perlin, Simplex, and Worley.
           </p>
-          
+
           <p>
             <strong>Inputs.</strong> Noise type, frequency, amplitude, octaves, and seed values.
           </p>
-          
+
           <p>
-            <strong>Guarantees.</strong> Noise systems are fully deterministic. The same algorithm, parameters, and seed produce identical output across conforming implementations. All rendering is executed through the NexArt Code Mode runtime with no Canvas2D or legacy rendering paths.
-          </p>
-          
-          <p>
-            <strong>Execution.</strong> Noise parameters are processed by the Code Mode runtime using specified algorithms and seeded randomness. Every output is reproducible, verifiable, and protocol-native.
+            <strong>Guarantees.</strong> Noise systems are deterministic. The same algorithm, parameters, and seed
+            produce identical output across conforming implementations. Rendering is executed through the Code Mode
+            runtime, and protocol-compliant flows do not include legacy rendering paths.
           </p>
 
-          <h2>Artnames</h2>
-          
           <p>
-            <strong>Intent.</strong> Artnames generates visual systems from text input. A name, phrase, or arbitrary string is transformed into visual parameters through hashing and mapping functions.
-          </p>
-          
-          <p>
-            <strong>Inputs.</strong> A text string and a mapping configuration that determines how text features become visual properties.
-          </p>
-          
-          <p>
-            <strong>Guarantees.</strong> Artnames systems are deterministic under the specified mapping version. The same string always produces the same visual output when the mapping is fixed.
-          </p>
-          
-          <p>
-            <strong>Limitations.</strong> The visual vocabulary is constrained by the mapping configuration. Artnames is generative but not infinitely expressive.
+            <strong>Execution.</strong> Noise parameters are processed by the Code Mode runtime using specified
+            algorithms and seeded randomness. Outputs are reproducible, verifiable, and protocol-native.
           </p>
 
           <h2>Enforcement Status</h2>
-          
+
           <p>
-            These modes are enforced by the NexArt Protocol and executed exclusively through the Code Mode runtime. No arbitrary rendering logic is permitted.
+            These modes are enforced by the NexArt Protocol and executed through the Code Mode runtime. No arbitrary
+            rendering logic is permitted in protocol-compliant execution.
           </p>
-          
+
           <div className="overflow-x-auto mb-6">
             <table className="w-full text-sm">
               <thead>
@@ -225,24 +222,6 @@ const Modes = () => {
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-border/50">
-                  <td className="py-2 pr-4">Shapes</td>
-                  <td className="py-2 pr-4">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/20 text-primary">
-                      HARD
-                    </span>
-                  </td>
-                  <td className="py-2">Code Mode runtime</td>
-                </tr>
-                <tr className="border-b border-border/50">
-                  <td className="py-2 pr-4">Noise</td>
-                  <td className="py-2 pr-4">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/20 text-primary">
-                      HARD
-                    </span>
-                  </td>
-                  <td className="py-2">Code Mode runtime</td>
-                </tr>
                 <tr className="border-b border-border/50">
                   <td className="py-2 pr-4">SoundArt</td>
                   <td className="py-2 pr-4">
@@ -262,7 +241,7 @@ const Modes = () => {
                   <td className="py-2">Protocol v1.2.0</td>
                 </tr>
                 <tr className="border-b border-border/50">
-                  <td className="py-2 pr-4">Artnames</td>
+                  <td className="py-2 pr-4">Shapes</td>
                   <td className="py-2 pr-4">
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/20 text-primary">
                       HARD
@@ -271,26 +250,29 @@ const Modes = () => {
                   <td className="py-2">Code Mode runtime</td>
                 </tr>
                 <tr>
-                  <td className="py-2 pr-4">Fluids</td>
+                  <td className="py-2 pr-4">Noise</td>
                   <td className="py-2 pr-4">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
-                      Not enforced
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/20 text-primary">
+                      HARD
                     </span>
                   </td>
-                  <td className="py-2">—</td>
+                  <td className="py-2">Code Mode runtime</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
           <h2>Mode Parity</h2>
-          
+
           <p>
-            The protocol's goal is that all modes produce canonical units, all modes are versioned, and all modes declare their determinism guarantees. Mode parity—where each mode is a complete and independent way to create NexArt systems—is a protocol goal that implementations are working toward.
+            The protocol goal is that all modes produce canonical units, all modes are versioned, and all modes declare
+            determinism guarantees. Mode parity means each mode is a complete and independent way to author NexArt
+            systems. Implementations are working toward this goal.
           </p>
-          
+
           <p>
-            Future modes may be added to the protocol. The framework is designed to accommodate new creation primitives without disrupting existing ones.
+            Future modes may be added to the protocol. The framework is designed to accommodate new creation primitives
+            without disrupting existing ones.
           </p>
         </div>
       </PageContent>
