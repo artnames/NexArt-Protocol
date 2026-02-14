@@ -6,131 +6,130 @@ import SEOHead from "@/components/seo/SEOHead";
 const CanonicalUnit = () => {
   return (
     <PageLayout>
-      <SEOHead 
-        title="Canonical Unit"
-        description="The core protocol object of NexArt. What a system contains, what it excludes, and why this abstraction exists."
+      <SEOHead
+        title="Canonical Unit | Portable Protocol Object"
+        description="The canonical unit is NexArt’s core protocol object. A portable specification of a deterministic generative system, designed for reproducible execution, verification, and interoperability."
       />
-      
-      <PageHeader 
-        title="Canonical Unit"
-        subtitle="The core protocol object."
-      />
-      
+
+      <PageHeader title="Canonical Unit" subtitle="The core protocol object." />
+
       <PageContent>
         <div className="prose-protocol">
           <p>
-            The canonical unit is the fundamental object of the NexArt protocol. Every piece of work created, stored, or transmitted through NexArt is intended to be represented as a canonical unit. This page defines what it is, what it contains, and what it intentionally excludes.
+            The canonical unit is the fundamental object of the NexArt protocol. Every system executed, stored, or
+            transmitted through NexArt is represented as a canonical unit. This page defines what it is, what it
+            contains, and what it intentionally excludes.
           </p>
-          
+
           <p>
-            NexArt systems are now governed independently of any single application.
+            The canonical unit is application-independent. The protocol, not the user interface, defines system meaning.
           </p>
 
           <h2>Definition</h2>
-          
+
           <p>
-            A canonical unit is a complete, portable specification of a generative art system. It is designed to contain everything needed to reproduce the visual output of that system, and nothing more. Reproducibility depends on declared determinism and the availability of external references (audio, code, time-based inputs).
+            A canonical unit is a complete, portable specification of a deterministic generative system. It contains
+            everything required to reproduce the output of that system, and nothing more. Reproducibility requires a
+            determinism declaration and resolvable external references when used.
           </p>
-          
+
           <p>
-            The canonical unit is mode-agnostic. Whether a system was created using SoundArt, Code Mode, Shapes, or any other creation primitive, it is represented in the same fundamental structure.
+            The canonical unit is mode-agnostic. Whether a system was authored using SoundArt, Code Mode, Shapes, or any
+            other creation primitive, it is represented in the same fundamental structure.
           </p>
 
           <h2>What It Contains</h2>
-          
-          <p>
-            The protocol requires every canonical unit to include:
-          </p>
-          
+
+          <p>The protocol requires every canonical unit to include:</p>
+
           <ul>
             <li>
-              <strong>Mode identifier</strong> — which creation primitive generated this system
+              <strong>Mode identifier</strong>, which creation primitive produced the system
             </li>
             <li>
-              <strong>Parameters</strong> — the complete set of values that define the system's behavior
+              <strong>Parameters</strong>, the complete set of values that define the system’s behavior
             </li>
             <li>
-              <strong>Protocol version</strong> — which version of the NexArt protocol this system conforms to
+              <strong>Protocol version</strong>, the protocol version this system conforms to
             </li>
             <li>
-              <strong>Determinism declaration</strong> — whether the system is deterministic or best-effort
+              <strong>Determinism declaration</strong>, whether the system is deterministic or best-effort
             </li>
             <li>
-              <strong>External references</strong> — pointers to any assets the system depends on (audio files, images, etc.)
+              <strong>External references</strong>, pointers to any required assets such as audio files or images
             </li>
           </ul>
 
           <h2>What It Does Not Contain</h2>
-          
-          <p>
-            The protocol requires canonical units to exclude:
-          </p>
-          
+
+          <p>The protocol requires canonical units to exclude:</p>
+
           <ul>
             <li>
-              <strong>Rendered outputs</strong> — images, videos, or other artifacts derived from the system
+              <strong>Rendered outputs</strong>, images, videos, or other artifacts derived from the system
             </li>
             <li>
-              <strong>Implementation details</strong> — how a particular renderer or tool processes the system
+              <strong>Implementation details</strong>, how a particular renderer or tool processes the system
             </li>
             <li>
-              <strong>User interface state</strong> — view settings, window positions, or other ephemeral data
+              <strong>User interface state</strong>, view settings, window positions, or other ephemeral data
             </li>
             <li>
-              <strong>Authentication or access control</strong> — ownership and permissions are handled externally
+              <strong>Authentication or access control</strong>, ownership and permissions are handled externally
             </li>
             <li>
-              <strong>Embedded binary assets</strong> — external references are used instead to keep units portable
+              <strong>Embedded binary assets</strong>, external references are used instead to keep units portable
             </li>
           </ul>
 
           <h2>Why This Abstraction Exists</h2>
-          
+
+          <p>The canonical unit serves several purposes:</p>
+
           <p>
-            The canonical unit serves several purposes:
+            <strong>Portability.</strong> A canonical unit can be moved between tools, platforms, and storage systems
+            without loss of meaning. It is self-describing and self-contained.
           </p>
-          
+
           <p>
-            <strong>Portability.</strong> A canonical unit can be moved between tools, platforms, and storage systems without loss of information. It is self-describing and self-contained.
+            <strong>Verifiability.</strong> Because the unit includes parameters and declarations, completeness can be
+            checked. A renderer can validate that it has everything needed before execution.
           </p>
-          
+
           <p>
-            <strong>Verifiability.</strong> Because the unit contains all parameters, its correctness can be checked. A renderer can validate that it has everything needed before attempting to process the system.
+            <strong>Durability.</strong> By excluding rendered outputs and implementation details, the canonical unit
+            preserves what matters long term, the rules that define the system.
           </p>
-          
+
           <p>
-            <strong>Durability.</strong> By excluding rendered outputs and implementation details, the canonical unit focuses on what matters for long-term preservation: the rules that define the artwork.
-          </p>
-          
-          <p>
-            <strong>Interoperability.</strong> Different tools can read and write canonical units, even if they implement different rendering strategies or user interfaces.
+            <strong>Interoperability.</strong> Different tools can read and write canonical units even when their
+            renderers and interfaces differ.
           </p>
 
           <h2>Mode Conformance</h2>
-          
+
           <p>
-            The protocol requires all creation modes in NexArt to produce canonical units. Implementations are being migrated to conform to this requirement. When you work in SoundArt mode, you are producing a canonical unit. When you work in Code Mode, you are producing a canonical unit.
-          </p>
-          
-          <p>
-            The modes differ in how systems are authored, but they converge on the same output format. This ensures that systems created in different modes can be stored, shared, and processed uniformly.
+            The protocol requires all creation modes in NexArt to produce canonical units. Implementations are being
+            migrated to conform to this requirement. Modes differ in how systems are authored, but they converge on a
+            shared representation so that systems can be stored, shared, and processed uniformly.
           </p>
 
           <h2>Current Status</h2>
-          
+
           <p>
-            The canonical unit structure described here represents the protocol's requirements. Current implementations are being migrated to fully conform to this specification. Some implementations may store additional data (such as rendered outputs) alongside the canonical unit during the transition period.
+            The canonical unit structure described here represents the protocol requirements. Implementations are being
+            migrated to fully conform to this specification. Some implementations may store additional data alongside
+            the canonical unit during the transition period.
           </p>
 
           <h2>Serialization</h2>
-          
+
           <p>
-            The protocol does not mandate a specific serialization format. Implementations may use JSON, binary formats, or other representations, as long as they can round-trip a canonical unit without loss of information.
+            The protocol does not mandate a specific serialization format. Implementations may use JSON, binary formats,
+            or other representations, as long as they can round-trip a canonical unit without loss of information.
           </p>
-          
-          <p>
-            Reference implementations will be provided in future versions of this specification.
-          </p>
+
+          <p>Reference implementations may be provided separately.</p>
         </div>
       </PageContent>
     </PageLayout>
