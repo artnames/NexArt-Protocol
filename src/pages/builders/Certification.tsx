@@ -12,136 +12,110 @@ const BuildersCertification = () => {
   return (
     <PageLayout>
       <SEOHead
-        title="Canonical Certification | Verified Deterministic Execution"
-        description="Canonical certification proves a deterministic NexArt execution occurred under pinned protocol semantics. Learn what gets sealed, how verification works, and when certification is required."
+        title="Canonical Certification"
+        description="What canonical certification means in the NexArt protocol. Deterministic execution, verifiable snapshots, and reproducibility guarantees."
       />
 
       <PageHeader title="Canonical Certification" subtitle="Determinism is a property. Certification is proof." />
 
       <PageContent>
         <article className="prose-protocol prose-spec">
+          {/* What is Canonical Certification */}
           <h2>What is canonical certification?</h2>
           <p>
-            Canonical certification is the process of executing a Code Mode system through the NexArt Canonical Renderer
-            and producing a verifiable record of that run. The result is not only an output artifact. It is a sealed
-            record that binds inputs, parameters, execution semantics, and outputs.
+            Canonical certification is the process of executing a Code Mode sketch through the NexArt canonical renderer
+            and producing cryptographically verifiable proof of that execution. The result is not just an image — it is
+            an auditable record that ties inputs, outputs, and execution environment together.
           </p>
-
           <p>
             A <strong>certified run</strong> produces:
           </p>
           <ul>
             <li>A deterministic PNG at canonical resolution</li>
             <li>
-              A snapshot file (<code>.snapshot.json</code>) containing the full input set
+              A snapshot file (<code>.snapshot.json</code>) containing all input parameters
             </li>
-            <li>Cryptographic hashes that bind the snapshot to the output</li>
+            <li>Cryptographic hashes linking the snapshot to the output</li>
           </ul>
-
           <p>
-            Given the same inputs and pinned protocol version, any compliant renderer produces byte-identical output
-            with the same output hash. This is the basis of verification.
+            Given the same inputs, any compliant renderer will produce byte-identical output with the same hash. This is
+            the foundation of NexArt's reproducibility guarantee.
           </p>
 
-          <h2>Determinism and certification</h2>
+          {/* Determinism vs Certification */}
+          <h2>Determinism vs. certification</h2>
           <p>
-            <strong>Determinism</strong> is a property of the system. Given the same seed and parameters, deterministic
-            execution produces the same output.
+            <strong>Determinism</strong> is a property of the code. A deterministic sketch, given the same seed and
+            parameters, will always produce the same output.
           </p>
-
           <p>
-            <strong>Certification</strong> is evidence that a run happened under pinned, versioned execution semantics.
-            It answers a simple question:
+            <strong>Certification</strong> is proof that determinism was exercised under controlled conditions. It
+            answers: <em>was this output actually produced by running this code with these inputs?</em>
           </p>
-
-          <p>
-            <em>
-              Did this output come from this exact system, with this exact input set, under this exact protocol version?
-            </em>
-          </p>
-
-          <table>
+          <table className="w-full border-separate border-spacing-y-2">
             <thead>
               <tr>
-                <th>Aspect</th>
-                <th>Determinism</th>
-                <th>Certification</th>
+                <th className="text-left py-3 pr-6 align-top">Aspect</th>
+                <th className="text-left py-3 pr-6 align-top">Determinism</th>
+                <th className="text-left py-3 align-top">Certification</th>
               </tr>
             </thead>
+
             <tbody>
-              <tr>
-                <td>Definition</td>
-                <td>Property of the system</td>
-                <td>Proof of a specific run</td>
-              </tr>
-              <tr>
-                <td>Dependency</td>
-                <td>Protocol-compliant logic</td>
-                <td>Canonical Renderer execution</td>
-              </tr>
-              <tr>
-                <td>Output</td>
-                <td>Repeatable result</td>
-                <td>Sealed, verifiable record</td>
-              </tr>
-              <tr>
-                <td>How to verify</td>
-                <td>Re-run with same inputs</td>
-                <td>Compare hashes against the record</td>
-              </tr>
-              <tr>
-                <td>Trust model</td>
-                <td>Trust the implementation</td>
-                <td>Verify the evidence</td>
-              </tr>
+              {[
+                ["Definition", "Property of the system", "Proof of a specific run"],
+                ["Dependency", "Protocol-compliant logic", "Canonical Renderer execution"],
+                ["Output", "Repeatable result", "Sealed, verifiable record"],
+                ["How to verify", "Re-run with same inputs", "Compare hashes against the record"],
+                ["Trust model", "Trust the implementation", "Verify the evidence"],
+              ].map(([a, d, c]) => (
+                <tr key={a} className="bg-muted/20">
+                  <td className="py-3 px-3 pr-6 align-top whitespace-nowrap font-medium">{a}</td>
+                  <td className="py-3 px-3 pr-6 align-top leading-relaxed">{d}</td>
+                  <td className="py-3 px-3 align-top leading-relaxed">{c}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
-
           <p>
-            You can develop deterministically without certification. Certification exists for third-party verification.
+            You can have determinism without certification (local execution). You cannot have certification without
+            determinism.
           </p>
 
-          <p>
-            Certification assumes deterministic execution semantics. If execution is not deterministic, certification
-            cannot provide a stable verification target.
-          </p>
-
+          {/* What happens during a certified run */}
           <h2>What happens during a certified run</h2>
-          <p>When a system is submitted to the Canonical Renderer:</p>
+          <p>When a sketch is submitted to the canonical renderer:</p>
           <ol>
             <li>
-              <strong>Input validation</strong>. The renderer verifies protocol compliance, validates the seed, and
-              checks parameter bounds.
+              <strong>Input validation</strong> — The renderer verifies the sketch is protocol-compliant, the seed is
+              valid, and all parameters are within bounds.
             </li>
             <li>
-              <strong>Environment lock</strong>. Execution occurs under pinned runtime and protocol versions, fixed
-              canvas dimensions, and deterministic randomness.
+              <strong>Environment lock</strong> — Execution occurs in a controlled environment with pinned runtime
+              versions, fixed canvas dimensions, and deterministic RNG.
             </li>
             <li>
-              <strong>Execution</strong>. The system executes once under the controlled runtime. External dependencies
-              are not permitted.
+              <strong>Execution</strong> — The sketch runs exactly once. No retries, no branching, no external
+              dependencies.
             </li>
             <li>
-              <strong>Output capture</strong>. The rendered canvas is exported as a PNG at canonical resolution.
+              <strong>Output capture</strong> — The rendered canvas is exported as a PNG at canonical resolution.
             </li>
             <li>
-              <strong>Hash generation</strong>. The output and the code are hashed and recorded in the snapshot.
+              <strong>Hash generation</strong> — The output is hashed. The code is hashed. Both are recorded in the
+              snapshot.
             </li>
             <li>
-              <strong>Snapshot emission</strong>. The snapshot is returned alongside the output, containing everything
-              needed for later verification.
+              <strong>Snapshot emission</strong> — The snapshot file is returned alongside the image, containing
+              everything needed for future verification.
             </li>
           </ol>
 
+          {/* Artifacts produced */}
           <h2>Artifacts produced</h2>
           <p>A certified run returns two artifacts:</p>
-
           <h3>1. Output PNG</h3>
-          <p>
-            The rendered image at canonical resolution (1950×2400 pixels). This is the output artifact used for minting,
-            archival, and verification.
-          </p>
-
+          <p>The rendered image at canonical resolution (1950×2400 pixels). This is the visual output of the sketch.</p>
           <h3>2. Snapshot file</h3>
           <p>A JSON file containing:</p>
           <div className="spec-code">
@@ -156,93 +130,99 @@ const BuildersCertification = () => {
 }`}</code>
           </div>
           <p>
-            The <code>outputHash</code> is the fingerprint of the PNG. The <code>codeHash</code> is the fingerprint of
-            the source code. Together, they bind inputs to outputs in a verifiable record.
+            The <code>outputHash</code> is the cryptographic fingerprint of the PNG. The <code>codeHash</code> is the
+            fingerprint of the source code. Together, they form an immutable link between input and output.
           </p>
 
+          {/* Canonical constraints */}
           <h2>Canonical constraints</h2>
-          <p>The Canonical Renderer enforces constraints required for reproducibility:</p>
+          <p>The canonical renderer enforces strict constraints to ensure reproducibility:</p>
           <ul>
             <li>
-              <strong>Fixed canvas size</strong>. 1950×2400 pixels.
+              <strong>Fixed canvas size</strong> — 1950×2400 pixels. No exceptions.
             </li>
             <li>
               <strong>
                 No <code>createCanvas()</code>
-              </strong>
-              . The canvas is provided by the runtime.
+              </strong>{" "}
+              — The canvas is provided by the runtime. Do not create your own.
             </li>
             <li>
-              <strong>No custom dimensions</strong>. Width and height are protocol constants.
+              <strong>No custom dimensions</strong> — Width and height are not parameters. They are protocol constants.
             </li>
             <li>
-              <strong>Seeded randomness only</strong>. Randomness must derive from the provided seed. No{" "}
+              <strong>Seeded RNG only</strong> — All randomness must derive from the provided seed. No{" "}
               <code>Math.random()</code>.
             </li>
             <li>
-              <strong>No external resources</strong>. No network calls, no filesystem access, no dynamic imports.
+              <strong>No external resources</strong> — No network calls, no file system access, no dynamic imports.
             </li>
             <li>
-              <strong>No time-dependent behavior</strong>. <code>Date.now()</code> and similar sources of entropy are
-              forbidden.
+              <strong>No time-dependent behavior</strong> — <code>Date.now()</code> and similar are forbidden.
             </li>
           </ul>
-
           <div className="spec-warning">
             <p className="spec-warning-title">Protocol violation</p>
             <p>
-              Violating any constraint results in a <code>400</code> error and the render does not execute.
+              Violating any constraint results in a <code>400</code> error. The render will not execute.
             </p>
           </div>
 
+          {/* When certification is needed */}
           <h2>When certification is needed</h2>
           <p>Certification is required when:</p>
           <ul>
             <li>
-              <strong>Minting</strong>. The output will be tokenized or registered on-chain.
+              <strong>Minting</strong> — The output will be tokenized or registered on-chain.
             </li>
             <li>
-              <strong>Archival</strong>. The ensures the output remains verifiable over time.
+              <strong>Archival</strong> — The output must be reproducible indefinitely.
             </li>
             <li>
-              <strong>Provenance</strong>. Third parties need to confirm the output came from specific code and inputs.
+              <strong>Provenance</strong> — Third parties need to verify the output was produced by specific code and
+              inputs.
             </li>
             <li>
-              <strong>Auditability</strong>. Compliance or contractual requirements demand a verifiable record.
+              <strong>Auditability</strong> — Compliance, legal, or contractual requirements demand a verifiable record.
             </li>
             <li>
-              <strong>Dispute resolution</strong>. The snapshot serves as evidence of what was executed.
+              <strong>Dispute resolution</strong> — The snapshot serves as evidence of what was executed.
             </li>
           </ul>
-
-          <p>Certification is not required for:</p>
+          <p>
+            Certification is <em>not</em> required for:
+          </p>
           <ul>
             <li>Local development and iteration</li>
             <li>Exploratory rendering in browser-based tools</li>
             <li>Previewing outputs before committing to a final version</li>
           </ul>
 
+          {/* What certification is not */}
           <h2>What certification is not</h2>
           <p>To avoid confusion:</p>
           <ul>
             <li>
-              <strong>Not a quality judgment</strong>. Certification proves execution, not aesthetic value.
+              <strong>Not a quality judgment</strong> — Certification proves execution, not aesthetic value.
             </li>
             <li>
-              <strong>Not copy protection</strong>. The output is not encrypted or access-controlled.
+              <strong>Not copy protection</strong> — The output is not encrypted or access-controlled. Anyone can view
+              it.
             </li>
             <li>
-              <strong>Not a blockchain transaction</strong>. Certification happens off-chain. On-chain registration is a
-              separate step.
+              <strong>Not a blockchain transaction</strong> — Certification happens off-chain. On-chain registration is
+              a separate, optional step.
             </li>
             <li>
-              <strong>Not a watermark</strong>. The image contains no embedded metadata. The snapshot is separate.
+              <strong>Not a watermark</strong> — The image contains no embedded metadata. The snapshot is a separate
+              file.
             </li>
             <li>
-              <strong>Not DRM</strong>. Certification is proof, not restriction.
+              <strong>Not DRM</strong> — Certification is about proof, not restriction.
             </li>
           </ul>
 
+          {/* Plan limits reference */}
           <p className="text-caption text-sm mt-8 pt-4 border-t border-border">
             Certified runs are subject to plan limits. See{" "}
             <Link to="/pricing" className="text-link hover:text-link-hover underline underline-offset-2">
@@ -251,100 +231,119 @@ const BuildersCertification = () => {
             for details.
           </p>
 
+          {/* Why Certification Exists */}
           <h2 className="mt-16 pt-8 border-t border-border">Why certification exists</h2>
           <p className="text-caption">Understanding the problem certification solves.</p>
 
+          {/* The reproducibility problem */}
           <h3>The reproducibility problem</h3>
           <p>
-            A deterministic system should produce the same output when re-executed with the same inputs. In practice,
-            reproducibility fails when execution semantics are not pinned and verified.
+            Generative systems produce outputs from code. If the code is deterministic, running it again should produce
+            the same output. In theory.
           </p>
           <p>
-            Runtime versions change. Dependencies update. Floating-point behavior varies. What rendered correctly in one
-            environment can drift or fail in another.
+            In practice, reproducibility fails. Runtime versions change. Dependencies update. Floating-point behavior
+            varies across platforms. What rendered correctly in 2024 may render differently in 2027 — or fail entirely.
+          </p>
+          <p>
+            This is not a hypothetical risk. It is the default outcome for any software system without explicit
+            reproducibility guarantees.
           </p>
 
+          {/* Why determinism degrades */}
           <h3>Why determinism alone degrades over time</h3>
           <p>
-            Determinism is necessary but not sufficient. Deterministic behavior today does not guarantee deterministic
-            behavior across time or platforms unless the execution surface and semantics are controlled.
+            Determinism is necessary but not sufficient. A sketch may be deterministic
+            <em>today</em> — same seed, same output. But determinism is fragile:
           </p>
           <ul>
             <li>
-              <strong>Runtime drift</strong>. Different runtime versions can behave differently in edge cases.
+              <strong>Runtime drift</strong> — Node.js 18 and Node.js 22 may handle edge cases differently.
             </li>
             <li>
-              <strong>Dependency changes</strong>. A dependency update can alter internal behavior.
+              <strong>Dependency rot</strong> — A library update changes internal behavior.
             </li>
             <li>
-              <strong>Platform divergence</strong>. Different architectures can produce different floating-point
-              results.
+              <strong>Platform divergence</strong> — ARM and x86 produce different floating-point results.
             </li>
             <li>
-              <strong>Canvas implementation variance</strong>. Browser canvas and node-canvas are not byte-identical.
+              <strong>Canvas implementation</strong> — Browser canvas and node-canvas are not byte-identical.
             </li>
           </ul>
+          <p>
+            Without a controlled environment, determinism is a local property that does not survive time or platform
+            changes.
+          </p>
 
+          {/* Why canonical environments matter */}
           <h3>Why canonical environments matter</h3>
           <p>
-            A <strong>canonical environment</strong> is a fixed, versioned execution context. It specifies runtime
-            versions, canvas dimensions, pinned protocol semantics, and deterministic randomness.
+            A <strong>canonical environment</strong> is a fixed, versioned execution context. It specifies:
           </p>
           <ul>
-            <li>Exact runtime versions (Node.js, canvas library, and related dependencies)</li>
+            <li>Exact runtime versions (Node.js, canvas library, etc.)</li>
             <li>Fixed canvas dimensions and pixel format</li>
-            <li>Pinned protocol version and SDK execution semantics</li>
+            <li>Pinned protocol version</li>
             <li>Deterministic random number generation</li>
           </ul>
           <p>
-            When a system runs in the canonical environment, output is reproducible across time. Given the same inputs
-            and semantics, it produces the same output in future verification runs.
+            When a sketch runs in the canonical environment, the output is not just deterministic — it is{" "}
+            <em>reproducible across time</em>. The same inputs will produce the same output in 2025, 2030, or 2040, as
+            long as the canonical renderer is preserved.
           </p>
-          <p>This is a prerequisite for any system where outputs have long-term significance.</p>
+          <p>
+            This is not a convenience. It is a prerequisite for any system where outputs have long-term significance.
+          </p>
 
+          {/* Certification as a trust primitive */}
           <h3>Certification as a trust primitive</h3>
-          <p>Certification creates a verifiable chain:</p>
+          <p>Certification creates a trust chain:</p>
           <ol>
             <li>
-              <strong>System to output</strong>. The code produces a specific output under specific inputs.
+              <strong>Code → Output</strong> — The sketch, given specific inputs, produces a specific output.
             </li>
             <li>
-              <strong>Output to hash</strong>. The output is fingerprinted and tampering is detectable.
+              <strong>Output → Hash</strong> — The output is fingerprinted. Any modification is detectable.
             </li>
             <li>
-              <strong>Hash to snapshot</strong>. Hashes are recorded alongside inputs and metadata.
+              <strong>Hash → Snapshot</strong> — The hash is recorded alongside inputs and metadata.
             </li>
             <li>
-              <strong>Snapshot to verification</strong>. Any party can replay and compare hashes.
+              <strong>Snapshot → Verification</strong> — Anyone can re-run the sketch and confirm the hash matches.
             </li>
           </ol>
           <p>
-            This supports trust through verification rather than authority. Parties can verify without relying on the
-            creator, the platform, or a marketplace.
+            This chain is the basis for trust without authority. You do not need to trust the artist, the platform, or
+            the marketplace. You can verify.
           </p>
 
+          {/* Long-term relevance */}
           <h3>Long-term relevance</h3>
-          <p>Certification supports requirements that extend beyond the moment of creation:</p>
+          <p>Certification addresses requirements that extend beyond the moment of creation:</p>
           <ul>
             <li>
-              <strong>Auditability</strong>. Later verification can confirm an output came from specific code without
-              relying on a database lookup.
+              <strong>Auditability</strong> — Years later, a third party can verify that an output was produced by
+              specific code. No database lookup required.
             </li>
             <li>
-              <strong>Compliance</strong>. Some workflows require proof of execution and provenance.
+              <strong>Compliance</strong> — Regulatory or contractual requirements may demand proof of origin and
+              execution.
             </li>
             <li>
-              <strong>Dispute resolution</strong>. The snapshot answers whether an output came from a specific system.
+              <strong>Dispute resolution</strong> — The snapshot is evidence. It answers:{" "}
+              <em>was this the output of that code?</em>
             </li>
             <li>
-              <strong>Archival integrity</strong>. Institutions can preserve the output and the proof.
+              <strong>Archival integrity</strong> — Museums, collectors, and institutions can preserve not just the
+              image, but the proof.
             </li>
             <li>
-              <strong>Decentralized verification</strong>. Anyone with the snapshot and a compliant renderer can verify.
+              <strong>Decentralized verification</strong> — Verification does not depend on NexArt. Anyone with the
+              snapshot and a compliant renderer can verify.
             </li>
           </ul>
           <p>
-            Certification is designed for the question that arrives later: <em>how do you know?</em>
+            Certification is not about today's transaction. It is about tomorrow's question: <em>how do you know?</em>
           </p>
         </article>
 
