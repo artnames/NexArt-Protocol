@@ -52,31 +52,47 @@ const BuildersCertification = () => {
             <strong>Certification</strong> is proof that determinism was exercised under controlled conditions. It
             answers: <em>was this output actually produced by running this code with these inputs?</em>
           </p>
-          <table className="w-full border-separate border-spacing-y-2">
-            <thead>
-              <tr>
-                <th className="text-left py-3 pr-6 align-top">Aspect</th>
-                <th className="text-left py-3 pr-6 align-top">Determinism</th>
-                <th className="text-left py-3 align-top">Certification</th>
-              </tr>
-            </thead>
+          <div className="overflow-x-auto">
+            <table className="w-full table-fixed border-separate border-spacing-y-3">
+              <colgroup>
+                <col className="w-[22%]" />
+                <col className="w-[39%]" />
+                <col className="w-[39%]" />
+              </colgroup>
 
-            <tbody>
-              {[
-                ["Definition", "Property of the system", "Proof of a specific run"],
-                ["Dependency", "Protocol-compliant logic", "Canonical Renderer execution"],
-                ["Output", "Repeatable result", "Sealed, verifiable record"],
-                ["How to verify", "Re-run with same inputs", "Compare hashes against the record"],
-                ["Trust model", "Trust the implementation", "Verify the evidence"],
-              ].map(([a, d, c]) => (
-                <tr key={a} className="bg-muted/20">
-                  <td className="py-3 px-3 pr-6 align-top whitespace-nowrap font-medium">{a}</td>
-                  <td className="py-3 px-3 pr-6 align-top leading-relaxed">{d}</td>
-                  <td className="py-3 px-3 align-top leading-relaxed">{c}</td>
+              <thead>
+                <tr>
+                  <th className="text-left pb-3 pr-6 text-sm font-semibold text-foreground/80">Aspect</th>
+                  <th className="text-left pb-3 pr-6 text-sm font-semibold text-foreground/80">Determinism</th>
+                  <th className="text-left pb-3 text-sm font-semibold text-foreground/80">Certification</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+
+              <tbody>
+                {[
+                  ["Definition", "Property of the system", "Proof of a specific run"],
+                  ["Dependency", "Protocol-compliant logic", "Canonical Renderer execution"],
+                  ["Output", "Repeatable result", "Sealed, verifiable record"],
+                  ["How to verify", "Re-run with same inputs", "Compare hashes against the record"],
+                  ["Trust model", "Trust the implementation", "Verify the evidence"],
+                ].map(([a, d, c]) => (
+                  <tr key={a} className="bg-muted/20 ring-1 ring-border/60 rounded-md">
+                    <td className="py-4 px-4 align-top font-medium text-foreground whitespace-nowrap rounded-l-md">
+                      {a}
+                    </td>
+
+                    <td className="py-4 px-4 align-top leading-relaxed text-foreground/90 border-l border-border/70">
+                      {d}
+                    </td>
+
+                    <td className="py-4 px-4 align-top leading-relaxed text-foreground/90 border-l border-border/70 rounded-r-md">
+                      {c}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <p>
             You can have determinism without certification (local execution). You cannot have certification without
             determinism.
