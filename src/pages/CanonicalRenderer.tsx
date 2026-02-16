@@ -7,129 +7,129 @@ import PageContent from "@/components/layout/PageContent";
 const CanonicalRenderer = () => {
   return (
     <PageLayout>
-      <SEOHead 
-        title="Canonical Renderer"
-        description="The NexArt Canonical Renderer is certification and verification infrastructure for deterministic generative systems."
+      <SEOHead
+        title="Canonical Renderer | Certification Grade Execution"
+        description="The NexArt Canonical Renderer is a reference implementation for certification-grade deterministic execution. It produces verified outputs and cryptographic hashes for replay and audit workflows."
       />
 
       <PageHeader
         title="NexArt Canonical Renderer"
-        subtitle="Certification and verification infrastructure for deterministic generative systems."
+        subtitle="A reference implementation for certification-grade deterministic execution."
       />
 
       <PageContent>
-        {/* What the Canonical Renderer Is */}
         <section className="mb-16">
-          <h2 className="text-2xl font-serif text-foreground mb-6">
-            What the Canonical Renderer Is
-          </h2>
+          <h2 className="text-2xl font-serif text-foreground mb-6">What the Canonical Renderer Is</h2>
           <div className="prose prose-lg max-w-none">
             <p className="text-body mb-4">
-              The Canonical Renderer is certification and verification infrastructure for deterministic generative systems. It converts a NexArt snapshot into an image with cryptographic proof of execution.
+              The Canonical Renderer is the reference implementation used for certified runs under the NexArt protocol.
+              It executes a canonical unit in a controlled environment and produces an output artifact plus a
+              cryptographic hash that can be used for verification.
             </p>
             <p className="text-body mb-4">
-              The renderer is fully deterministic: identical input always produces identical output. Given the same snapshot and seed, the renderer will produce byte-for-byte identical image data across any number of invocations.
+              Execution is deterministic. Given the same canonical unit, protocol version, and seed, the renderer
+              produces identical output on every run. The output is stable at the byte level, which makes certification
+              and replay verification possible.
             </p>
             <p className="text-body">
-              Each render operation returns both the image bytes and a cryptographic hash of the output. This hash serves as a verifiable fingerprint, allowing any party to independently confirm that a given image was produced from a specific snapshot—whether for NFT minting, audit verification, or research reproducibility.
+              Each render operation returns the output bytes and the output hash. The hash acts as a verifiable
+              fingerprint, allowing any party to confirm that an artifact corresponds to a specific canonical unit. This
+              supports on-chain minting, audit verification, and research reproducibility.
             </p>
           </div>
         </section>
 
-        {/* Why NexArt Provides a Reference Renderer */}
         <section className="mb-16">
-          <h2 className="text-2xl font-serif text-foreground mb-6">
-            Why NexArt Provides a Reference Renderer
-          </h2>
+          <h2 className="text-2xl font-serif text-foreground mb-6">Why NexArt Provides a Reference Renderer</h2>
           <div className="prose prose-lg max-w-none">
             <p className="text-body mb-4">
-              NexArt operates a public reference renderer to lower the barrier for builders. By providing a working implementation, we establish a shared standard that makes integrations straightforward and reduces the infrastructure work required to get started.
+              NexArt operates a public reference renderer to reduce integration work for builders. A working
+              implementation establishes a shared standard, makes early testing simple, and provides a concrete target
+              for compliant implementations.
             </p>
             <p className="text-body mb-4">
-              The reference renderer exists as a convenience, not a dependency. Builders can use it to test, prototype, and ship without needing to provision their own infrastructure. However, NexArt is not architecturally dependent on this node, and builders are not required to use it.
+              The reference renderer is a convenience, not a protocol dependency. Builders can prototype and ship
+              without provisioning infrastructure, and teams with strict requirements can run their own renderer without
+              changing protocol behavior.
             </p>
             <p className="text-body">
-              This approach allows new builders to focus on their applications while the protocol remains open for those who want more control.
+              The protocol remains open. Compliance is defined by output equivalence under the pinned protocol
+              semantics, not by any single node.
             </p>
           </div>
         </section>
 
-        {/* Using the Reference Renderer */}
         <section className="mb-16">
-          <h2 className="text-2xl font-serif text-foreground mb-6">
-            Using the Reference Renderer
-          </h2>
+          <h2 className="text-2xl font-serif text-foreground mb-6">Using the Reference Renderer</h2>
           <div className="prose prose-lg max-w-none">
             <p className="text-body mb-4">
-              The reference renderer is suitable for early builders, testing, previews, and small-scale production use. No setup is required — builders can send snapshots and receive certified images immediately.
+              The reference renderer is suitable for testing, previews, and small-scale production workloads. No setup
+              is required. Builders submit canonical units and receive verified outputs immediately.
             </p>
             <p className="text-body mb-4">
-              The reference node is operated on a best-effort basis. While we aim for consistent availability, there are no hard guarantees around uptime or throughput. Builders with production requirements that demand specific performance characteristics should consider running their own renderer.
+              The public node is operated on a best-effort basis. Availability and throughput can vary. Teams with
+              production requirements that demand specific performance or isolation should deploy their own renderer.
             </p>
             <p className="text-body">
-              The reference renderer implements the same protocol specification as any compliant renderer. Output produced by the reference node is identical to output produced by any other correctly implemented renderer given the same input.
+              Output produced by the reference node is identical to output produced by any compliant renderer given the
+              same inputs and protocol version.
             </p>
           </div>
         </section>
 
-        {/* Running Your Own Renderer */}
         <section className="mb-16">
-          <h2 className="text-2xl font-serif text-foreground mb-6">
-            Running Your Own Renderer
-          </h2>
+          <h2 className="text-2xl font-serif text-foreground mb-6">Running Your Own Renderer</h2>
           <div className="prose prose-lg max-w-none">
             <p className="text-body mb-4">
-              NexArt does not require builders to run their own renderer — but it is designed so they can.
+              Self-hosting is optional, and the protocol is designed to support it. Builders who want control over
+              availability, scaling, performance, or data locality can deploy a compliant renderer and still produce
+              outputs that match the reference implementation.
             </p>
-            <p className="text-body mb-4">
-              The rendering pipeline is open and reproducible. Builders who want control over their infrastructure, performance guarantees, or isolation from shared resources can deploy their own compliant renderer. Self-hosted renderers produce output that is indistinguishable from the reference node.
-            </p>
-            <p className="text-body mb-4">
-              Running your own renderer provides:
-            </p>
+            <p className="text-body mb-4">Running your own renderer provides:</p>
             <ul className="list-disc pl-6 text-body mb-4 space-y-2">
-              <li>Full control over availability and scaling</li>
-              <li>Performance guarantees tailored to your requirements</li>
-              <li>Isolation from other builders' workloads</li>
-              <li>The ability to operate independently of NexArt infrastructure</li>
+              <li>Control over availability and scaling</li>
+              <li>Performance characteristics tailored to your workloads</li>
+              <li>Isolation from shared resources</li>
+              <li>Operational independence from NexArt infrastructure</li>
             </ul>
             <p className="text-body">
-              Self-hosting is optional. The choice between using the reference renderer and running your own is purely operational — the protocol does not distinguish between them.
+              The choice between using the public renderer and running your own is purely operational. The protocol does
+              not distinguish between them.
             </p>
           </div>
         </section>
 
-        {/* Protocol Philosophy */}
         <section className="mb-16">
-          <h2 className="text-2xl font-serif text-foreground mb-6">
-            Protocol Philosophy
-          </h2>
+          <h2 className="text-2xl font-serif text-foreground mb-6">Protocol Philosophy</h2>
           <div className="prose prose-lg max-w-none">
             <p className="text-body mb-4">
-              NexArt is not tied to a single rendering service. The protocol defines the input format, the execution model, and the output specification. Any renderer that correctly implements this specification will produce valid, identical output.
+              NexArt is not tied to a single rendering service. The protocol defines the input format, the versioned
+              execution semantics, and the output specification. Any renderer that implements those semantics is
+              compliant.
             </p>
             <p className="text-body mb-4">
-              Trust in NexArt does not come from authority — it comes from determinism and cryptographic verification. Because rendering is deterministic and outputs are hashed, anyone can verify that a given image corresponds to a specific snapshot. No trusted third party is required.
+              Trust comes from determinism and verification. Because output is deterministic and hashed, any party can
+              verify that an artifact matches a canonical unit. A trusted third party is not required.
             </p>
             <p className="text-body">
-              The reference renderer is not privileged. It implements the same public specification as any other renderer. Its role is to demonstrate correctness and provide convenience, not to serve as a gatekeeper.
+              The reference renderer is not privileged. It demonstrates correctness and provides convenience, and it is
+              evaluated by the same public rules as any other implementation.
             </p>
           </div>
         </section>
 
-        {/* Summary */}
         <section className="mb-16">
-          <h2 className="text-2xl font-serif text-foreground mb-6">
-            Summary
-          </h2>
+          <h2 className="text-2xl font-serif text-foreground mb-6">Summary</h2>
           <div className="prose prose-lg max-w-none">
             <p className="text-body">
-              The NexArt Canonical Renderer exists to make building easier — not to centralize control. It is a reference implementation that demonstrates the protocol, lowers the barrier for new builders, and provides a shared standard for the ecosystem. Builders who need more control can run their own renderer at any time. The protocol remains open, deterministic, and verifiable regardless of which renderer produces the output.
+              The NexArt Canonical Renderer exists to provide a certification-grade reference implementation, reduce
+              integration friction, and produce verified outputs for replay. Builders can use the public node or run
+              their own. The protocol remains deterministic and verifiable regardless of which compliant renderer
+              produces the output.
             </p>
           </div>
         </section>
 
-        {/* Pricing Note */}
         <section className="pt-8 border-t border-border">
           <p className="text-caption text-sm">
             Certified runs via the canonical renderer are subject to plan limits. See{" "}
