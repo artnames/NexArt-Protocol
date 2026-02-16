@@ -48,10 +48,16 @@ const BuildersCertification = () => {
             <strong>Determinism</strong> is a property of the system. Given the same seed and parameters, deterministic
             execution produces the same output.
           </p>
+
           <p>
-            <strong>Certification</strong> is evidence that deterministic execution occurred under controlled, versioned
-            conditions. It answers a narrower question:{" "}
-            <em>did this output come from this system, with these inputs, under these semantics?</em>
+            <strong>Certification</strong> is evidence that a run happened under pinned, versioned execution semantics.
+            It answers a simple question:
+          </p>
+
+          <p>
+            <em>
+              Did this output come from this exact system, with this exact input set, under this exact protocol version?
+            </em>
           </p>
 
           <table>
@@ -64,36 +70,40 @@ const BuildersCertification = () => {
             </thead>
             <tbody>
               <tr>
-                <td>What it is</td>
-                <td>A system property</td>
-                <td>An execution proof</td>
+                <td>Definition</td>
+                <td>Property of the system</td>
+                <td>Proof of a specific run</td>
               </tr>
               <tr>
-                <td>Requires</td>
+                <td>Dependency</td>
                 <td>Protocol-compliant logic</td>
                 <td>Canonical Renderer execution</td>
               </tr>
               <tr>
-                <td>Produces</td>
-                <td>Repeatable output</td>
-                <td>Verifiable record</td>
+                <td>Output</td>
+                <td>Repeatable result</td>
+                <td>Sealed, verifiable record</td>
               </tr>
               <tr>
-                <td>Verifiable by</td>
-                <td>Re-execution under the same semantics</td>
-                <td>Hash comparison against the sealed record</td>
+                <td>How to verify</td>
+                <td>Re-run with same inputs</td>
+                <td>Compare hashes against the record</td>
               </tr>
               <tr>
                 <td>Trust model</td>
                 <td>Trust the implementation</td>
-                <td>Verify the record</td>
+                <td>Verify the evidence</td>
               </tr>
             </tbody>
           </table>
 
           <p>
-            You can have determinism without certification during local development. You cannot have certification
-            without deterministic semantics.
+            You can develop deterministically without certification. Certification exists for third-party verification.
+          </p>
+
+          <p>
+            Certification assumes deterministic execution semantics. If execution is not deterministic, certification
+            cannot provide a stable verification target.
           </p>
 
           <h2>What happens during a certified run</h2>
@@ -192,7 +202,7 @@ const BuildersCertification = () => {
               <strong>Minting</strong>. The output will be tokenized or registered on-chain.
             </li>
             <li>
-              <strong>Archival</strong>. The output must remain verifiable over time.
+              <strong>Archival</strong>. The ensures the output remains verifiable over time.
             </li>
             <li>
               <strong>Provenance</strong>. Third parties need to confirm the output came from specific code and inputs.
@@ -280,9 +290,15 @@ const BuildersCertification = () => {
             A <strong>canonical environment</strong> is a fixed, versioned execution context. It specifies runtime
             versions, canvas dimensions, pinned protocol semantics, and deterministic randomness.
           </p>
+          <ul>
+            <li>Exact runtime versions (Node.js, canvas library, and related dependencies)</li>
+            <li>Fixed canvas dimensions and pixel format</li>
+            <li>Pinned protocol version and SDK execution semantics</li>
+            <li>Deterministic random number generation</li>
+          </ul>
           <p>
-            When a system runs in the canonical environment, the output is reproducible across time. Given the same
-            inputs and semantics, it produces the same output in future verification runs.
+            When a system runs in the canonical environment, output is reproducible across time. Given the same inputs
+            and semantics, it produces the same output in future verification runs.
           </p>
           <p>This is a prerequisite for any system where outputs have long-term significance.</p>
 
