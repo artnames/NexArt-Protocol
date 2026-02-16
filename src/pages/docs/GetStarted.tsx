@@ -7,84 +7,87 @@ import PageContent from "@/components/layout/PageContent";
 const GetStarted = () => {
   return (
     <PageLayout>
-      <SEOHead 
-        title="Get Started"
-        description="Get started with NexArt — a deterministic rendering protocol for reproducible, verifiable generative output."
+      <SEOHead
+        title="Get Started | Deterministic Execution and Verification"
+        description="Get started with NexArt: deterministic execution semantics, canonical rendering, and hash-based verification for reproducible generative outputs."
       />
 
-      <PageHeader
-        title="Get Started with NexArt"
-        subtitle="Deterministic rendering for reproducible, verifiable generative output."
-      />
+      <PageHeader title="Get Started" subtitle="Deterministic execution, canonical outputs, and verifiable records." />
 
       <PageContent>
         <article className="prose-protocol">
           <p>
-            NexArt is a deterministic rendering protocol designed for reproducibility and verification. 
-            It ensures that the same input — code, seed, and parameters — always produces the exact same output, 
-            regardless of where or when it is rendered.
+            NexArt is a deterministic execution protocol for generative systems. Given the same code, seed, and
+            parameters, a compliant runtime produces the same output under pinned semantics.
           </p>
 
           <p>
-            The protocol is enforced through a canonical renderer: a remote service that executes generative 
-            code in a controlled environment and produces cryptographically verifiable outputs. Every render 
-            generates a snapshot containing hashes, metadata, and optionally the source code itself.
+            NexArt supports canonical rendering for certification workflows. A canonical renderer executes the system in
+            a controlled environment and returns an output artifact plus a snapshot that binds inputs and outputs using
+            cryptographic hashes.
           </p>
 
           <p>
-            This architecture enables trustless verification. Given a snapshot, anyone can re-run the render 
-            and confirm the output matches — proving that the artwork was created exactly as claimed.
+            Verification is hash-based. Given a snapshot, any party can re-render under the same protocol version and
+            compare hashes to confirm the output matches the recorded run.
           </p>
 
-          <h2>Quick Start</h2>
+          <h2>Quick start</h2>
 
           <p>
-            The NexArt CLI provides the fastest way to render and verify generative artwork. 
-            No installation is required — run directly via <code>npx</code>.
+            The NexArt CLI is the fastest way to render and verify a system. No installation is required. Run it
+            directly via <code>npx</code>.
           </p>
 
           <div className="spec-code">
             <code>
-              <span className="text-caption"># Run without installing (recommended)</span>{"\n"}
-              npx --yes @nexart/cli@0.2.3 run ./examples/sketch.js --seed 12345 --include-code --out out.png{"\n"}
+              <span className="text-caption"># Render (recommended)</span>
               {"\n"}
-              <span className="text-caption"># Verify determinism</span>{"\n"}
+              npx --yes @nexart/cli@0.2.3 run ./examples/sketch.js --seed 12345 --include-code --out out.png
+              {"\n\n"}
+              <span className="text-caption"># Verify snapshot integrity</span>
+              {"\n"}
               npx --yes @nexart/cli@0.2.3 verify out.snapshot.json
             </code>
           </div>
 
           <p>
-            The CLI communicates with the remote canonical renderer. Outputs are deterministic and verifiable — 
-            the same command with the same inputs will always produce identical results.
+            By default, the CLI uses the NexArt reference canonical renderer. Builders can also run their own compliant
+            renderer for isolation, scaling, or internal infrastructure requirements.
           </p>
 
           <div className="bg-muted/50 border border-border rounded-md p-4 my-6">
             <p className="text-sm text-muted-foreground mb-0">
-              <strong>HTTP API:</strong> If you call the HTTP API directly, include <code>protocolVersion</code> for audit stability. 
-              If omitted, the service will default to its current version and report the resolved version in response headers.
+              <strong>HTTP API:</strong> If you call the renderer API directly, include <code>protocolVersion</code> for
+              audit stability. If omitted, the service resolves to its current default and reports the resolved version
+              in response headers and the snapshot.
             </p>
           </div>
 
-          <h2>What You Get</h2>
+          <h2>What you get</h2>
 
           <ul>
-            <li><strong>out.png</strong> — The rendered image at canonical resolution (1950×2400)</li>
-            <li><strong>out.snapshot.json</strong> — Deterministic snapshot with hashes, metadata, and verification data (always includes resolved <code>protocolVersion</code>)</li>
+            <li>
+              <strong>out.png</strong> — The rendered output at canonical resolution (1950×2400)
+            </li>
+            <li>
+              <strong>out.snapshot.json</strong> — A sealed execution record containing inputs, resolved{" "}
+              <code>protocolVersion</code>, and hashes needed for verification
+            </li>
           </ul>
 
-          <h2>Next Steps</h2>
+          <h2>Next steps</h2>
 
-          <p>
-            Read the full CLI documentation to understand authentication, canonical rules, and verification workflows.
-          </p>
+          <p>Read the CLI documentation for authentication, canonical constraints, and verification workflows.</p>
 
           <div className="bg-muted/50 border border-border rounded-md p-4 my-6">
             <p className="text-sm text-muted-foreground mb-2">
-              <strong>Note:</strong> API keys are used for authentication and environment separation only. 
-              They do not carry quota. Quota is enforced at the account level.
+              <strong>API keys:</strong> Used for authentication and environment separation. Quotas are enforced at the
+              account level.
             </p>
             <p className="text-sm text-muted-foreground mb-0">
-              <strong>Key limits by plan:</strong> Free includes 2 keys. Pro includes 5. Pro+ includes 10. Enterprise is contract-defined.
+              <strong>Key limits by plan:</strong> Free includes 2 keys. Pro includes 5. Pro+ includes 10. Enterprise is
+              contract-defined.
             </p>
           </div>
 
@@ -93,7 +96,7 @@ const GetStarted = () => {
               to="/docs/cli"
               className="inline-flex items-center px-4 py-2 text-sm font-medium border border-border rounded hover:bg-muted transition-colors"
             >
-              Read CLI Documentation →
+              Read CLI documentation →
             </Link>
           </div>
         </article>
