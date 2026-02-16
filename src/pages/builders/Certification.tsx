@@ -62,7 +62,7 @@ const BuildersCertification = () => {
 
               <thead>
                 <tr>
-                  <th className="text-left pb-3 pr-6 text-sm font-semibold text-foreground/80"> Aspect</th>
+                  <th className="text-middle pb-3 pr-6 text-sm font-semibold text-foreground/80"> Aspect</th>
                   <th className="text-left pb-3 pr-6 text-sm font-semibold text-foreground/80"> Determinism</th>
                   <th className="text-left pb-3 text-sm font-semibold text-foreground/80"> Certification</th>
                 </tr>
