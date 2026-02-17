@@ -16,6 +16,8 @@ export type Database = {
     Tables: {
       cer_bundles: {
         Row: {
+          artifact_mime: string | null
+          artifact_path: string | null
           attestation_json: Json | null
           bundle_type: string | null
           cer_bundle_redacted: Json
@@ -26,6 +28,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          artifact_mime?: string | null
+          artifact_path?: string | null
           attestation_json?: Json | null
           bundle_type?: string | null
           cer_bundle_redacted: Json
@@ -36,6 +40,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          artifact_mime?: string | null
+          artifact_path?: string | null
           attestation_json?: Json | null
           bundle_type?: string | null
           cer_bundle_redacted?: Json

@@ -223,6 +223,8 @@ export interface StoredCERBundle {
   attestationJson: Record<string, unknown> | null;
   bundle: Record<string, unknown>;
   storedAt: string;
+  artifactPath: string | null;
+  artifactMime: string | null;
 }
 
 export async function fetchCERBundles(eventIds: number[]): Promise<Record<number, StoredCERBundle>> {

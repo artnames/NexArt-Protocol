@@ -59,16 +59,16 @@ export default function Usage() {
       setUsageToday(todayData);
       setUsageMonth(monthData);
 
-      // Fetch stored CER bundles for attest events
-      const attestEventIds = eventsData
-        .filter(e => e.endpoint?.includes("attest") && e.status_code >= 200 && e.status_code < 300)
+      // Fetch stored CER bundles for attest AND render events
+      const bundleEventIds = eventsData
+        .filter(e => (e.endpoint?.includes("attest") || e.endpoint?.includes("render")) && e.status_code >= 200 && e.status_code < 300)
         .map(e => Number(e.id))
         .filter(n => !isNaN(n));
 
       let storedBundles: Awaited<ReturnType<typeof fetchCERBundles>> = {};
-      if (attestEventIds.length > 0) {
+      if (bundleEventIds.length > 0) {
         try {
-          storedBundles = await fetchCERBundles(attestEventIds);
+          storedBundles = await fetchCERBundles(bundleEventIds);
         } catch (e) {
           console.warn("Failed to fetch CER bundles:", e);
         }

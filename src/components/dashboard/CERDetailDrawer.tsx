@@ -18,8 +18,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Copy, Download, ChevronDown, RotateCcw } from "lucide-react";
+import { Copy, Download, ChevronDown, RotateCcw, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import type { CertifiedUsageEvent, NormalizedCER } from "./certified-records-types";
 
 interface CERDetailDrawerProps {
@@ -212,7 +213,33 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
             )}
           </Section>
 
-          {/* Section D — Actions */}
+          {/* Section D — Artifact */}
+          {n.artifactPath && (
+            <Section title="Output Artifact">
+              <InfoRow label="Type" value={n.artifactMime} />
+              <InfoRow label="Path" value={n.artifactPath} />
+              <Button
+                variant="outline"
+                size="sm"
+                className="font-mono text-xs mt-2"
+                onClick={async () => {
+                  const { data } = await supabase.storage
+                    .from('certified-artifacts')
+                    .createSignedUrl(n.artifactPath!, 300);
+                  if (data?.signedUrl) {
+                    window.open(data.signedUrl, '_blank');
+                  } else {
+                    toast({ variant: "destructive", title: "Error", description: "Failed to generate signed URL." });
+                  }
+                }}
+              >
+                <ImageIcon className="h-3.5 w-3.5 mr-1.5" />
+                View Output (PNG)
+              </Button>
+            </Section>
+          )}
+
+          {/* Section E — Actions */}
           <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
             <TooltipProvider>
               <Tooltip>
