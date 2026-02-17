@@ -1,64 +1,74 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
-import { AuthProvider } from "@/contexts/AuthContext";
+
+// Eager: landing page (LCP-critical)
 import Index from "./pages/Index";
-import Protocol from "./pages/Protocol";
-import ProtocolCompliance from "./pages/ProtocolCompliance";
-import CanonicalUnit from "./pages/CanonicalUnit";
-import Modes from "./pages/Modes";
-import Determinism from "./pages/Determinism";
-import Security from "./pages/Security";
-import Glossary from "./pages/Glossary";
-import NonGoals from "./pages/NonGoals";
-import Builders from "./pages/Builders";
-import Governance from "./pages/Governance";
-import CodeMode from "./pages/CodeMode";
-import BuilderRewards from "./pages/BuilderRewards";
-import BuilderManifest from "./pages/BuilderManifest";
-import CodeModeV1 from "./pages/CodeModeV1";
-import CodeModeExecution from "./pages/CodeModeExecution";
-import HowCodeModeThinks from "./pages/HowCodeModeThinks";
-import CommonCodeModeMistakes from "./pages/CommonCodeModeMistakes";
-import CodeModeQuickReference from "./pages/CodeModeQuickReference";
-import CanonicalRenderer from "./pages/CanonicalRenderer";
-import GetStarted from "./pages/docs/GetStarted";
-import CLI from "./pages/docs/CLI";
-import RendererAPI from "./pages/docs/RendererAPI";
-import AIAgentContract from "./pages/docs/AIAgentContract";
-import BuildersCLI from "./pages/builders/CLI";
-import BuildersQuickstart from "./pages/builders/Quickstart";
-import BuildersCertification from "./pages/builders/Certification";
-import Pricing from "./pages/Pricing";
-import Contact from "./pages/Contact";
-import NotFound from "./pages/NotFound";
-import Auth from "./pages/Auth";
-import ResetPassword from "./pages/ResetPassword";
-import Dashboard from "./pages/dashboard/Dashboard";
-import ApiKeys from "./pages/dashboard/ApiKeys";
-import Usage from "./pages/dashboard/Usage";
-import Billing from "./pages/dashboard/Billing";
-import Privacy from "./pages/Privacy";
-import Terms from "./pages/Terms";
-import FAQ from "./pages/FAQ";
-import AIExecutionIntegrity from "./pages/protocol/AIExecutionIntegrity";
-import AIExecutionDemo from "./pages/demos/AIExecutionDemo";
+
+// Lazy: all other pages
+const Protocol = lazy(() => import("./pages/Protocol"));
+const ProtocolCompliance = lazy(() => import("./pages/ProtocolCompliance"));
+const CanonicalUnit = lazy(() => import("./pages/CanonicalUnit"));
+const Modes = lazy(() => import("./pages/Modes"));
+const Determinism = lazy(() => import("./pages/Determinism"));
+const Security = lazy(() => import("./pages/Security"));
+const Glossary = lazy(() => import("./pages/Glossary"));
+const NonGoals = lazy(() => import("./pages/NonGoals"));
+const Builders = lazy(() => import("./pages/Builders"));
+const Governance = lazy(() => import("./pages/Governance"));
+const CodeMode = lazy(() => import("./pages/CodeMode"));
+const BuilderRewards = lazy(() => import("./pages/BuilderRewards"));
+const BuilderManifest = lazy(() => import("./pages/BuilderManifest"));
+const CodeModeV1 = lazy(() => import("./pages/CodeModeV1"));
+const CodeModeExecution = lazy(() => import("./pages/CodeModeExecution"));
+const HowCodeModeThinks = lazy(() => import("./pages/HowCodeModeThinks"));
+const CommonCodeModeMistakes = lazy(() => import("./pages/CommonCodeModeMistakes"));
+const CodeModeQuickReference = lazy(() => import("./pages/CodeModeQuickReference"));
+const CanonicalRenderer = lazy(() => import("./pages/CanonicalRenderer"));
+const GetStarted = lazy(() => import("./pages/docs/GetStarted"));
+const CLI = lazy(() => import("./pages/docs/CLI"));
+const RendererAPI = lazy(() => import("./pages/docs/RendererAPI"));
+const AIAgentContract = lazy(() => import("./pages/docs/AIAgentContract"));
+const BuildersCLI = lazy(() => import("./pages/builders/CLI"));
+const BuildersQuickstart = lazy(() => import("./pages/builders/Quickstart"));
+const BuildersCertification = lazy(() => import("./pages/builders/Certification"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Contact = lazy(() => import("./pages/Contact"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Terms = lazy(() => import("./pages/Terms"));
+const FAQ = lazy(() => import("./pages/FAQ"));
+const AIExecutionIntegrity = lazy(() => import("./pages/protocol/AIExecutionIntegrity"));
+const AIExecutionDemo = lazy(() => import("./pages/demos/AIExecutionDemo"));
+
+// Auth-gated routes (heavy: AuthProvider + dashboard)
+const AuthGatedRoutes = lazy(() => import("./components/routing/AuthGatedRoutes"));
 
 const queryClient = new QueryClient();
+
+const PageFallback = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="text-sm text-muted-foreground font-mono">Loading…</div>
+  </div>
+);
 
 const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Suspense fallback={<PageFallback />}>
             <Routes>
+              {/* LCP-critical: eager */}
               <Route path="/" element={<Index />} />
+
+              {/* Public docs/marketing: lazy, no AuthProvider */}
               <Route path="/protocol" element={<Protocol />} />
               <Route path="/protocol-compliance" element={<ProtocolCompliance />} />
               <Route path="/canonical-unit" element={<CanonicalUnit />} />
@@ -87,22 +97,23 @@ const App = () => (
               <Route path="/builders/certification" element={<BuildersCertification />} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/contact" element={<Contact />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/auth/reset-password" element={<ResetPassword />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/dashboard/api-keys" element={<ApiKeys />} />
-              <Route path="/dashboard/usage" element={<Usage />} />
-              <Route path="/dashboard/billing" element={<Billing />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/protocol/ai-execution-integrity" element={<AIExecutionIntegrity />} />
               <Route path="/demos/ai-execution" element={<AIExecutionDemo />} />
+
+              {/* Auth-gated routes: AuthProvider only mounts here */}
+              <Route path="/auth" element={<AuthGatedRoutes />} />
+              <Route path="/auth/reset-password" element={<AuthGatedRoutes />} />
+              <Route path="/dashboard" element={<AuthGatedRoutes />} />
+              <Route path="/dashboard/*" element={<AuthGatedRoutes />} />
+
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
+          </Suspense>
+        </BrowserRouter>
+      </TooltipProvider>
     </QueryClientProvider>
   </HelmetProvider>
 );
