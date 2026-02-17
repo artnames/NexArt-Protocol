@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import {
-  getUsageSummaryByPeriod, getRecentUsage,
+  getUsageSummaryByPeriod, getRecentUsage, fetchCERBundles,
   UsageSummary, UsageEvent, parseApiError, getFriendlyErrorMessage, ApiError,
 } from "@/lib/api";
 import { Activity, CheckCircle, XCircle, Clock, BarChart3, AlertCircle, Eye, Copy } from "lucide-react";
@@ -19,7 +19,7 @@ import CERDetailDrawer from "@/components/dashboard/CERDetailDrawer";
 import CertificationSummary from "@/components/dashboard/CertificationSummary";
 import RecordsFilters, { type FiltersState } from "@/components/dashboard/RecordsFilters";
 import {
-  enrichEventWithCER, computeCertificationSummary,
+  enrichEventWithCER, enrichEventWithStoredBundle, computeCertificationSummary,
   type CertifiedUsageEvent,
 } from "@/components/dashboard/certified-records-types";
 
@@ -28,7 +28,7 @@ export default function Usage() {
   const { toast } = useToast();
   const [usageToday, setUsageToday] = useState<UsageSummary | null>(null);
   const [usageMonth, setUsageMonth] = useState<UsageSummary | null>(null);
-  const [recentEvents, setRecentEvents] = useState<UsageEvent[]>([]);
+  const [recentEvents, setRecentEvents] = useState<CertifiedUsageEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<ApiError | null>(null);
   const [activeTab, setActiveTab] = useState<"today" | "month">("month");
@@ -58,7 +58,33 @@ export default function Usage() {
       ]);
       setUsageToday(todayData);
       setUsageMonth(monthData);
-      setRecentEvents(eventsData);
+
+      // Fetch stored CER bundles for attest events
+      const attestEventIds = eventsData
+        .filter(e => e.endpoint?.includes("attest") && e.status_code >= 200 && e.status_code < 300)
+        .map(e => Number(e.id))
+        .filter(n => !isNaN(n));
+
+      let storedBundles: Awaited<ReturnType<typeof fetchCERBundles>> = {};
+      if (attestEventIds.length > 0) {
+        try {
+          storedBundles = await fetchCERBundles(attestEventIds);
+        } catch (e) {
+          console.warn("Failed to fetch CER bundles:", e);
+        }
+      }
+
+      // Enrich events with stored bundles where available
+      const enriched = eventsData.map(ev => {
+        const base = enrichEventWithCER(ev);
+        const stored = storedBundles[Number(ev.id)];
+        if (stored) {
+          return enrichEventWithStoredBundle(base, stored);
+        }
+        return base;
+      });
+
+      setRecentEvents(enriched);
     } catch (error) {
       console.error("Failed to load usage data:", error);
       const apiError = parseApiError(error);
@@ -69,8 +95,8 @@ export default function Usage() {
     }
   }
 
-  // Enrich events with CER data
-  const certifiedEvents = useMemo(() => recentEvents.map(enrichEventWithCER), [recentEvents]);
+  // Certification summary (events are already enriched)
+  const certifiedEvents = recentEvents;
 
   // Certification summary
   const certSummary = useMemo(() => computeCertificationSummary(certifiedEvents), [certifiedEvents]);

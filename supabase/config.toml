@@ -35,3 +35,9 @@ verify_jwt = false
 
 [functions.stripe-webhook]
 verify_jwt = false
+
+[functions.store-cer-bundle]
+verify_jwt = false
+
+[functions.fetch-cer-bundle]
+verify_jwt = false
