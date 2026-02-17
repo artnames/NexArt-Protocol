@@ -46,9 +46,10 @@ export function enrichEventWithCER(event: UsageEvent): CertifiedUsageEvent {
   // Generate deterministic-looking mock hashes from event id
   const hash = (prefix: string) => {
     const chars = "0123456789abcdef";
+    const idStr = String(event.id);
     let h = "";
     for (let i = 0; i < 64; i++) {
-      h += chars[(event.id.charCodeAt(i % event.id.length) + prefix.charCodeAt(i % prefix.length) + i) % 16];
+      h += chars[(idStr.charCodeAt(i % idStr.length) + prefix.charCodeAt(i % prefix.length) + i) % 16];
     }
     return `sha256:${h}`;
   };
