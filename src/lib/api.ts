@@ -216,6 +216,29 @@ export async function getRecentUsage(): Promise<UsageEvent[]> {
   return data.events;
 }
 
+// CER Bundle storage
+export interface StoredCERBundle {
+  certificateHash: string | null;
+  bundleType: string | null;
+  attestationJson: Record<string, unknown> | null;
+  bundle: Record<string, unknown>;
+  storedAt: string;
+}
+
+export async function fetchCERBundles(eventIds: number[]): Promise<Record<number, StoredCERBundle>> {
+  if (eventIds.length === 0) return {};
+  const data = await handleFunctionResponse<{ bundles: Record<number, StoredCERBundle> }>("fetch-cer-bundle", {
+    body: { eventIds },
+  });
+  return data.bundles;
+}
+
+export async function storeCERBundle(usageEventId: number, bundle: Record<string, unknown>): Promise<void> {
+  await handleFunctionResponse<{ ok: boolean }>("store-cer-bundle", {
+    body: { usageEventId, bundle },
+  });
+}
+
 // Stripe checkout and portal functions
 export interface StripeCheckoutResponse {
   url: string;

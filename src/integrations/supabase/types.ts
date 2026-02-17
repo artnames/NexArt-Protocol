@@ -14,7 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cer_bundles: {
+        Row: {
+          attestation_json: Json | null
+          bundle_type: string | null
+          cer_bundle_redacted: Json
+          certificate_hash: string | null
+          created_at: string
+          id: string
+          usage_event_id: number
+          user_id: string
+        }
+        Insert: {
+          attestation_json?: Json | null
+          bundle_type?: string | null
+          cer_bundle_redacted: Json
+          certificate_hash?: string | null
+          created_at?: string
+          id?: string
+          usage_event_id: number
+          user_id: string
+        }
+        Update: {
+          attestation_json?: Json | null
+          bundle_type?: string | null
+          cer_bundle_redacted?: Json
+          certificate_hash?: string | null
+          created_at?: string
+          id?: string
+          usage_event_id?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

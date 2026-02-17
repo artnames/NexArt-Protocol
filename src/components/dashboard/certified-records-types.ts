@@ -1,4 +1,4 @@
-import type { UsageEvent } from "@/lib/api";
+import type { UsageEvent, StoredCERBundle } from "@/lib/api";
 
 // ── Normalized CER (single source of truth for the drawer) ──────────
 
@@ -164,6 +164,35 @@ export function enrichEventWithCER(event: UsageEvent): CertifiedUsageEvent {
   const surface = deriveSurface(event.endpoint);
   const normalized = normalizeCertifiedRecord(event, null);
   return { ...event, surface, normalized };
+}
+
+// ── Enrich with stored bundle data ──────────────────────────────────
+
+export function enrichEventWithStoredBundle(
+  event: CertifiedUsageEvent,
+  stored: StoredCERBundle,
+): CertifiedUsageEvent {
+  // Reconstruct a RawCERBundle from stored data
+  const bundle: RawCERBundle = {
+    bundleType: stored.bundleType ?? undefined,
+    certificateHash: stored.certificateHash ?? undefined,
+    createdAt: stored.storedAt,
+    ...(stored.bundle as Record<string, unknown>),
+  };
+
+  // If stored.bundle has snapshot/attestation at top level, use them
+  const rawBundle = stored.bundle as Record<string, unknown>;
+  if (rawBundle.snapshot) {
+    bundle.snapshot = rawBundle.snapshot as RawCERBundle["snapshot"];
+  }
+  if (stored.attestationJson) {
+    bundle.attestation = stored.attestationJson as RawCERBundle["attestation"];
+  } else if (rawBundle.attestation) {
+    bundle.attestation = rawBundle.attestation as RawCERBundle["attestation"];
+  }
+
+  const normalized = normalizeCertifiedRecord(event, bundle);
+  return { ...event, surface: normalized.surface, normalized };
 }
 
 // ── Summary stats ───────────────────────────────────────────────────

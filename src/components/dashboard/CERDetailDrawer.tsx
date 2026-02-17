@@ -142,6 +142,11 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
           <p className="text-[11px] font-mono text-muted-foreground leading-relaxed border-l-2 border-border pl-3">
             {n.endpointNote}
           </p>
+          {hasBundle && (
+            <p className="text-[10px] font-mono text-muted-foreground/70 leading-relaxed border-l-2 border-muted pl-3">
+              Stored bundle is redacted; hashes remain verifiable.
+            </p>
+          )}
 
           {/* Section A — Identity */}
           <Section title="Identity">
