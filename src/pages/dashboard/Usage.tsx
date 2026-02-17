@@ -1,30 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Navigate, Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { 
-  getUsageSummaryByPeriod, 
-  getRecentUsage, 
-  UsageSummary, 
-  UsageEvent,
-  parseApiError,
-  getFriendlyErrorMessage,
-  ApiError
+import {
+  getUsageSummaryByPeriod, getRecentUsage,
+  UsageSummary, UsageEvent, parseApiError, getFriendlyErrorMessage, ApiError,
 } from "@/lib/api";
-import { Activity, CheckCircle, XCircle, Clock, Info, BarChart3, AlertCircle } from "lucide-react";
+import { Activity, CheckCircle, XCircle, Clock, BarChart3, AlertCircle, Eye, Copy } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import CERDetailDrawer from "@/components/dashboard/CERDetailDrawer";
+import CertificationSummary from "@/components/dashboard/CertificationSummary";
+import RecordsFilters, { type FiltersState } from "@/components/dashboard/RecordsFilters";
+import {
+  enrichEventWithCER, computeCertificationSummary,
+  type CertifiedUsageEvent,
+} from "@/components/dashboard/certified-records-types";
 
 export default function Usage() {
   const { user, loading: authLoading } = useAuth();
@@ -35,6 +32,15 @@ export default function Usage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<ApiError | null>(null);
   const [activeTab, setActiveTab] = useState<"today" | "month">("month");
+
+  // CER drawer
+  const [drawerEvent, setDrawerEvent] = useState<CertifiedUsageEvent | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Filters
+  const [filters, setFilters] = useState<FiltersState>({
+    status: "all", surface: "all", endpoint: "all", search: "",
+  });
 
   useEffect(() => {
     if (!user) return;
@@ -57,201 +63,265 @@ export default function Usage() {
       console.error("Failed to load usage data:", error);
       const apiError = parseApiError(error);
       setLoadError(apiError);
-      toast({
-        variant: "destructive",
-        title: `Error (${apiError.code})`,
-        description: getFriendlyErrorMessage(apiError),
-      });
+      toast({ variant: "destructive", title: `Error (${apiError.code})`, description: getFriendlyErrorMessage(apiError) });
     } finally {
       setLoading(false);
     }
   }
 
-  function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+  // Enrich events with CER data
+  const certifiedEvents = useMemo(() => recentEvents.map(enrichEventWithCER), [recentEvents]);
+
+  // Certification summary
+  const certSummary = useMemo(() => computeCertificationSummary(certifiedEvents), [certifiedEvents]);
+
+  // Filtered events
+  const filteredEvents = useMemo(() => {
+    return certifiedEvents.filter((e) => {
+      if (filters.status === "success" && !(e.status_code >= 200 && e.status_code < 300)) return false;
+      if (filters.status === "client_error" && !(e.status_code >= 400 && e.status_code < 500)) return false;
+      if (filters.status === "server_error" && !(e.status_code >= 500)) return false;
+      if (filters.surface !== "all" && e.surface !== filters.surface) return false;
+      if (filters.endpoint !== "all" && e.endpoint !== filters.endpoint) return false;
+      if (filters.search) {
+        const q = filters.search.toLowerCase();
+        const matchHash = e.cer?.certificateHash?.toLowerCase().includes(q);
+        const matchId = e.cer?.executionId?.toLowerCase().includes(q) || e.id.toLowerCase().includes(q);
+        if (!matchHash && !matchId) return false;
+      }
+      return true;
     });
+  }, [certifiedEvents, filters]);
+
+  function formatDate(dateStr: string) {
+    return new Date(dateStr).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
   }
 
   function getStatusBadge(statusCode: number) {
-    if (statusCode >= 200 && statusCode < 300) {
-      return <Badge variant="default">Success</Badge>;
-    } else if (statusCode >= 400 && statusCode < 500) {
-      return <Badge variant="secondary">Client Error</Badge>;
-    } else if (statusCode >= 500) {
-      return <Badge variant="destructive">Server Error</Badge>;
-    }
+    if (statusCode >= 200 && statusCode < 300) return <Badge variant="default">Success</Badge>;
+    if (statusCode >= 400 && statusCode < 500) return <Badge variant="secondary">Client Error</Badge>;
+    if (statusCode >= 500) return <Badge variant="destructive">Server Error</Badge>;
     return <Badge variant="outline">{statusCode}</Badge>;
   }
 
-  if (authLoading) {
-    return <div className="flex items-center justify-center min-h-screen text-caption">Loading...</div>;
+  function shortenHash(hash: string | undefined | null) {
+    if (!hash) return "—";
+    // sha256:abcdef...1234
+    const raw = hash.replace("sha256:", "");
+    return `sha256:${raw.slice(0, 4)}…${raw.slice(-4)}`;
   }
 
+  function openDrawer(event: CertifiedUsageEvent) {
+    setDrawerEvent(event);
+    setDrawerOpen(true);
+  }
+
+  if (authLoading) {
+    return <div className="flex items-center justify-center min-h-screen text-muted-foreground">Loading...</div>;
+  }
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
 
-  const currentUsage = activeTab === "today" ? usageToday : usageMonth;
   const hasNoUsage = !usageMonth || usageMonth.total === 0;
 
   return (
-    <DashboardLayout title="Usage">
-        {loading ? (
-          <div className="text-caption">Loading...</div>
-        ) : (
-          <div className="space-y-6">
-            {/* Error State */}
-            {loadError && (
-              <Card className="border-destructive/50 bg-destructive/5">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg text-destructive">
-                    <AlertCircle className="h-5 w-5" />
-                    {loadError.isServiceUnavailable ? "Service Unavailable" : "Error Loading Usage Data"}
-                  </CardTitle>
-                  <CardDescription className="text-destructive/80">
-                    {getFriendlyErrorMessage(loadError)}
-                    {loadError.code && <span className="ml-2 font-mono text-xs">({loadError.code})</span>}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline" onClick={() => loadData()}>
-                    Try Again
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+    <DashboardLayout title="Usage & Certified Records">
+      {loading ? (
+        <div className="text-muted-foreground">Loading...</div>
+      ) : (
+        <div className="space-y-6">
+          {/* Microcopy */}
+          <p className="text-xs text-muted-foreground font-mono leading-relaxed">
+            This console provides visibility into Certified Execution Records generated by the NexArt canonical node. Production systems typically embed certification into their own infrastructure.
+          </p>
 
-            {/* Explanation */}
-            <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg text-sm">
-              <Info className="h-5 w-5 mt-0.5 shrink-0 text-primary" />
-              <div>
-                <p className="font-medium">What counts as a certified run?</p>
-                <p className="text-caption mt-1">
-                  Each certified run corresponds to one call to the canonical renderer. 
-                  A successful render produces a deterministic PNG and a verifiable snapshot.
-                </p>
-              </div>
-            </div>
-
-            {/* Summary with Tabs */}
-            <Card>
+          {/* Error State */}
+          {loadError && (
+            <Card className="border-destructive/50 bg-destructive/5">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Usage Summary
+                <CardTitle className="flex items-center gap-2 text-lg text-destructive">
+                  <AlertCircle className="h-5 w-5" />
+                  {loadError.isServiceUnavailable ? "Service Unavailable" : "Error Loading Data"}
                 </CardTitle>
+                <CardDescription className="text-destructive/80">
+                  {getFriendlyErrorMessage(loadError)}
+                  {loadError.code && <span className="ml-2 font-mono text-xs">({loadError.code})</span>}
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "today" | "month")}>
-                  <TabsList className="mb-4">
-                    <TabsTrigger value="today">Today</TabsTrigger>
-                    <TabsTrigger value="month">This Month</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="today" className="mt-0">
-                    <UsageStats usage={usageToday} period="today" />
-                  </TabsContent>
-                  
-                  <TabsContent value="month" className="mt-0">
-                    <UsageStats usage={usageMonth} period="month" />
-                  </TabsContent>
-                </Tabs>
+                <Button variant="outline" onClick={() => loadData()}>Try Again</Button>
               </CardContent>
             </Card>
+          )}
 
-            {/* Recent Events */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Recent Requests</CardTitle>
-                <CardDescription>Last 50 certified execution requests</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {hasNoUsage ? (
-                  <div className="text-center py-8">
-                    <Activity className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-lg font-medium mb-2">No certified runs yet</p>
-                    <p className="text-caption text-sm mb-4">
-                      Create an API key and run your first certified render to see usage data here.
-                    </p>
-                    <Link to="/dashboard/api-keys">
-                      <Button variant="outline">
-                        Get Started
-                      </Button>
-                    </Link>
-                  </div>
-                ) : recentEvents.length === 0 ? (
-                  <p className="text-caption">No recent events found.</p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Time</TableHead>
-                        <TableHead>Endpoint</TableHead>
-                        <TableHead>Key</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Duration</TableHead>
-                        <TableHead>Error</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {recentEvents.map((event) => (
-                        <TableRow key={event.id}>
-                          <TableCell className="text-caption text-sm">
-                            {formatDate(event.created_at)}
-                          </TableCell>
-                          <TableCell className="font-mono text-sm">
-                            {event.endpoint || "/api/render"}
-                          </TableCell>
-                          <TableCell className="text-sm">{event.key_label}</TableCell>
-                          <TableCell>{getStatusBadge(event.status_code)}</TableCell>
-                          <TableCell className="text-sm">{event.duration_ms}ms</TableCell>
-                          <TableCell className="text-sm text-caption">
-                            {event.error_code || "—"}
-                          </TableCell>
+          {/* Usage Summary with Tabs */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Usage Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "today" | "month")}>
+                <TabsList className="mb-4">
+                  <TabsTrigger value="today">Today</TabsTrigger>
+                  <TabsTrigger value="month">This Month</TabsTrigger>
+                </TabsList>
+                <TabsContent value="today" className="mt-0">
+                  <UsageStats usage={usageToday} />
+                </TabsContent>
+                <TabsContent value="month" className="mt-0">
+                  <UsageStats usage={usageMonth} />
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+
+          {/* Certification Summary */}
+          {!hasNoUsage && (
+            <CertificationSummary
+              total={certSummary.total}
+              successRate={certSummary.successRate}
+              aiCount={certSummary.aiCount}
+              codeModeCount={certSummary.codeModeCount}
+            />
+          )}
+
+          {/* Certified Records Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-mono">Certified Records</CardTitle>
+              <CardDescription>Last 50 certified execution requests</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {hasNoUsage ? (
+                <div className="text-center py-8">
+                  <Activity className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-lg font-medium mb-2">No certified runs yet</p>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    Create an API key and run your first certified render to see records here.
+                  </p>
+                  <Link to="/dashboard/api-keys">
+                    <Button variant="outline">Get Started</Button>
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  <RecordsFilters filters={filters} onChange={setFilters} />
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Time</TableHead>
+                          <TableHead>Surface</TableHead>
+                          <TableHead>Endpoint</TableHead>
+                          <TableHead>Key</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Certificate Hash</TableHead>
+                          <TableHead>Protocol</TableHead>
+                          <TableHead>Duration</TableHead>
+                          <TableHead className="w-[60px]">View</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        )}
+                      </TableHeader>
+                      <TableBody>
+                        {filteredEvents.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+                              No records match filters.
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          filteredEvents.map((event) => (
+                            <TableRow key={event.id}>
+                              <TableCell className="text-muted-foreground text-xs whitespace-nowrap">
+                                {formatDate(event.created_at)}
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="font-mono text-[10px]">
+                                  {event.surface === "ai" ? "AI" : "Code Mode"}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="font-mono text-xs">{event.endpoint || "/api/render"}</TableCell>
+                              <TableCell className="text-xs">{event.key_label}</TableCell>
+                              <TableCell>{getStatusBadge(event.status_code)}</TableCell>
+                              <TableCell>
+                                {event.cer?.certificateHash ? (
+                                  <button
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(event.cer!.certificateHash);
+                                      toast({ title: "Copied", description: "Certificate hash copied." });
+                                    }}
+                                    className="flex items-center gap-1 font-mono text-xs text-foreground hover:text-primary transition-colors"
+                                    title={event.cer.certificateHash}
+                                  >
+                                    {shortenHash(event.cer.certificateHash)}
+                                    <Copy className="h-3 w-3 text-muted-foreground" />
+                                  </button>
+                                ) : (
+                                  <span className="text-muted-foreground text-xs">—</span>
+                                )}
+                              </TableCell>
+                              <TableCell className="font-mono text-xs">
+                                {event.cer?.protocolVersion || "—"}
+                              </TableCell>
+                              <TableCell className="text-xs">{event.duration_ms}ms</TableCell>
+                              <TableCell>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => openDrawer(event)}
+                                >
+                                  <Eye className="h-3.5 w-3.5" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      <CERDetailDrawer event={drawerEvent} open={drawerOpen} onOpenChange={setDrawerOpen} />
     </DashboardLayout>
   );
 }
 
-function UsageStats({ usage, period }: { usage: UsageSummary | null; period: string }) {
+function UsageStats({ usage }: { usage: UsageSummary | null }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       <div className="p-4 bg-muted/50 rounded-lg">
         <p className="text-2xl font-semibold">{usage?.total || 0}</p>
-        <p className="text-sm text-caption">Total Runs</p>
+        <p className="text-sm text-muted-foreground">Total Runs</p>
       </div>
       <div className="p-4 bg-muted/50 rounded-lg">
         <p className="text-2xl font-semibold flex items-center gap-2">
           <CheckCircle className="h-5 w-5 text-green-500" />
           {usage?.success || 0}
         </p>
-        <p className="text-sm text-caption">Successful</p>
+        <p className="text-sm text-muted-foreground">Successful</p>
       </div>
       <div className="p-4 bg-muted/50 rounded-lg">
         <p className="text-2xl font-semibold flex items-center gap-2">
           <XCircle className="h-5 w-5 text-red-500" />
           {usage?.errors || 0}
         </p>
-        <p className="text-sm text-caption">Errors</p>
+        <p className="text-sm text-muted-foreground">Errors</p>
       </div>
       <div className="p-4 bg-muted/50 rounded-lg">
         <p className="text-2xl font-semibold flex items-center gap-2">
           <Clock className="h-5 w-5 text-blue-500" />
           {usage?.avg_duration_ms || 0}ms
         </p>
-        <p className="text-sm text-caption">Avg Duration</p>
+        <p className="text-sm text-muted-foreground">Avg Duration</p>
       </div>
     </div>
   );
