@@ -2,7 +2,6 @@ import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 
@@ -48,8 +47,6 @@ const AIExecutionDemo = lazy(() => import("./pages/demos/AIExecutionDemo"));
 // Auth-gated routes (heavy: AuthProvider + dashboard)
 const AuthGatedRoutes = lazy(() => import("./components/routing/AuthGatedRoutes"));
 
-const queryClient = new QueryClient();
-
 const PageFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
     <div className="text-sm text-muted-foreground font-mono">Loading…</div>
@@ -58,13 +55,12 @@ const PageFallback = () => (
 
 const App = () => (
   <HelmetProvider>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Suspense fallback={<PageFallback />}>
-            <Routes>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Suspense fallback={<PageFallback />}>
+          <Routes>
               {/* LCP-critical: eager */}
               <Route path="/" element={<Index />} />
 
@@ -109,12 +105,11 @@ const App = () => (
               <Route path="/dashboard" element={<AuthGatedRoutes />} />
               <Route path="/dashboard/*" element={<AuthGatedRoutes />} />
 
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </TooltipProvider>
   </HelmetProvider>
 );
 

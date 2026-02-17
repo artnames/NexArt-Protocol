@@ -1,19 +1,9 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, ChevronDown } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Menu } from "lucide-react";
+
+// Lazy-load the mobile menu (Sheet is heavy Radix component)
+const MobileMenu = lazy(() => import("./MobileMenu"));
 
 // Grouped navigation
 const navGroups = [
@@ -77,63 +67,58 @@ const standaloneItems = [
   { href: "/dashboard", label: "Dashboard" },
 ];
 
+export { navGroups, standaloneItems };
+
 const Header = () => {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Check if current path is within a group
-  const isGroupActive = (items: { href: string }[]) => {
-    return items.some((item) => location.pathname === item.href);
-  };
+  const isGroupActive = (items: { href: string }[]) =>
+    items.some((item) => location.pathname === item.href);
 
   return (
     <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur-sm z-50">
       <div className="max-w-5xl mx-auto px-6 py-3">
         <div className="flex items-center justify-between">
-          {/* Logo */}
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="font-mono text-sm font-medium tracking-wide text-foreground hover:text-caption transition-colors"
           >
             nexart.io
           </Link>
-          
-          {/* Desktop Navigation with Dropdowns */}
-          <nav className="hidden md:flex items-center gap-1">
+
+          {/* Desktop: CSS-only hover dropdowns (no Radix) */}
+          <nav className="hidden md:flex items-center gap-0.5">
             {navGroups.map((group) => (
-              <DropdownMenu key={group.label}>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded transition-colors ${
-                      isGroupActive(group.items)
-                        ? "text-foreground font-medium"
-                        : "text-caption hover:text-foreground"
-                    }`}
-                  >
-                    {group.label}
-                    <ChevronDown className="h-3.5 w-3.5" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent 
-                  align="start" 
-                  className="z-50 min-w-[160px] bg-background border border-border shadow-lg"
+              <div key={group.label} className="relative group">
+                <button
+                  className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded transition-colors ${
+                    isGroupActive(group.items)
+                      ? "text-foreground font-medium"
+                      : "text-caption hover:text-foreground"
+                  }`}
                 >
-                  {group.items.map((item) => (
-                    <DropdownMenuItem key={item.href} asChild>
+                  {group.label}
+                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div className="absolute left-0 top-full pt-1 hidden group-hover:block group-focus-within:block z-50">
+                  <div className="min-w-[160px] bg-background border border-border rounded-md shadow-lg py-1">
+                    {group.items.map((item) => (
                       <Link
+                        key={item.href}
                         to={item.href}
-                        className={`w-full cursor-pointer ${
+                        className={`block px-3 py-1.5 text-sm transition-colors ${
                           location.pathname === item.href
-                            ? "bg-muted font-medium"
-                            : ""
+                            ? "bg-muted font-medium text-foreground"
+                            : "text-caption hover:text-foreground hover:bg-muted/50"
                         }`}
                       >
                         {item.label}
                       </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    ))}
+                  </div>
+                </div>
+              </div>
             ))}
             {standaloneItems.map((item) => (
               <Link
@@ -150,69 +135,21 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Mobile Burger Menu */}
-          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-            <SheetTrigger asChild>
-              <button
-                className="md:hidden p-2 -mr-2 text-caption hover:text-foreground transition-colors"
-                aria-label="Open menu"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-72 overflow-y-auto">
-              <SheetHeader>
-                <SheetTitle className="font-mono text-sm">Navigation</SheetTitle>
-              </SheetHeader>
-              <nav className="mt-6 space-y-6 pb-6">
-                {navGroups.map((group) => (
-                  <div key={group.label}>
-                    <p className="text-xs font-mono text-caption uppercase tracking-wider mb-2">
-                      {group.label}
-                    </p>
-                    <div className="space-y-1">
-                      {group.items.map((item) => (
-                        <Link
-                          key={item.href}
-                          to={item.href}
-                          onClick={() => setMenuOpen(false)}
-                          className={`block px-3 py-2 text-sm rounded transition-colors ${
-                            location.pathname === item.href
-                              ? "text-foreground bg-muted font-medium"
-                              : "text-caption hover:text-foreground hover:bg-muted/50"
-                          }`}
-                        >
-                          {item.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-                {/* Standalone items in mobile */}
-                <div>
-                  <p className="text-xs font-mono text-caption uppercase tracking-wider mb-2">
-                    More
-                  </p>
-                  <div className="space-y-1">
-                    {standaloneItems.map((item) => (
-                      <Link
-                        key={item.href}
-                        to={item.href}
-                        onClick={() => setMenuOpen(false)}
-                        className={`block px-3 py-2 text-sm rounded transition-colors ${
-                          location.pathname === item.href
-                            ? "text-foreground bg-muted font-medium"
-                            : "text-caption hover:text-foreground hover:bg-muted/50"
-                        }`}
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </nav>
-            </SheetContent>
-          </Sheet>
+          {/* Mobile burger */}
+          <button
+            className="md:hidden p-2 -mr-2 text-caption hover:text-foreground transition-colors"
+            aria-label="Open menu"
+            onClick={() => setMenuOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+
+          {/* Mobile menu: lazy-loaded */}
+          {menuOpen && (
+            <Suspense fallback={null}>
+              <MobileMenu open={menuOpen} onOpenChange={setMenuOpen} />
+            </Suspense>
+          )}
         </div>
       </div>
     </header>
