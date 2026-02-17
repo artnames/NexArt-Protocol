@@ -1,6 +1,3 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-import postgres from "https://deno.land/x/postgresjs@v3.4.4/mod.js";
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -8,25 +5,65 @@ const corsHeaders = {
 
 /**
  * store-cer-bundle: Persists a redacted CER bundle for a successful /api/attest run.
- * Called after attestation succeeds. Expects JSON body:
- * {
- *   usageEventId: number,
- *   bundle: { bundleType, certificateHash, createdAt, snapshot: {...}, attestation: {...} }
- * }
+ *
+ * Auth: Authorization: Bearer <CER_INGEST_SECRET> (shared secret, NOT JWT/service-role).
+ *
+ * Body:
+ *   { usageEventId: string, bundle: object, attestation?: object }
  *
  * Redaction: snapshot.input, snapshot.output, snapshot.prompt are stripped before storage.
+ *
+ * curl example:
+ *   curl -X POST https://<project>.supabase.co/functions/v1/store-cer-bundle \
+ *     -H "Authorization: Bearer YOUR_CER_INGEST_SECRET" \
+ *     -H "Content-Type: application/json" \
+ *     -d '{
+ *       "usageEventId": "evt_abc123",
+ *       "bundle": {
+ *         "bundleType": "cer.ai.execution.v1",
+ *         "certificateHash": "sha256-...",
+ *         "snapshot": { "input": "REDACTED_BY_FN", "inputHash": "sha256-..." },
+ *         "attestation": { "nodeId": "n1", "signature": "sig..." }
+ *       }
+ *     }'
  */
 
-function redactBundle(bundle: Record<string, unknown>): Record<string, unknown> {
-  const redacted = JSON.parse(JSON.stringify(bundle));
-  if (redacted.snapshot && typeof redacted.snapshot === "object") {
-    const snap = redacted.snapshot as Record<string, unknown>;
+// ── helpers ──────────────────────────────────────────────────────────
+
+/** Deep-remove keys whose value is `undefined`; convert undefined array items to null. */
+function deepSanitize(val: unknown): unknown {
+  if (val === undefined) return null;
+  if (val === null || typeof val !== 'object') return val;
+  if (Array.isArray(val)) return val.map((v) => deepSanitize(v === undefined ? null : v));
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(val as Record<string, unknown>)) {
+    if (v !== undefined) out[k] = deepSanitize(v);
+  }
+  return out;
+}
+
+/** Strip sensitive snapshot fields, then deep-sanitize. */
+function redactAndSanitize(bundle: Record<string, unknown>): Record<string, unknown> {
+  const copy = JSON.parse(JSON.stringify(bundle));
+  if (copy.snapshot && typeof copy.snapshot === 'object') {
+    const snap = copy.snapshot as Record<string, unknown>;
     delete snap.input;
     delete snap.output;
     delete snap.prompt;
   }
-  return redacted;
+  return deepSanitize(copy) as Record<string, unknown>;
 }
+
+function jsonError(error: string, message: string, status: number) {
+  return new Response(JSON.stringify({ error, message }), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+// ── handler ──────────────────────────────────────────────────────────
+
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -34,163 +71,77 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // ── Auth: shared secret ──
+    const ingestSecret = Deno.env.get('CER_INGEST_SECRET');
+    if (!ingestSecret) {
+      console.error('CER_INGEST_SECRET not configured');
+      return jsonError('CONFIG', 'Server misconfigured', 500);
+    }
+
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'AUTH', message: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (!authHeader?.startsWith('Bearer ') || authHeader.replace('Bearer ', '') !== ingestSecret) {
+      return jsonError('UNAUTHORIZED', 'Invalid or missing ingest secret', 401);
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const isServiceRole = token === serviceRoleKey;
-
-    let userId: string;
-
-    if (isServiceRole) {
-      // Server-to-server call from Railway node — user_id must be in body
-      const body = await req.json();
-      const { usageEventId, bundle, userId: bodyUserId } = body;
-
-      if (!bodyUserId) {
-        return new Response(JSON.stringify({ error: 'VALIDATION', message: 'userId required for service-role calls' }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      userId = bodyUserId;
-
-      if (!usageEventId || !bundle) {
-        return new Response(JSON.stringify({ error: 'VALIDATION', message: 'usageEventId and bundle required' }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
-      // Skip ownership check — service role is trusted
-      const redacted = redactBundle(bundle);
-
-      const supabaseAdmin = createClient(
-        Deno.env.get('SUPABASE_URL')!,
-        serviceRoleKey
-      );
-
-      const { error: insertError } = await supabaseAdmin
-        .from('cer_bundles')
-        .upsert({
-          user_id: userId,
-          usage_event_id: usageEventId,
-          certificate_hash: bundle.certificateHash || null,
-          bundle_type: bundle.bundleType || null,
-          attestation_json: bundle.attestation || null,
-          cer_bundle_redacted: redacted,
-        }, { onConflict: 'usage_event_id' });
-
-      if (insertError) {
-        console.error('Insert error:', insertError);
-        return new Response(JSON.stringify({ error: 'DB_INSERT', message: insertError.message }), {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
-      return new Response(JSON.stringify({ ok: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // User JWT path (dashboard manual calls)
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: 'AUTH', message: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    userId = user.id;
-
+    // ── Parse + validate body ──
     const body = await req.json();
-    const { usageEventId, bundle } = body;
+    const { usageEventId, bundle, attestation } = body;
 
-    if (!usageEventId || !bundle) {
-      return new Response(JSON.stringify({ error: 'VALIDATION', message: 'usageEventId and bundle required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (!usageEventId || typeof usageEventId !== 'string' || usageEventId.trim() === '') {
+      return jsonError('VALIDATION', 'usageEventId must be a non-empty string', 400);
     }
 
-    // Verify the usage event belongs to this user via Railway DB
-    const databaseUrl = Deno.env.get("DATABASE_URL");
-    if (!databaseUrl) {
-      throw new Error("CONFIG: DATABASE_URL missing");
-    }
-    const sql = postgres(databaseUrl, { ssl: false });
-
-    try {
-      const rows = await sql`
-        SELECT ue.id FROM usage_events ue
-        INNER JOIN api_keys ak ON ue.api_key_id = ak.id
-        WHERE ue.id = ${usageEventId} AND ak.user_id = ${userId}::uuid
-        LIMIT 1
-      `;
-      await sql.end();
-
-      if (rows.length === 0) {
-        return new Response(JSON.stringify({ error: 'NOT_FOUND', message: 'Event not found or not owned' }), {
-          status: 404,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-    } catch (dbErr) {
-      await sql.end();
-      throw dbErr;
+    if (!bundle || typeof bundle !== 'object') {
+      return jsonError('VALIDATION', 'bundle must be an object', 400);
     }
 
-    // Redact sensitive fields
-    const redacted = redactBundle(bundle);
+    if (bundle.bundleType !== 'cer.ai.execution.v1') {
+      return jsonError('VALIDATION', `Unsupported bundleType: ${bundle.bundleType}`, 400);
+    }
 
-    // Use service role to insert into Supabase cer_bundles
+    // ── Redact + sanitize ──
+    const redacted = redactAndSanitize(bundle);
+
+    // ── Upsert into cer_bundles ──
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
-    const { error: insertError } = await supabaseAdmin
-      .from('cer_bundles')
-      .upsert({
-        user_id: userId,
-        usage_event_id: usageEventId,
-        certificate_hash: bundle.certificateHash || null,
-        bundle_type: bundle.bundleType || null,
-        attestation_json: bundle.attestation || null,
-        cer_bundle_redacted: redacted,
-      }, { onConflict: 'usage_event_id' });
-
-    if (insertError) {
-      console.error('Insert error:', insertError);
-      return new Response(JSON.stringify({ error: 'DB_INSERT', message: insertError.message }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    // usageEventId comes as string from the node; cast to integer for the DB column
+    const eventIdNum = parseInt(usageEventId, 10);
+    if (isNaN(eventIdNum)) {
+      return jsonError('VALIDATION', 'usageEventId must be numeric', 400);
     }
 
-    return new Response(JSON.stringify({ ok: true }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    const certificateHash = bundle.certificateHash || null;
 
+    const { error: upsertError } = await supabaseAdmin
+      .from('cer_bundles')
+      .upsert(
+        {
+          usage_event_id: eventIdNum,
+          user_id: bundle.userId || body.userId || '00000000-0000-0000-0000-000000000000',
+          certificate_hash: certificateHash,
+          bundle_type: bundle.bundleType,
+          attestation_json: attestation ?? bundle.attestation ?? null,
+          cer_bundle_redacted: redacted,
+        },
+        { onConflict: 'usage_event_id' },
+      );
+
+    if (upsertError) {
+      console.error('Upsert error:', upsertError);
+      return jsonError('DB_UPSERT', upsertError.message, 500);
+    }
+
+    return new Response(
+      JSON.stringify({ ok: true, usageEventId, certificateHash }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
   } catch (err) {
-    const error = err as Error;
-    console.error('store-cer-bundle error:', error.message);
-    return new Response(JSON.stringify({ error: 'INTERNAL', message: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    const e = err as Error;
+    console.error('store-cer-bundle error:', e.message);
+    return jsonError('INTERNAL', e.message, 500);
   }
 });
