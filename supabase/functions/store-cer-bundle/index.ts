@@ -8,6 +8,8 @@ const corsHeaders = {
 
 // ── helpers ──────────────────────────────────────────────────────────
 
+const SUPPORTED_BUNDLE_TYPES = ['cer.ai.execution.v1', 'cer.codemode.render.v1'] as const;
+
 function deepSanitize(val: unknown): unknown {
   if (val === undefined) return null;
   if (val === null || typeof val !== 'object') return val;
@@ -19,15 +21,49 @@ function deepSanitize(val: unknown): unknown {
   return out;
 }
 
-function redactAndSanitize(bundle: Record<string, unknown>): Record<string, unknown> {
+function redactAndSanitize(bundle: Record<string, unknown>, bundleType: string): Record<string, unknown> {
   const copy = JSON.parse(JSON.stringify(bundle));
-  if (copy.snapshot && typeof copy.snapshot === 'object') {
-    const snap = copy.snapshot as Record<string, unknown>;
-    delete snap.input;
-    delete snap.output;
-    delete snap.prompt;
+  if (bundleType === 'cer.ai.execution.v1') {
+    // Redact AI-specific sensitive fields
+    if (copy.snapshot && typeof copy.snapshot === 'object') {
+      const snap = copy.snapshot as Record<string, unknown>;
+      delete snap.input;
+      delete snap.output;
+      delete snap.prompt;
+    }
   }
+  // For render bundles, no redaction needed (no sensitive payloads)
   return deepSanitize(copy) as Record<string, unknown>;
+}
+
+/** Stable canonical JSON for hashing (sorted keys, no whitespace) */
+function canonicalJson(obj: unknown): string {
+  if (obj === null || obj === undefined) return 'null';
+  if (typeof obj === 'string') return JSON.stringify(obj);
+  if (typeof obj === 'number' || typeof obj === 'boolean') return String(obj);
+  if (Array.isArray(obj)) return '[' + obj.map(canonicalJson).join(',') + ']';
+  const keys = Object.keys(obj as Record<string, unknown>).sort();
+  const entries = keys
+    .filter(k => (obj as Record<string, unknown>)[k] !== undefined)
+    .map(k => JSON.stringify(k) + ':' + canonicalJson((obj as Record<string, unknown>)[k]));
+  return '{' + entries.join(',') + '}';
+}
+
+/** Compute sha256 hex hash */
+async function sha256Hex(data: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(data));
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/** Compute certificate hash for render bundles that don't have one */
+async function computeCertificateHash(bundle: Record<string, unknown>): Promise<string> {
+  // Remove meta fields that shouldn't be part of the hash
+  const { createdAt, certificateHash, ...hashable } = bundle;
+  const canonical = canonicalJson(hashable);
+  const hex = await sha256Hex(canonical);
+  return `sha256:${hex}`;
 }
 
 function jsonResp(body: Record<string, unknown>, status: number) {
@@ -69,7 +105,7 @@ Deno.serve(async (req) => {
     // ── Parse body ──
     const body = await req.json();
 
-    // ── Normalize usageEventId: accept both camelCase and snake_case ──
+    // ── Normalize usageEventId ──
     const rawEventId = body.usageEventId ?? body.usage_event_id;
     if (rawEventId === undefined || rawEventId === null || String(rawEventId).trim() === '') {
       return jsonResp({
@@ -79,7 +115,6 @@ Deno.serve(async (req) => {
       }, 400);
     }
     const usageEventId = String(rawEventId).trim();
-
     const eventIdNum = parseInt(usageEventId, 10);
     if (isNaN(eventIdNum)) {
       return jsonResp({
@@ -89,7 +124,7 @@ Deno.serve(async (req) => {
       }, 400);
     }
 
-    const { bundle, attestation } = body;
+    const { bundle, attestation, artifactBase64, artifactMime } = body;
 
     if (!bundle || typeof bundle !== 'object') {
       return jsonResp({
@@ -99,19 +134,24 @@ Deno.serve(async (req) => {
       }, 400);
     }
 
-    if (bundle.bundleType !== 'cer.ai.execution.v1') {
+    const bundleType = bundle.bundleType as string;
+    if (!bundleType || !SUPPORTED_BUNDLE_TYPES.includes(bundleType as typeof SUPPORTED_BUNDLE_TYPES[number])) {
       return jsonResp({
         ok: false, error: 'VALIDATION',
-        message: `Missing or unsupported bundle.bundleType: got "${bundle.bundleType ?? '(undefined)'}", expected "cer.ai.execution.v1"`,
+        message: `Unsupported bundle.bundleType: got "${bundleType ?? '(undefined)'}", expected one of: ${SUPPORTED_BUNDLE_TYPES.join(', ')}`,
         upserted: false, usageEventId, certificateHash: null,
       }, 400);
     }
 
-    const certificateHash = bundle.certificateHash ?? null;
+    // ── Certificate hash: use provided or compute for render bundles ──
+    let certificateHash = bundle.certificateHash as string | null ?? null;
+    if (!certificateHash && bundleType === 'cer.codemode.render.v1') {
+      certificateHash = await computeCertificateHash(bundle);
+    }
     if (!certificateHash) {
       return jsonResp({
         ok: false, error: 'VALIDATION',
-        message: 'Missing bundle.certificateHash: required for storage',
+        message: 'Missing bundle.certificateHash and could not compute one',
         upserted: false, usageEventId, certificateHash: null,
       }, 400);
     }
@@ -150,15 +190,40 @@ Deno.serve(async (req) => {
       }, 400);
     }
 
-    // ── Redact + sanitize ──
-    const redacted = redactAndSanitize(bundle);
-
-    // ── Upsert into cer_bundles ──
+    // ── Supabase admin client ──
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
+    // ── Upload PNG artifact if provided ──
+    let artifactPath: string | null = null;
+    if (artifactBase64 && artifactMime) {
+      const artifactBytes = Uint8Array.from(atob(artifactBase64), c => c.charCodeAt(0));
+      const ext = artifactMime === 'image/png' ? 'png' : 'bin';
+      artifactPath = `user/${ownerId}/usage/${eventIdNum}/output.${ext}`;
+
+      const { error: uploadError } = await supabaseAdmin.storage
+        .from('certified-artifacts')
+        .upload(artifactPath, artifactBytes, {
+          contentType: artifactMime,
+          upsert: true,
+        });
+
+      if (uploadError) {
+        console.error('Artifact upload error:', uploadError);
+        return jsonResp({
+          ok: false, error: 'ARTIFACT_UPLOAD',
+          message: `Failed to upload artifact: ${uploadError.message}`,
+          upserted: false, usageEventId, certificateHash,
+        }, 500);
+      }
+    }
+
+    // ── Redact + sanitize ──
+    const redacted = redactAndSanitize(bundle, bundleType);
+
+    // ── Upsert into cer_bundles ──
     const { error: upsertError } = await supabaseAdmin
       .from('cer_bundles')
       .upsert(
@@ -166,9 +231,11 @@ Deno.serve(async (req) => {
           usage_event_id: eventIdNum,
           user_id: ownerId,
           certificate_hash: certificateHash,
-          bundle_type: bundle.bundleType,
+          bundle_type: bundleType,
           attestation_json: attestation ?? bundle.attestation ?? null,
           cer_bundle_redacted: redacted,
+          artifact_path: artifactPath,
+          artifact_mime: artifactMime ?? null,
         },
         { onConflict: 'usage_event_id' },
       );
@@ -181,7 +248,10 @@ Deno.serve(async (req) => {
       }, 500);
     }
 
-    return jsonResp({ ok: true, usageEventId, certificateHash, upserted: true }, 200);
+    return jsonResp({
+      ok: true, usageEventId, bundleType, certificateHash,
+      upserted: true, artifactPath: artifactPath ?? null,
+    }, 200);
   } catch (err) {
     const e = err as Error;
     console.error('store-cer-bundle error:', e.message);

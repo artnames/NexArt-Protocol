@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
     // RLS ensures only user's own bundles are returned
     const { data, error: fetchError } = await supabase
       .from('cer_bundles')
-      .select('usage_event_id, certificate_hash, bundle_type, attestation_json, cer_bundle_redacted, created_at')
+      .select('usage_event_id, certificate_hash, bundle_type, attestation_json, cer_bundle_redacted, created_at, artifact_path, artifact_mime')
       .in('usage_event_id', eventIds);
 
     if (fetchError) {
@@ -82,6 +82,8 @@ Deno.serve(async (req) => {
         attestationJson: row.attestation_json,
         bundle: row.cer_bundle_redacted,
         storedAt: row.created_at,
+        artifactPath: row.artifact_path ?? null,
+        artifactMime: row.artifact_mime ?? null,
       };
     }
 

@@ -24,6 +24,10 @@ export interface NormalizedCER {
   completeness: "full" | "partial" | "none";
   /** Endpoint-specific message shown in drawer */
   endpointNote: string;
+  /** Storage path for artifact (PNG for render bundles) */
+  artifactPath: string | null;
+  /** MIME type of stored artifact */
+  artifactMime: string | null;
 }
 
 // ── Raw CER bundle shape (from /api/attest JSON response) ───────────
@@ -97,7 +101,9 @@ export function normalizeCertifiedRecord(
       rawBundleJson: null,
       completeness: "none",
       endpointNote:
-        "Renderer returns PNG (image/png). Snapshot metadata is stored separately when available.",
+        "Renderer returns PNG (image/png). Stored record includes output hash and artifact path.",
+      artifactPath: null,
+      artifactMime: null,
     };
   }
 
@@ -126,6 +132,8 @@ export function normalizeCertifiedRecord(
         isSuccess
           ? "Attestation returned success but no CER bundle was stored for this run."
           : "Attestation returned an error. No CER bundle available.",
+      artifactPath: null,
+      artifactMime: null,
     };
   }
 
@@ -155,6 +163,8 @@ export function normalizeCertifiedRecord(
     rawBundleJson: bundle ? { ...bundle } : null,
     completeness: hasCore ? "full" : "partial",
     endpointNote: "Attestation returns JSON (application/json).",
+    artifactPath: null,
+    artifactMime: null,
   };
 }
 
@@ -192,6 +202,13 @@ export function enrichEventWithStoredBundle(
   }
 
   const normalized = normalizeCertifiedRecord(event, bundle);
+  // Overlay artifact info from stored bundle
+  normalized.artifactPath = stored.artifactPath ?? null;
+  normalized.artifactMime = stored.artifactMime ?? null;
+  // For render bundles with a stored bundle, update the endpoint note
+  if (normalized.surface === "code" && normalized.completeness !== "none") {
+    normalized.endpointNote = "Renderer returns PNG. Stored record includes output hash and artifact path.";
+  }
   return { ...event, surface: normalized.surface, normalized };
 }
 
