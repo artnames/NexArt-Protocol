@@ -229,10 +229,24 @@ export interface StoredCERBundle {
 
 export async function fetchCERBundles(eventIds: number[]): Promise<Record<number, StoredCERBundle>> {
   if (eventIds.length === 0) return {};
-  const data = await handleFunctionResponse<{ bundles: Record<number, StoredCERBundle> }>("fetch-cer-bundle", {
+  const data = await handleFunctionResponse<{ bundles: Record<number, unknown> }>("fetch-cer-bundle", {
     body: { eventIds },
   });
-  return data.bundles;
+  // Normalize snake_case / camelCase from edge function response
+  const result: Record<number, StoredCERBundle> = {};
+  for (const [key, raw] of Object.entries(data.bundles || {})) {
+    const r = raw as Record<string, unknown>;
+    result[Number(key)] = {
+      certificateHash: (r.certificateHash ?? r.certificate_hash ?? null) as string | null,
+      bundleType: (r.bundleType ?? r.bundle_type ?? null) as string | null,
+      attestationJson: (r.attestationJson ?? r.attestation_json ?? null) as Record<string, unknown> | null,
+      bundle: (r.bundle ?? r.cer_bundle_redacted ?? {}) as Record<string, unknown>,
+      storedAt: (r.storedAt ?? r.created_at ?? "") as string,
+      artifactPath: (r.artifactPath ?? r.artifact_path ?? null) as string | null,
+      artifactMime: (r.artifactMime ?? r.artifact_mime ?? null) as string | null,
+    };
+  }
+  return result;
 }
 
 export async function storeCERBundle(usageEventId: number, bundle: Record<string, unknown>): Promise<void> {

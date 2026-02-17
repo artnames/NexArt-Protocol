@@ -139,6 +139,21 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
         </SheetHeader>
 
         <div className="space-y-6 pb-8">
+          {/* Debug lookup line */}
+          <Collapsible className="border border-border rounded px-3 py-1.5">
+            <CollapsibleTrigger className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors font-mono w-full">
+              <ChevronDown className="h-3 w-3" />
+              Bundle Lookup Debug
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-1 text-[10px] font-mono text-muted-foreground">
+              <p>usageEventId={event.id} → found={hasBundle ? "true" : "false"}</p>
+              <p>surface={n.surface} completeness={n.completeness}</p>
+              {n.bundleType && <p>bundleType={n.bundleType}</p>}
+              {n.certificateHash && <p>certificateHash={n.certificateHash}</p>}
+              {n.artifactPath && <p>artifactPath={n.artifactPath}</p>}
+            </CollapsibleContent>
+          </Collapsible>
+
           {/* Endpoint note */}
           <p className="text-[11px] font-mono text-muted-foreground leading-relaxed border-l-2 border-border pl-3">
             {n.endpointNote}

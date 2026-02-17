@@ -80,7 +80,8 @@ export function normalizeCertifiedRecord(
   const isSuccess = event.status_code >= 200 && event.status_code < 300;
 
   // /api/render returns PNG binary — no inline CER bundle
-  if (surface === "code") {
+  // If a stored bundle exists, use it; otherwise show "none"
+  if (surface === "code" && !bundle) {
     return {
       surface,
       bundleType: null,
@@ -101,7 +102,39 @@ export function normalizeCertifiedRecord(
       rawBundleJson: null,
       completeness: "none",
       endpointNote:
-        "Renderer returns PNG (image/png). Stored record includes output hash and artifact path.",
+        "Renderer returns PNG (image/png). No stored record for this run.",
+      artifactPath: null,
+      artifactMime: null,
+    };
+  }
+
+  // Code surface WITH a stored bundle
+  if (surface === "code" && bundle) {
+    const snap = bundle.snapshot ?? null;
+    const att = bundle.attestation ?? null;
+    const hasCore = !!bundle.certificateHash;
+
+    return {
+      surface,
+      bundleType: bundle.bundleType ?? null,
+      certificateHash: bundle.certificateHash ?? null,
+      protocolVersion: snap?.protocolVersion ?? null,
+      sdkVersion: snap?.sdkVersion ?? null,
+      timestamp: snap?.timestamp ?? bundle.createdAt ?? event.created_at ?? null,
+      executionId: snap?.executionId ?? String(event.id),
+      appId: snap?.appId ?? null,
+      inputHash: snap?.inputHash ?? null,
+      outputHash: snap?.outputHash ?? null,
+      attestationId: att?.attestationId ?? att?.hash ?? null,
+      nodeRuntimeHash: att?.nodeRuntimeHash ?? null,
+      upstreamStatus: event.status_code,
+      durationMs: event.duration_ms,
+      parameters: snap?.parameters ?? null,
+      snapshotJson: snap ? { ...snap } : null,
+      rawBundleJson: bundle ? { ...bundle } : null,
+      completeness: hasCore ? "full" : "partial",
+      endpointNote:
+        "Renderer returns PNG. Stored record includes output hash and artifact path.",
       artifactPath: null,
       artifactMime: null,
     };
