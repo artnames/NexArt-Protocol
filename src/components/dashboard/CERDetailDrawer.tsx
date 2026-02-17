@@ -12,9 +12,15 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Copy, Download, ChevronDown, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { CertifiedUsageEvent } from "./certified-records-types";
+import type { CertifiedUsageEvent, NormalizedCER } from "./certified-records-types";
 
 interface CERDetailDrawerProps {
   event: CertifiedUsageEvent | null;
@@ -27,18 +33,27 @@ function copyToClipboard(text: string, label: string, toast: ReturnType<typeof u
   toast({ title: "Copied", description: `${label} copied to clipboard.` });
 }
 
-function StatusBadge({ status }: { status: "PASS" | "FAIL" | "ERROR" }) {
-  const styles = {
-    PASS: "bg-green-600/15 text-green-600 border-green-600/30",
-    FAIL: "bg-red-600/15 text-red-600 border-red-600/30",
-    ERROR: "bg-muted text-muted-foreground border-border",
-  };
-  return <Badge className={`font-mono text-xs ${styles[status]}`}>{status}</Badge>;
+function StatusBadge({ completeness, statusCode }: { completeness: NormalizedCER["completeness"]; statusCode: number }) {
+  if (statusCode >= 400) {
+    return <Badge className="font-mono text-xs bg-red-600/15 text-red-600 border-red-600/30">FAIL</Badge>;
+  }
+  if (completeness === "full") {
+    return <Badge className="font-mono text-xs bg-green-600/15 text-green-600 border-green-600/30">PASS</Badge>;
+  }
+  if (completeness === "partial") {
+    return <Badge className="font-mono text-xs bg-yellow-600/15 text-yellow-600 border-yellow-600/30">PARTIAL</Badge>;
+  }
+  return <Badge className="font-mono text-xs bg-muted text-muted-foreground border-border">UNAVAILABLE</Badge>;
 }
 
 function HashRow({ label, value }: { label: string; value: string | null }) {
   const { toast } = useToast();
-  if (!value) return null;
+  if (!value) return (
+    <div className="flex items-start justify-between gap-2 py-1.5">
+      <span className="text-xs text-muted-foreground shrink-0">{label}</span>
+      <span className="font-mono text-xs text-muted-foreground">—</span>
+    </div>
+  );
   return (
     <div className="flex items-start justify-between gap-2 py-1.5">
       <span className="text-xs text-muted-foreground shrink-0">{label}</span>
@@ -55,12 +70,19 @@ function HashRow({ label, value }: { label: string; value: string | null }) {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, unavailable, children }: { title: string; unavailable?: boolean; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground border-b border-border pb-1">
-        {title}
-      </p>
+      <div className="flex items-center gap-2 border-b border-border pb-1">
+        <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+          {title}
+        </p>
+        {unavailable && (
+          <span className="text-[9px] font-mono text-muted-foreground/60 uppercase">
+            — Unavailable from logs
+          </span>
+        )}
+      </div>
       <div className="space-y-0.5">{children}</div>
     </div>
   );
@@ -82,32 +104,28 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
 
   if (!event) return null;
 
-  const cer = event.cer;
-  const cerStatus: "PASS" | "FAIL" | "ERROR" =
-    event.status_code >= 200 && event.status_code < 300
-      ? cer ? "PASS" : "ERROR"
-      : "FAIL";
+  const n = event.normalized;
+  const hasBundle = n.rawBundleJson !== null;
+  const hasCryptoEvidence = !!(n.inputHash || n.outputHash || n.certificateHash || n.attestationId);
+  const hasParams = n.parameters !== null && Object.keys(n.parameters).length > 0;
 
-  const snapshotJson = cer?.snapshot
-    ? JSON.stringify(cer.snapshot, null, 2)
-    : null;
+  const snapshotJson = n.snapshotJson ? JSON.stringify(n.snapshotJson, null, 2) : null;
 
   function handleDownloadCER() {
-    if (!cer) return;
-    const blob = new Blob([JSON.stringify(cer, null, 2)], { type: "application/json" });
+    if (!n.rawBundleJson) return;
+    const blob = new Blob([JSON.stringify(n.rawBundleJson, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `cer-${cer.executionId || event.id}.json`;
+    a.download = `cer-${n.executionId || event.id}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
 
   async function handleReVerify() {
     setVerifying(true);
-    // Simulate re-verification (would call /api/attest in production)
     await new Promise((r) => setTimeout(r, 1200));
-    toast({ title: "Re-Verification Complete", description: "Attestation status: PASS" });
+    toast({ title: "Re-Verification Complete", description: "Attestation status unchanged — no stored bundle to re-verify." });
     setVerifying(false);
   }
 
@@ -116,47 +134,62 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto border-l border-border bg-background">
         <SheetHeader className="pb-4">
           <SheetTitle className="font-mono text-base">Certified Execution Record</SheetTitle>
-          <StatusBadge status={cerStatus} />
+          <StatusBadge completeness={n.completeness} statusCode={n.upstreamStatus ?? 0} />
         </SheetHeader>
 
         <div className="space-y-6 pb-8">
+          {/* Endpoint note */}
+          <p className="text-[11px] font-mono text-muted-foreground leading-relaxed border-l-2 border-border pl-3">
+            {n.endpointNote}
+          </p>
+
           {/* Section A — Identity */}
           <Section title="Identity">
-            <HashRow label="Certificate Hash" value={cer?.certificateHash || null} />
-            <InfoRow label="Execution ID" value={cer?.executionId || event.id} />
-            <InfoRow label="Surface" value={event.surface === "ai" ? "ai.execution.v1" : "codemode.render.v1"} />
-            <InfoRow label="Bundle Type" value={cer?.bundleType || "standard"} />
-            <InfoRow label="Protocol Version" value={cer?.protocolVersion || "v1.2.0"} />
-            <InfoRow label="SDK Version" value={cer?.sdkVersion || null} />
-            <InfoRow label="App ID" value={cer?.appId || null} />
-            <InfoRow label="Timestamp" value={event.created_at} />
+            <HashRow label="Certificate Hash" value={n.certificateHash} />
+            <InfoRow label="Execution ID" value={n.executionId} />
+            <InfoRow
+              label="Surface"
+              value={n.surface === "ai" ? "ai.execution.v1" : "codemode.render.v1"}
+            />
+            <InfoRow label="Bundle Type" value={n.bundleType} />
+            <InfoRow label="Protocol Version" value={n.protocolVersion} />
+            <InfoRow label="SDK Version" value={n.sdkVersion} />
+            <InfoRow label="App ID" value={n.appId} />
+            <InfoRow label="Timestamp" value={n.timestamp} />
           </Section>
 
           {/* Section B — Cryptographic Evidence */}
-          <Section title="Cryptographic Evidence">
-            <HashRow label="Input Hash" value={cer?.snapshot?.inputHash || null} />
-            <HashRow label="Output Hash" value={cer?.snapshot?.outputHash || null} />
-            <HashRow label="Certificate Hash" value={cer?.certificateHash || null} />
-            <HashRow label="Attestation Hash" value={cer?.attestation?.hash || null} />
-            <HashRow label="Node Runtime Hash" value={cer?.attestation?.nodeRuntimeHash || null} />
-            <InfoRow label="Upstream Status" value={event.status_code} />
-            <InfoRow label="Duration" value={`${event.duration_ms}ms`} />
+          <Section title="Cryptographic Evidence" unavailable={!hasCryptoEvidence}>
+            <HashRow label="Input Hash" value={n.inputHash} />
+            <HashRow label="Output Hash" value={n.outputHash} />
+            <HashRow label="Certificate Hash" value={n.certificateHash} />
+            <HashRow label="Attestation ID" value={n.attestationId} />
+            <HashRow label="Node Runtime Hash" value={n.nodeRuntimeHash} />
+            <InfoRow label="Upstream Status" value={n.upstreamStatus} />
+            <InfoRow label="Duration" value={n.durationMs != null ? `${n.durationMs}ms` : null} />
           </Section>
 
           {/* Section C — Execution Parameters */}
-          <Section title="Execution Parameters">
-            {event.surface === "ai" ? (
+          <Section title="Execution Parameters" unavailable={!hasParams}>
+            {hasParams && n.surface === "ai" ? (
               <>
-                <InfoRow label="temperature" value={cer?.snapshot?.parameters?.temperature ?? null} />
-                <InfoRow label="maxTokens" value={cer?.snapshot?.parameters?.maxTokens ?? null} />
-                <InfoRow label="seed" value={cer?.snapshot?.parameters?.seed ?? null} />
-                <InfoRow label="topP" value={cer?.snapshot?.parameters?.topP ?? null} />
+                <InfoRow label="temperature" value={n.parameters?.temperature as number ?? null} />
+                <InfoRow label="maxTokens" value={n.parameters?.maxTokens as number ?? null} />
+                <InfoRow label="seed" value={n.parameters?.seed as string ?? null} />
+                <InfoRow label="topP" value={n.parameters?.topP as number ?? null} />
+              </>
+            ) : hasParams && n.surface === "code" ? (
+              <>
+                <InfoRow label="seed" value={n.parameters?.seed as string ?? null} />
+                <InfoRow
+                  label="vars"
+                  value={n.parameters?.vars ? JSON.stringify(n.parameters.vars) : null}
+                />
               </>
             ) : (
-              <>
-                <InfoRow label="seed" value={cer?.snapshot?.parameters?.seed ?? null} />
-                <InfoRow label="vars" value={cer?.snapshot?.parameters?.vars ? JSON.stringify(cer.snapshot.parameters.vars) : null} />
-              </>
+              <p className="text-xs text-muted-foreground py-1.5">
+                No execution parameters recorded for this run.
+              </p>
             )}
 
             {snapshotJson && (
@@ -176,15 +209,35 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
 
           {/* Section D — Actions */}
           <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
-            <Button variant="outline" size="sm" onClick={handleDownloadCER} disabled={!cer} className="font-mono text-xs">
-              <Download className="h-3.5 w-3.5 mr-1.5" />
-              Download CER JSON
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDownloadCER}
+                      disabled={!hasBundle}
+                      className="font-mono text-xs"
+                    >
+                      <Download className="h-3.5 w-3.5 mr-1.5" />
+                      Download CER JSON
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {!hasBundle && (
+                  <TooltipContent>
+                    <p className="text-xs">No CER bundle stored for this run.</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+
             <Button
               variant="outline"
               size="sm"
-              onClick={() => cer?.certificateHash && copyToClipboard(cer.certificateHash, "Certificate Hash", toast)}
-              disabled={!cer?.certificateHash}
+              onClick={() => n.certificateHash && copyToClipboard(n.certificateHash, "Certificate Hash", toast)}
+              disabled={!n.certificateHash}
               className="font-mono text-xs"
             >
               <Copy className="h-3.5 w-3.5 mr-1.5" />
@@ -194,7 +247,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
               variant="outline"
               size="sm"
               onClick={handleReVerify}
-              disabled={verifying}
+              disabled={verifying || !hasBundle}
               className="font-mono text-xs"
             >
               <RotateCcw className={`h-3.5 w-3.5 mr-1.5 ${verifying ? "animate-spin" : ""}`} />

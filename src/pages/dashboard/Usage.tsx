@@ -85,8 +85,8 @@ export default function Usage() {
       if (filters.endpoint !== "all" && e.endpoint !== filters.endpoint) return false;
       if (filters.search) {
         const q = filters.search.toLowerCase();
-        const matchHash = e.cer?.certificateHash?.toLowerCase().includes(q);
-        const matchId = e.cer?.executionId?.toLowerCase().includes(q) || e.id.toLowerCase().includes(q);
+        const matchHash = e.normalized.certificateHash?.toLowerCase().includes(q);
+        const matchId = e.normalized.executionId?.toLowerCase().includes(q) || String(e.id).toLowerCase().includes(q);
         if (!matchHash && !matchId) return false;
       }
       return true;
@@ -247,16 +247,16 @@ export default function Usage() {
                               <TableCell className="text-xs">{event.key_label}</TableCell>
                               <TableCell>{getStatusBadge(event.status_code)}</TableCell>
                               <TableCell>
-                                {event.cer?.certificateHash ? (
+                                {event.normalized.certificateHash ? (
                                   <button
                                     onClick={() => {
-                                      navigator.clipboard.writeText(event.cer!.certificateHash);
+                                      navigator.clipboard.writeText(event.normalized.certificateHash!);
                                       toast({ title: "Copied", description: "Certificate hash copied." });
                                     }}
                                     className="flex items-center gap-1 font-mono text-xs text-foreground hover:text-primary transition-colors"
-                                    title={event.cer.certificateHash}
+                                    title={event.normalized.certificateHash}
                                   >
-                                    {shortenHash(event.cer.certificateHash)}
+                                    {shortenHash(event.normalized.certificateHash)}
                                     <Copy className="h-3 w-3 text-muted-foreground" />
                                   </button>
                                 ) : (
@@ -264,7 +264,7 @@ export default function Usage() {
                                 )}
                               </TableCell>
                               <TableCell className="font-mono text-xs">
-                                {event.cer?.protocolVersion || "—"}
+                                {event.normalized.protocolVersion || "—"}
                               </TableCell>
                               <TableCell className="text-xs">{event.duration_ms}ms</TableCell>
                               <TableCell>
