@@ -1,6 +1,9 @@
-import { Routes, Route, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { lazy, Suspense } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 const Auth = lazy(() => import("@/pages/Auth"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
@@ -34,10 +37,12 @@ export default function AuthGatedRoutes() {
   };
 
   return (
-    <AuthProvider>
-      <Suspense fallback={<Fallback />}>
-        {renderPage()}
-      </Suspense>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Suspense fallback={<Fallback />}>
+          {renderPage()}
+        </Suspense>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
