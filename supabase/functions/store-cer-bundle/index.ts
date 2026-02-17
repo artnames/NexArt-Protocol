@@ -3,34 +3,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-/**
- * store-cer-bundle: Persists a redacted CER bundle for a successful /api/attest run.
- *
- * Auth: Authorization: Bearer <CER_INGEST_SECRET> (shared secret, NOT JWT/service-role).
- *
- * Body:
- *   { usageEventId: string, bundle: object, attestation?: object }
- *
- * Redaction: snapshot.input, snapshot.output, snapshot.prompt are stripped before storage.
- *
- * curl example:
- *   curl -X POST https://<project>.supabase.co/functions/v1/store-cer-bundle \
- *     -H "Authorization: Bearer YOUR_CER_INGEST_SECRET" \
- *     -H "Content-Type: application/json" \
- *     -d '{
- *       "usageEventId": "evt_abc123",
- *       "bundle": {
- *         "bundleType": "cer.ai.execution.v1",
- *         "certificateHash": "sha256-...",
- *         "snapshot": { "input": "REDACTED_BY_FN", "inputHash": "sha256-..." },
- *         "attestation": { "nodeId": "n1", "signature": "sig..." }
- *       }
- *     }'
- */
-
 // ── helpers ──────────────────────────────────────────────────────────
 
-/** Deep-remove keys whose value is `undefined`; convert undefined array items to null. */
 function deepSanitize(val: unknown): unknown {
   if (val === undefined) return null;
   if (val === null || typeof val !== 'object') return val;
@@ -42,7 +16,6 @@ function deepSanitize(val: unknown): unknown {
   return out;
 }
 
-/** Strip sensitive snapshot fields, then deep-sanitize. */
 function redactAndSanitize(bundle: Record<string, unknown>): Record<string, unknown> {
   const copy = JSON.parse(JSON.stringify(bundle));
   if (copy.snapshot && typeof copy.snapshot === 'object') {
@@ -54,8 +27,8 @@ function redactAndSanitize(bundle: Record<string, unknown>): Record<string, unkn
   return deepSanitize(copy) as Record<string, unknown>;
 }
 
-function jsonError(error: string, message: string, status: number) {
-  return new Response(JSON.stringify({ error, message }), {
+function jsonResp(body: Record<string, unknown>, status: number) {
+  return new Response(JSON.stringify(body), {
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
@@ -75,28 +48,78 @@ Deno.serve(async (req) => {
     const ingestSecret = Deno.env.get('CER_INGEST_SECRET');
     if (!ingestSecret) {
       console.error('CER_INGEST_SECRET not configured');
-      return jsonError('CONFIG', 'Server misconfigured', 500);
+      return jsonResp({ ok: false, error: 'CONFIG', message: 'Server misconfigured', upserted: false }, 500);
     }
 
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ') || authHeader.replace('Bearer ', '') !== ingestSecret) {
-      return jsonError('UNAUTHORIZED', 'Invalid or missing ingest secret', 401);
+      return jsonResp({ ok: false, error: 'UNAUTHORIZED', message: 'Invalid or missing ingest secret', upserted: false }, 401);
     }
 
-    // ── Parse + validate body ──
+    // ── Parse body ──
     const body = await req.json();
-    const { usageEventId, bundle, attestation } = body;
 
-    if (!usageEventId || typeof usageEventId !== 'string' || usageEventId.trim() === '') {
-      return jsonError('VALIDATION', 'usageEventId must be a non-empty string', 400);
+    // ── Normalize usageEventId: accept both camelCase and snake_case ──
+    const rawEventId = body.usageEventId ?? body.usage_event_id;
+    if (rawEventId === undefined || rawEventId === null || String(rawEventId).trim() === '') {
+      return jsonResp({
+        ok: false,
+        error: 'VALIDATION',
+        message: 'Missing usageEventId (or usage_event_id): must be a non-empty string or number',
+        upserted: false,
+        usageEventId: null,
+        certificateHash: null,
+      }, 400);
     }
+    const usageEventId = String(rawEventId).trim();
+
+    const { bundle, attestation } = body;
 
     if (!bundle || typeof bundle !== 'object') {
-      return jsonError('VALIDATION', 'bundle must be an object', 400);
+      return jsonResp({
+        ok: false,
+        error: 'VALIDATION',
+        message: 'Missing or invalid bundle: must be an object',
+        upserted: false,
+        usageEventId,
+        certificateHash: null,
+      }, 400);
     }
 
     if (bundle.bundleType !== 'cer.ai.execution.v1') {
-      return jsonError('VALIDATION', `Unsupported bundleType: ${bundle.bundleType}`, 400);
+      return jsonResp({
+        ok: false,
+        error: 'VALIDATION',
+        message: `Missing or unsupported bundle.bundleType: got "${bundle.bundleType ?? '(undefined)'}", expected "cer.ai.execution.v1"`,
+        upserted: false,
+        usageEventId,
+        certificateHash: null,
+      }, 400);
+    }
+
+    const certificateHash = bundle.certificateHash ?? null;
+    if (!certificateHash) {
+      return jsonResp({
+        ok: false,
+        error: 'VALIDATION',
+        message: 'Missing bundle.certificateHash: required for storage',
+        upserted: false,
+        usageEventId,
+        certificateHash: null,
+      }, 400);
+    }
+
+    // ── Numeric event ID for DB ──
+    const eventIdNum = parseInt(usageEventId, 10);
+    if (isNaN(eventIdNum)) {
+      return jsonResp({
+        ok: false,
+        error: 'VALIDATION',
+        message: 'usageEventId must be numeric (or a numeric string)',
+        upserted: false,
+        usageEventId,
+        certificateHash,
+      }, 400);
     }
 
     // ── Redact + sanitize ──
@@ -107,14 +130,6 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
-
-    // usageEventId comes as string from the node; cast to integer for the DB column
-    const eventIdNum = parseInt(usageEventId, 10);
-    if (isNaN(eventIdNum)) {
-      return jsonError('VALIDATION', 'usageEventId must be numeric', 400);
-    }
-
-    const certificateHash = bundle.certificateHash || null;
 
     const { error: upsertError } = await supabaseAdmin
       .from('cer_bundles')
@@ -132,16 +147,20 @@ Deno.serve(async (req) => {
 
     if (upsertError) {
       console.error('Upsert error:', upsertError);
-      return jsonError('DB_UPSERT', upsertError.message, 500);
+      return jsonResp({
+        ok: false,
+        error: 'DB_UPSERT',
+        message: upsertError.message,
+        upserted: false,
+        usageEventId,
+        certificateHash,
+      }, 500);
     }
 
-    return new Response(
-      JSON.stringify({ ok: true, usageEventId, certificateHash }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-    );
+    return jsonResp({ ok: true, usageEventId, certificateHash, upserted: true }, 200);
   } catch (err) {
     const e = err as Error;
     console.error('store-cer-bundle error:', e.message);
-    return jsonError('INTERNAL', e.message, 500);
+    return jsonResp({ ok: false, error: 'INTERNAL', message: e.message, upserted: false }, 500);
   }
 });
