@@ -42,6 +42,65 @@ Deno.serve(async (req) => {
       });
     }
 
+    const token = authHeader.replace('Bearer ', '');
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const isServiceRole = token === serviceRoleKey;
+
+    let userId: string;
+
+    if (isServiceRole) {
+      // Server-to-server call from Railway node — user_id must be in body
+      const body = await req.json();
+      const { usageEventId, bundle, userId: bodyUserId } = body;
+
+      if (!bodyUserId) {
+        return new Response(JSON.stringify({ error: 'VALIDATION', message: 'userId required for service-role calls' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      userId = bodyUserId;
+
+      if (!usageEventId || !bundle) {
+        return new Response(JSON.stringify({ error: 'VALIDATION', message: 'usageEventId and bundle required' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Skip ownership check — service role is trusted
+      const redacted = redactBundle(bundle);
+
+      const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        serviceRoleKey
+      );
+
+      const { error: insertError } = await supabaseAdmin
+        .from('cer_bundles')
+        .upsert({
+          user_id: userId,
+          usage_event_id: usageEventId,
+          certificate_hash: bundle.certificateHash || null,
+          bundle_type: bundle.bundleType || null,
+          attestation_json: bundle.attestation || null,
+          cer_bundle_redacted: redacted,
+        }, { onConflict: 'usage_event_id' });
+
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        return new Response(JSON.stringify({ error: 'DB_INSERT', message: insertError.message }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // User JWT path (dashboard manual calls)
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
@@ -55,6 +114,7 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+    userId = user.id;
 
     const body = await req.json();
     const { usageEventId, bundle } = body;
@@ -77,7 +137,7 @@ Deno.serve(async (req) => {
       const rows = await sql`
         SELECT ue.id FROM usage_events ue
         INNER JOIN api_keys ak ON ue.api_key_id = ak.id
-        WHERE ue.id = ${usageEventId} AND ak.user_id = ${user.id}::uuid
+        WHERE ue.id = ${usageEventId} AND ak.user_id = ${userId}::uuid
         LIMIT 1
       `;
       await sql.end();
@@ -105,7 +165,7 @@ Deno.serve(async (req) => {
     const { error: insertError } = await supabaseAdmin
       .from('cer_bundles')
       .upsert({
-        user_id: user.id,
+        user_id: userId,
         usage_event_id: usageEventId,
         certificate_hash: bundle.certificateHash || null,
         bundle_type: bundle.bundleType || null,
