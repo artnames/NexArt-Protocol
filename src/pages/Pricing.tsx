@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SEOHead from "@/components/seo/SEOHead";
 import { Link, useSearchParams } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
@@ -7,8 +7,8 @@ import PageContent from "@/components/layout/PageContent";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 
 type BillingCycle = "annual" | "monthly";
@@ -88,7 +88,12 @@ const plans: PlanConfig[] = [
 ];
 
 const Pricing = () => {
-  const { user } = useAuth();
+  const [user, setUser] = useState<User | null>(null);
+
+  // Lightweight session check – Pricing is public, no AuthProvider needed
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null));
+  }, []);
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("annual");
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
