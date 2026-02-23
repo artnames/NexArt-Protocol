@@ -112,7 +112,7 @@ const Footer = () => {
           </div>
 
           {/* Follow us */}
-          <div>
+          <div className="md:text-right">
             <h4 className="text-xs font-mono text-foreground mb-4 tracking-wide">Follow us</h4>
             <ul className="space-y-2 text-sm">
               <li>
