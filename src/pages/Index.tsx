@@ -5,63 +5,116 @@ import PageContent from "@/components/layout/PageContent";
 import SEOHead from "@/components/seo/SEOHead";
 import { Button } from "@/components/ui/button";
 
+const useCases = [
+  { title: "AI Agents", desc: "Enforce deterministic decision trails across autonomous agent workflows." },
+  { title: "Financial Simulation", desc: "Guarantee reproducible outcomes for auditable quantitative models." },
+  { title: "Automation Systems", desc: "Eliminate execution drift in compliance-sensitive pipelines." },
+  { title: "Governance Mechanisms", desc: "Provide cryptographic proof of policy execution and rule enforcement." },
+  { title: "Generative Systems", desc: "Ensure canonical, verifiable outputs across rendering environments." },
+];
+
 const Index = () => {
   return (
     <PageLayout>
       <SEOHead
-        title="Deterministic Execution Infrastructure for Generative Systems"
-        description="NexArt is a protocol and SDK for reproducible execution and verifiable outputs. Same inputs. Same outputs. Provable. Replayable."
+        title="Verifiable Execution Infrastructure for AI & Generative Systems"
+        description="NexArt enforces canonical execution semantics — generating deterministic replay and cryptographic proof of execution across environments and time."
       />
 
       <PageHeader
-        title="Deterministic Execution Infrastructure for Generative Systems"
-        subtitle="NexArt is a protocol and SDK for reproducible execution and verifiable outputs."
+        title="Verifiable Execution Infrastructure for AI & Generative Systems"
+        subtitle="Replayable. Auditable. Cryptographically Verifiable."
       />
 
       <PageContent>
         <div className="prose-protocol">
-          <p className="text-lg text-muted-foreground italic">Same inputs. Same outputs. Provable. Replayable.</p>
-
-          <h2>What Problem Does This Solve?</h2>
-
+          {/* Hero body */}
+          <p className="text-lg text-muted-foreground">
+            As AI systems become autonomous, execution must be reproducible and independently verifiable.
+          </p>
           <p>
-            Non-deterministic execution breaks reproducibility. Results drift across devices, runtimes, and time. A
-            system that produces different results under the same inputs is not auditable, archivable, or trustworthy.
+            If the same inputs cannot reliably produce the same outputs, your system cannot be audited.
+          </p>
+          <p>
+            NexArt enforces canonical execution semantics at the protocol level — generating deterministic
+            replay and cryptographic proof of execution across environments and time.
           </p>
 
-          <p>This becomes a problem for:</p>
+          <div className="flex flex-wrap gap-3 my-8">
+            <Button asChild>
+              <Link to="/contact">Run a Determinism Audit</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/protocol">Read the Protocol</Link>
+            </Button>
+          </div>
+
+          {/* Section 2: Operational Risk */}
+          <h2>Where Non-Determinism Becomes Operational Risk</h2>
+
+          <p>Execution drift creates silent risk in:</p>
 
           <ul>
-            <li>
-              <strong>Production systems</strong> — that need consistent results across environments
-            </li>
-            <li>
-              <strong>Auditors &amp; compliance teams</strong> — that require replayable, verifiable evidence trails
-            </li>
-            <li>
-              <strong>Long-term archives</strong> — that depend on stable outputs over decades
-            </li>
+            <li>AI agent decision workflows</li>
+            <li>Compliance-sensitive automation pipelines</li>
+            <li>Financial simulations requiring deterministic replay</li>
+            <li>Model evaluation and benchmarking systems</li>
+            <li>Long-term digital archives</li>
           </ul>
 
-          <p>
-            NexArt solves this by enforcing canonical, deterministic execution at the protocol level. The same seed,
-            parameters, and code will always produce the same output, regardless of where or when it runs.
+          <p className="text-sm text-muted-foreground italic">
+            If reproducibility matters in your domain, determinism is infrastructure — not a feature.
           </p>
 
-          <div className="bg-muted/50 border border-border rounded-md p-5 my-8">
-            <div className="flex flex-col gap-3">
-              <span className="text-sm font-medium">Determinism Reference</span>
-              <p className="text-sm text-muted-foreground mb-3">
-                Public verification harness for NexArt’s deterministic execution and replay guarantees.
+          {/* Section 3: Guarantees */}
+          <h2>Protocol-Level Execution Guarantees</h2>
+
+          <ul>
+            <li>Canonical execution semantics</li>
+            <li>Version-pinned runtime guarantees</li>
+            <li>Deterministic replay across environments</li>
+            <li>Cryptographic output fingerprinting</li>
+            <li>Independent verification via canonical node attestation</li>
+          </ul>
+
+          <p className="text-sm text-muted-foreground italic">
+            This is not logging. This is enforced execution integrity.
+          </p>
+
+          {/* Section 4: How It Works */}
+          <h2>How Verifiable Execution Works</h2>
+
+          <div className="grid gap-6 md:grid-cols-3 my-6">
+            <div className="border border-border rounded-md p-5">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground mb-3">
+                1
+              </span>
+              <p className="text-sm font-medium mb-2">Snapshot</p>
+              <p className="text-sm text-muted-foreground mb-0">
+                Inputs, parameters, runtime version, and environment are normalized and hashed.
               </p>
-              <Button asChild variant="outline" className="w-fit">
-                <a href="https://determinism.nexart.io" target="_blank" rel="noopener noreferrer">
-                  determinism.nexart.io
-                </a>
-              </Button>
+            </div>
+            <div className="border border-border rounded-md p-5">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground mb-3">
+                2
+              </span>
+              <p className="text-sm font-medium mb-2">Canonical Verification</p>
+              <p className="text-sm text-muted-foreground mb-0">
+                The bundle is independently verified by the NexArt canonical node.
+              </p>
+            </div>
+            <div className="border border-border rounded-md p-5">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground mb-3">
+                3
+              </span>
+              <p className="text-sm font-medium mb-2">Proof of Execution</p>
+              <p className="text-sm text-muted-foreground mb-0">
+                A Certified Execution Record (CER) is generated and can be independently validated.
+              </p>
             </div>
           </div>
 
+          {/* Section 5: Protocol vs Applications */}
           <h2>Protocol vs. Applications</h2>
 
           <p>NexArt separates the protocol layer from the application layer.</p>
@@ -78,8 +131,7 @@ const Index = () => {
                 <li>Canonical execution semantics</li>
                 <li>Deterministic, reproducible runs</li>
                 <li>
-                  Enforced via <code className="text-xs bg-muted px-1 py-0.5 rounded">@nexart/codemode-sdk v1.8.4</code>{" "}
-                  (deterministic runtime)
+                  Enforced via <code className="text-xs bg-muted px-1 py-0.5 rounded">@nexart/codemode-sdk v1.8.4</code>
                 </li>
                 <li>Protocol v1.2.0 — Locked &amp; Stable</li>
               </ul>
@@ -105,6 +157,41 @@ const Index = () => {
             Applications are replaceable. The execution layer is the product.
           </p>
 
+          {/* Section 6: Applicable Domains */}
+          <h2>Applicable Domains</h2>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 my-6">
+            {useCases.map((uc) => (
+              <div key={uc.title} className="border border-border rounded-md p-5">
+                <p className="text-sm font-medium mb-1">{uc.title}</p>
+                <p className="text-sm text-muted-foreground mb-0">{uc.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Section 7: Reference Implementation */}
+          <h2>Reference Implementation</h2>
+
+          <p>
+            Generative art was the first domain where NexArt enforced strict deterministic replay across
+            environments — proving canonical execution guarantees in practice.
+          </p>
+
+          <div className="bg-muted/50 border border-border rounded-md p-5 my-6">
+            <div className="flex flex-col gap-3">
+              <span className="text-sm font-medium">Determinism Reference</span>
+              <p className="text-sm text-muted-foreground mb-3">
+                Public verification harness for NexArt's deterministic execution and replay guarantees.
+              </p>
+              <Button asChild variant="outline" className="w-fit">
+                <a href="https://determinism.nexart.io" target="_blank" rel="noopener noreferrer">
+                  determinism.nexart.io
+                </a>
+              </Button>
+            </div>
+          </div>
+
+          {/* For Builders */}
           <h2>For Builders</h2>
 
           <p>
@@ -121,6 +208,7 @@ const Index = () => {
             </Button>
           </div>
 
+          {/* Protocol Status */}
           <h2>Protocol Status</h2>
 
           <div className="bg-primary/10 border border-primary/30 rounded-md p-4 my-6">
@@ -136,6 +224,7 @@ const Index = () => {
             </p>
           </div>
 
+          {/* Reference links */}
           <h2>Reference</h2>
 
           <ul>
@@ -164,6 +253,25 @@ const Index = () => {
               — The creation primitives
             </li>
           </ul>
+
+          {/* Section 5 (enterprise wedge): Determinism Audit CTA */}
+          <div className="bg-muted/50 border border-border rounded-md p-6 my-12">
+            <h2 className="mt-0">Run a Determinism Audit</h2>
+            <p>We analyze one of your AI or generative workflows and evaluate:</p>
+            <ul>
+              <li>Execution drift</li>
+              <li>Replay guarantees</li>
+              <li>Snapshot integrity</li>
+              <li>Version consistency</li>
+              <li>Deterministic reproducibility</li>
+            </ul>
+            <p className="text-sm text-muted-foreground italic mb-4">
+              Understand your reproducibility risk before it becomes a liability.
+            </p>
+            <Button asChild>
+              <Link to="/contact">Request Audit</Link>
+            </Button>
+          </div>
         </div>
       </PageContent>
     </PageLayout>
