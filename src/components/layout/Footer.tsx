@@ -71,36 +71,17 @@ const Footer = () => {
 
           {/* Built with NexArt */}
           <div>
-            <h4 className="text-xs font-mono text-foreground mb-4 tracking-wide">Built with Nexart</h4>
+          <h4 className="text-xs font-mono text-foreground mb-4 tracking-wide">Built on NexArt Protocol</h4>
+            <p className="text-[10px] font-mono text-muted-foreground mb-2 tracking-wide uppercase">Protocol Implementations</p>
             <ul className="space-y-2 text-sm">
               <li>
                 <a
-                  href="https://nexart.xyz"
+                  href="https://nexartaiauditor.xyz"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-caption hover:text-foreground transition-colors"
                 >
-                  NexArt
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://byxcollection.xyz"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-caption hover:text-foreground transition-colors"
-                >
-                  ByX
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://velocity.recanon.xyz"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-caption hover:text-foreground transition-colors"
-                >
-                  Velocity
+                  NexArt AI Auditor
                 </a>
               </li>
               <li>
@@ -111,6 +92,16 @@ const Footer = () => {
                   className="text-caption hover:text-foreground transition-colors"
                 >
                   Recanon
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://velocity.recanon.xyz"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-caption hover:text-foreground transition-colors"
+                >
+                  Velocity
                 </a>
               </li>
               <li>
@@ -131,6 +122,26 @@ const Footer = () => {
                   className="text-caption hover:text-foreground transition-colors"
                 >
                   Frontierra
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://nexart.xyz"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-caption hover:text-foreground transition-colors"
+                >
+                  NexArt
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://byxcollection.xyz"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-caption hover:text-foreground transition-colors"
+                >
+                  ByX
                 </a>
               </li>
             </ul>
