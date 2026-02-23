@@ -143,7 +143,7 @@ const ProtocolCompliance = () => {
                   <span className="text-xs font-mono px-2 py-1 bg-foreground text-background rounded-sm">LEVEL 2</span>
                 </div>
                 <p className="text-caption text-sm mb-2">
-                  Reference application for generative art creation with full SDK and Canonical Renderer integration.
+                  Reference application for deterministic execution with full SDK and Canonical Renderer integration.
                 </p>
                 <p className="text-xs text-muted-foreground">
                   <a href="https://nexart.xyz" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-caption">

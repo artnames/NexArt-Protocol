@@ -9,15 +9,15 @@ const GetStarted = () => {
     <PageLayout>
       <SEOHead
         title="Get Started | Deterministic Execution and Verification"
-        description="Get started with NexArt: deterministic execution semantics, canonical rendering, and hash-based verification for reproducible generative outputs."
+        description="Get started with NexArt: deterministic execution semantics, canonical rendering, and hash-based verification for reproducible AI and generative outputs."
       />
 
-      <PageHeader title="Get Started" subtitle="Deterministic execution, canonical outputs, and verifiable records." />
+      <PageHeader title="Get Started" subtitle="Deterministic execution, canonical outputs, and verifiable execution records." />
 
       <PageContent>
         <article className="prose-protocol">
           <p>
-            NexArt is a deterministic execution protocol for generative systems. Given the same code, seed, and
+            NexArt is a deterministic execution protocol for AI and generative systems. Given the same code, seed, and
             parameters, a compliant runtime produces the same output under pinned semantics.
           </p>
 

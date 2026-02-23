@@ -3,8 +3,8 @@ import { useLocation } from "react-router-dom";
 
 const SITE_URL = "https://nexart.io";
 const SITE_NAME = "NexArt";
-const DEFAULT_TITLE = "NexArt Protocol — Deterministic Generative Media Infrastructure";
-const DEFAULT_DESCRIPTION = "NexArt is a protocol and SDK for reproducible, verifiable generative output — on-chain or off-chain. Same input. Same output. Everywhere.";
+const DEFAULT_TITLE = "NexArt — Verifiable Execution Infrastructure for AI & Generative Systems";
+const DEFAULT_DESCRIPTION = "NexArt enforces canonical execution semantics at the protocol layer — producing deterministic replay and cryptographic proof of execution across environments and time.";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 interface SEOHeadProps {
