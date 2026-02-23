@@ -6,7 +6,7 @@ import SEOHead from "@/components/seo/SEOHead";
 import { Button } from "@/components/ui/button";
 
 const useCases = [
-  { title: "AI Agents", desc: "Enforce deterministic decision trails across autonomous agent workflows." },
+  { title: "AI Agents", desc: "Enforce deterministic decision trails across autonomous, self-directed agent workflows." },
   { title: "Financial Simulation", desc: "Guarantee reproducible outcomes for auditable quantitative models." },
   { title: "Automation Systems", desc: "Eliminate execution drift in compliance-sensitive pipelines." },
   { title: "Governance Mechanisms", desc: "Provide cryptographic proof of policy execution and rule enforcement." },
@@ -33,16 +33,19 @@ const Index = () => {
             As AI systems become autonomous, execution must be reproducible and independently verifiable.
           </p>
           <p>
-            If the same inputs cannot reliably produce the same outputs, your system cannot be audited.
+            If identical inputs can produce different outputs, your system cannot be reliably audited, defended, or archived.
           </p>
           <p>
             NexArt enforces canonical execution semantics at the protocol level — generating deterministic
             replay and cryptographic proof of execution across environments and time.
           </p>
+          <p>
+            This transforms execution from a runtime behavior into verifiable infrastructure.
+          </p>
 
           <div className="flex flex-wrap gap-3 my-8">
             <Button asChild>
-              <Link to="/contact">Run a Determinism Audit</Link>
+              <Link to="/contact">Run a Deterministic Integration Test</Link>
             </Button>
             <Button asChild variant="outline">
               <Link to="/protocol">Read the Protocol</Link>
@@ -51,6 +54,8 @@ const Index = () => {
 
           {/* Section 2: Operational Risk */}
           <h2>Where Non-Determinism Becomes Operational Risk</h2>
+
+          <p>Non-deterministic systems may appear stable — until reproducibility is required.</p>
 
           <p>Execution drift creates silent risk in:</p>
 
@@ -78,7 +83,7 @@ const Index = () => {
           </ul>
 
           <p className="text-sm text-muted-foreground italic">
-            This is not logging. This is enforced execution integrity.
+            This is not observability. It is enforced execution integrity at the protocol layer.
           </p>
 
           {/* Section 4: How It Works */}
@@ -109,7 +114,7 @@ const Index = () => {
               </span>
               <p className="text-sm font-medium mb-2">Proof of Execution</p>
               <p className="text-sm text-muted-foreground mb-0">
-                A Certified Execution Record (CER) is generated and can be independently validated.
+                A Certified Execution Record (CER) is generated and can be independently validated without trusting the originating application.
               </p>
             </div>
           </div>
@@ -154,7 +159,7 @@ const Index = () => {
           </div>
 
           <p className="text-sm text-muted-foreground italic">
-            Applications are replaceable. The execution layer is the product.
+            Applications evolve. The execution layer remains canonical.
           </p>
 
           {/* Section 6: Applicable Domains */}
@@ -175,6 +180,9 @@ const Index = () => {
           <p>
             Generative art was the first domain where NexArt enforced strict deterministic replay across
             environments — proving canonical execution guarantees in practice.
+          </p>
+          <p>
+            It served as a high-variance stress test for protocol-level reproducibility.
           </p>
 
           <div className="bg-muted/50 border border-border rounded-md p-5 my-6">
@@ -254,22 +262,24 @@ const Index = () => {
             </li>
           </ul>
 
-          {/* Section 5 (enterprise wedge): Determinism Audit CTA */}
+          {/* Enterprise Wedge: Deterministic Integration Test */}
           <div className="bg-muted/50 border border-border rounded-md p-6 my-12">
-            <h2 className="mt-0">Run a Determinism Audit</h2>
-            <p>We analyze one of your AI or generative workflows and evaluate:</p>
+            <h2 className="mt-0">Run a Deterministic Integration Test</h2>
+            <p>
+              We evaluate one of your AI or generative workflows using the NexArt deterministic runtime and canonical verification layer.
+            </p>
+            <p>You receive:</p>
             <ul>
-              <li>Execution drift</li>
-              <li>Replay guarantees</li>
-              <li>Snapshot integrity</li>
-              <li>Version consistency</li>
-              <li>Deterministic reproducibility</li>
+              <li>Drift detection results</li>
+              <li>Replay validation</li>
+              <li>Snapshot hash</li>
+              <li>Certified Execution Record (CER)</li>
             </ul>
             <p className="text-sm text-muted-foreground italic mb-4">
-              Understand your reproducibility risk before it becomes a liability.
+              Identify reproducibility risk before it becomes regulatory, financial, or reputational liability.
             </p>
             <Button asChild>
-              <Link to="/contact">Request Audit</Link>
+              <Link to="/contact">Request Integration Test</Link>
             </Button>
           </div>
         </div>
