@@ -36,7 +36,7 @@ const Index = () => {
             If identical inputs can produce different outputs, your system cannot be reliably audited, defended, or archived.
           </p>
           <p>
-            NexArt enforces canonical execution semantics at the protocol level — generating deterministic
+            NexArt enforces canonical execution semantics at the protocol layer — producing deterministic
             replay and cryptographic proof of execution across environments and time.
           </p>
           <p>
@@ -56,6 +56,8 @@ const Index = () => {
           <h2>Where Non-Determinism Becomes Operational Risk</h2>
 
           <p>Non-deterministic systems may appear stable — until reproducibility is required.</p>
+
+          <p>When reproducibility becomes mandatory, it is often too late to retrofit.</p>
 
           <p>Execution drift creates silent risk in:</p>
 
@@ -82,6 +84,9 @@ const Index = () => {
             <li>Independent verification via canonical node attestation</li>
           </ul>
 
+          <p className="text-sm text-muted-foreground italic">
+            These guarantees are enforced at runtime, not inferred after execution.
+          </p>
           <p className="text-sm text-muted-foreground italic">
             This is not observability. It is enforced execution integrity at the protocol layer.
           </p>
@@ -115,6 +120,9 @@ const Index = () => {
               <p className="text-sm font-medium mb-2">Proof of Execution</p>
               <p className="text-sm text-muted-foreground mb-0">
                 A Certified Execution Record (CER) is generated and can be independently validated without trusting the originating application.
+              </p>
+              <p className="text-sm text-muted-foreground mb-0">
+                Verification does not require trusting the originating application or operator.
               </p>
             </div>
           </div>
@@ -188,8 +196,11 @@ const Index = () => {
           <div className="bg-muted/50 border border-border rounded-md p-5 my-6">
             <div className="flex flex-col gap-3">
               <span className="text-sm font-medium">Determinism Reference</span>
-              <p className="text-sm text-muted-foreground mb-3">
+              <p className="text-sm text-muted-foreground mb-1">
                 Public verification harness for NexArt's deterministic execution and replay guarantees.
+              </p>
+              <p className="text-sm text-muted-foreground mb-3">
+                Independently validate protocol-level determinism.
               </p>
               <Button asChild variant="outline" className="w-fit">
                 <a href="https://determinism.nexart.io" target="_blank" rel="noopener noreferrer">
@@ -276,7 +287,7 @@ const Index = () => {
               <li>Certified Execution Record (CER)</li>
             </ul>
             <p className="text-sm text-muted-foreground italic mb-4">
-              Identify reproducibility risk before it becomes regulatory, financial, or reputational liability.
+              Identify reproducibility risk before it becomes regulatory, financial, or reputational exposure.
             </p>
             <Button asChild>
               <Link to="/contact">Request Integration Test</Link>
