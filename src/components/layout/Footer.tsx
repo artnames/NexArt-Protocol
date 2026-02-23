@@ -175,6 +175,9 @@ const Footer = () => {
         </div>
 
         {/* Bottom bar */}
+        <p className="text-sm text-muted-foreground mb-6">
+          NexArt is a deterministic execution protocol that enables reproducible and verifiable AI systems.
+        </p>
         <div className="pt-8 border-t border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs text-muted-foreground">
           <div className="font-mono">
             <p>Code Mode Protocol v1.2.0 · SDK v1.8.4 — Locked & Stable</p>
