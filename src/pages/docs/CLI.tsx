@@ -8,7 +8,7 @@ const CLI = () => {
     <PageLayout>
       <SEOHead 
         title="CLI Documentation"
-        description="NexArt CLI documentation — install, render, and verify deterministic generative artwork."
+        description="NexArt CLI documentation — install, render, and verify deterministic execution outputs."
       />
 
       <PageHeader

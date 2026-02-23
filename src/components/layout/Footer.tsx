@@ -83,6 +83,7 @@ const Footer = () => {
                 >
                   NexArt AI Auditor
                 </a>
+                <span className="block text-[10px] text-muted-foreground">Verifiable AI Execution</span>
               </li>
               <li>
                 <a
@@ -93,6 +94,7 @@ const Footer = () => {
                 >
                   Recanon
                 </a>
+                <span className="block text-[10px] text-muted-foreground">Execution Certification</span>
               </li>
               <li>
                 <a
@@ -103,6 +105,7 @@ const Footer = () => {
                 >
                   Velocity
                 </a>
+                <span className="block text-[10px] text-muted-foreground">Financial Simulation Infrastructure</span>
               </li>
               <li>
                 <a
@@ -113,6 +116,7 @@ const Footer = () => {
                 >
                   Science Lab
                 </a>
+                <span className="block text-[10px] text-muted-foreground">Reproducible Scientific Models</span>
               </li>
               <li>
                 <a
@@ -123,6 +127,7 @@ const Footer = () => {
                 >
                   Frontierra
                 </a>
+                <span className="block text-[10px] text-muted-foreground">Deterministic Game Worlds</span>
               </li>
               <li>
                 <a
@@ -133,6 +138,7 @@ const Footer = () => {
                 >
                   NexArt
                 </a>
+                <span className="block text-[10px] text-muted-foreground">Creative Systems Runtime</span>
               </li>
               <li>
                 <a
@@ -143,6 +149,7 @@ const Footer = () => {
                 >
                   ByX
                 </a>
+                <span className="block text-[10px] text-muted-foreground">Generative Collections</span>
               </li>
             </ul>
           </div>

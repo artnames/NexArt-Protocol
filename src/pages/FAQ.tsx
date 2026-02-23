@@ -272,7 +272,7 @@ const faqItems = [
           </li>
           <li>
             <a href="https://byxcollection.xyz" target="_blank" rel="noreferrer" className="text-link hover:text-link-hover underline underline-offset-2">ByX Collection</a>
-            {" "}— Creative coding and generative systems built on NexArt
+            {" "}— Generative collections built on NexArt
           </li>
           <li>
             <a href="https://frontierra.xyz" target="_blank" rel="noreferrer" className="text-link hover:text-link-hover underline underline-offset-2">Frontierra</a>

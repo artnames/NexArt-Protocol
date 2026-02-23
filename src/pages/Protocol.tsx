@@ -8,21 +8,21 @@ const Protocol = () => {
   return (
     <PageLayout>
       <SEOHead
-        title="NexArt Protocol | Deterministic Execution and Verification Standard"
-        description="NexArt Protocol defines a canonical execution layer for deterministic generative workloads, with replayable verification and stable versioned guarantees. Open to third-party builders."
+        title="NexArt Protocol | Verifiable Execution and Certification Standard"
+        description="NexArt Protocol defines a canonical execution layer for deterministic workloads — AI agents, simulations, automation — with replayable verification and cryptographic proof of execution."
       />
 
       <PageHeader
         title="NexArt Protocol"
-        subtitle="A canonical execution and verification standard for deterministic generative systems."
+        subtitle="A canonical execution and verification standard for deterministic systems."
       />
 
       <PageContent>
         <div className="prose-protocol">
           <p>
-            NexArt is a deterministic execution protocol for generative workloads. This page explains what the protocol
-            is, why it exists, and how it enables verifiable, permanent computation across media, simulations, and
-            research.
+            NexArt is a deterministic execution protocol for AI and generative workloads. This page explains what the protocol
+            is, why it exists, and how it enables verifiable, permanent computation across autonomous systems, simulations,
+            compliance workflows, and research.
           </p>
 
           <section className="mt-12">
@@ -102,8 +102,8 @@ const Protocol = () => {
             <h2>Why Determinism Matters</h2>
 
             <p>
-              For generative systems to be trustworthy, they must be verifiable. Whether for financial auditors,
-              research peers, or collectors, there must be assurance that the output will be the same tomorrow, next
+              For autonomous and generative systems to be trustworthy, they must be verifiable. Whether for compliance auditors,
+              financial regulators, research peers, or governance frameworks, there must be assurance that the output will be the same tomorrow, next
               year, and decades from now.
             </p>
 
