@@ -75,81 +75,39 @@ const Footer = () => {
             <p className="text-[10px] font-mono text-muted-foreground mb-2 tracking-wide uppercase">Protocol Implementations</p>
             <ul className="space-y-2 text-sm">
               <li>
-                <a
-                  href="https://nexartaiauditor.xyz"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-caption hover:text-foreground transition-colors"
-                >
-                  NexArt AI Auditor
+                <a href="https://nexartaiauditor.xyz" target="_blank" rel="noopener noreferrer" className="text-caption hover:text-foreground transition-colors">
+                  NexArt AI Auditor — Verifiable AI Execution
                 </a>
-                <span className="block text-[10px] text-muted-foreground">Verifiable AI Execution</span>
               </li>
               <li>
-                <a
-                  href="https://recanon.xyz"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-caption hover:text-foreground transition-colors"
-                >
-                  Recanon
+                <a href="https://recanon.xyz" target="_blank" rel="noopener noreferrer" className="text-caption hover:text-foreground transition-colors">
+                  Recanon — Execution Certification
                 </a>
-                <span className="block text-[10px] text-muted-foreground">Execution Certification</span>
               </li>
               <li>
-                <a
-                  href="https://velocity.recanon.xyz"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-caption hover:text-foreground transition-colors"
-                >
-                  Velocity
+                <a href="https://velocity.recanon.xyz" target="_blank" rel="noopener noreferrer" className="text-caption hover:text-foreground transition-colors">
+                  Velocity — Financial Simulation
                 </a>
-                <span className="block text-[10px] text-muted-foreground">Financial Simulation</span>
               </li>
               <li>
-                <a
-                  href="https://nexartsciencelab.xyz"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-caption hover:text-foreground transition-colors"
-                >
-                  Science Lab
+                <a href="https://nexartsciencelab.xyz" target="_blank" rel="noopener noreferrer" className="text-caption hover:text-foreground transition-colors">
+                  Science Lab — Reproducible Research
                 </a>
-                <span className="block text-[10px] text-muted-foreground">Reproducible Research</span>
               </li>
               <li>
-                <a
-                  href="https://frontierra.xyz"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-caption hover:text-foreground transition-colors"
-                >
-                  Frontierra
+                <a href="https://frontierra.xyz" target="_blank" rel="noopener noreferrer" className="text-caption hover:text-foreground transition-colors">
+                  Frontierra — Deterministic Game Worlds
                 </a>
-                <span className="block text-[10px] text-muted-foreground">Deterministic Game Worlds</span>
               </li>
               <li>
-                <a
-                  href="https://nexart.xyz"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-caption hover:text-foreground transition-colors"
-                >
-                  NexArt
+                <a href="https://nexart.xyz" target="_blank" rel="noopener noreferrer" className="text-caption hover:text-foreground transition-colors">
+                  NexArt — Creative Systems Runtime
                 </a>
-                <span className="block text-[10px] text-muted-foreground">Creative Systems Runtime</span>
               </li>
               <li>
-                <a
-                  href="https://byxcollection.xyz"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-caption hover:text-foreground transition-colors"
-                >
-                  ByX
+                <a href="https://byxcollection.xyz" target="_blank" rel="noopener noreferrer" className="text-caption hover:text-foreground transition-colors">
+                  ByX — Generative Collections
                 </a>
-                <span className="block text-[10px] text-muted-foreground">Generative Collections</span>
               </li>
             </ul>
           </div>
