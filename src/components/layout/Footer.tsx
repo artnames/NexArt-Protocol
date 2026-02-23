@@ -105,7 +105,7 @@ const Footer = () => {
                 >
                   Velocity
                 </a>
-                <span className="block text-[10px] text-muted-foreground">Financial Simulation Infrastructure</span>
+                <span className="block text-[10px] text-muted-foreground">Financial Simulation</span>
               </li>
               <li>
                 <a
@@ -116,7 +116,7 @@ const Footer = () => {
                 >
                   Science Lab
                 </a>
-                <span className="block text-[10px] text-muted-foreground">Reproducible Scientific Models</span>
+                <span className="block text-[10px] text-muted-foreground">Reproducible Research</span>
               </li>
               <li>
                 <a
