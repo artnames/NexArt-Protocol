@@ -71,8 +71,7 @@ const Footer = () => {
 
           {/* Built with NexArt */}
           <div>
-          <h4 className="text-xs font-mono text-foreground mb-4 tracking-wide">Built on NexArt Protocol</h4>
-            <p className="text-[10px] font-mono text-muted-foreground mb-2 tracking-wide uppercase">Protocol Implementations</p>
+            <h4 className="text-xs font-mono text-foreground mb-4 tracking-wide">Protocol Implementations</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <a href="https://nexartaiauditor.xyz" target="_blank" rel="noopener noreferrer" className="text-caption hover:text-foreground transition-colors">
