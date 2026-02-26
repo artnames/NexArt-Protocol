@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 function jsonResp(body: Record<string, unknown>, status: number) {
@@ -12,17 +12,6 @@ function jsonResp(body: Record<string, unknown>, status: number) {
   });
 }
 
-/**
- * Re-attest a CER bundle to obtain a signed receipt from the NexArt canonical node.
- * 
- * This function:
- * 1. Validates user owns the bundle
- * 2. Sends the redacted bundle to the node's /attest endpoint
- * 3. Stores the returned signed receipt in attestation_json
- * 4. Returns the updated attestation for the UI
- * 
- * Body: { usageEventId: number, nodeUrl?: string }
- */
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -51,6 +40,15 @@ Deno.serve(async (req) => {
       return jsonResp({ ok: false, error: 'VALIDATION', message: 'Missing usageEventId' }, 400);
     }
 
+    // Check required env vars
+    const nodeApiKey = Deno.env.get('NEXART_NODE_API_KEY');
+    if (!nodeApiKey) {
+      console.error('Missing NEXART_NODE_API_KEY environment variable');
+      return jsonResp({ ok: false, error: 'CONFIG', message: 'Missing NEXART_NODE_API_KEY. Please configure this secret.' }, 500);
+    }
+
+    const nodeUrl = Deno.env.get('NEXART_NODE_URL') || 'https://nexart-canonical-renderer-production.up.railway.app';
+
     // Fetch the existing bundle owned by this user
     const { data: row, error: fetchErr } = await supabaseAdmin
       .from('cer_bundles')
@@ -63,43 +61,63 @@ Deno.serve(async (req) => {
       return jsonResp({ ok: false, error: 'NOT_FOUND', message: 'Bundle not found or not owned by user' }, 404);
     }
 
-    // Build the payload to send to the node for re-attestation
+    // Build the full CER bundle payload to send to the node
     const redactedBundle = row.cer_bundle_redacted as Record<string, unknown>;
     const certificateHash = row.certificate_hash;
 
-    // The node URL defaults to the NexArt canonical node
-    const nodeUrl = (body.nodeUrl as string) || 'https://node.nexart.io';
+    // Construct the full bundle as it would appear for verification
+    const fullPayload: Record<string, unknown> = {
+      ...redactedBundle,
+      certificateHash,
+      bundleType: row.bundle_type,
+    };
 
-    // Call the node's /api/re-attest endpoint
-    const attestResp = await fetch(`${nodeUrl}/api/re-attest`, {
+    // Call the node's /api/attest endpoint with auth
+    console.info(`Re-attesting bundle ${usageEventId} via ${nodeUrl}/api/attest`);
+    const attestResp = await fetch(`${nodeUrl}/api/attest`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        bundle: redactedBundle,
-        certificateHash,
-        bundleType: row.bundle_type,
-      }),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${nodeApiKey}`,
+      },
+      body: JSON.stringify(fullPayload),
     });
 
     if (!attestResp.ok) {
-      const errBody = await attestResp.text();
-      console.error('Node re-attest failed:', attestResp.status, errBody);
+      let errBody = '';
+      let errJson: Record<string, unknown> | null = null;
+      try {
+        errBody = await attestResp.text();
+        errJson = JSON.parse(errBody);
+      } catch {
+        // errBody is already set as text
+      }
+      const errMessage = (errJson?.message || errJson?.error || errBody || 'Unknown node error') as string;
+      const requestId = (errJson?.requestId || attestResp.headers.get('x-request-id') || null) as string | null;
+      
+      console.error(`Node re-attest failed: HTTP ${attestResp.status}`, errBody.slice(0, 500));
       return jsonResp({
-        ok: false, error: 'NODE_ERROR',
-        message: `Node returned ${attestResp.status}: ${errBody.slice(0, 200)}`,
+        ok: false,
+        error: 'NODE_ERROR',
+        message: `Node returned HTTP ${attestResp.status}: ${errMessage.slice(0, 300)}`,
+        httpStatus: attestResp.status,
+        requestId,
       }, 502);
     }
 
     const attestResult = await attestResp.json() as Record<string, unknown>;
 
     // Extract the signed receipt fields
-    const signedAttestation = {
+    const signedAttestation: Record<string, unknown> = {
       attestationId: attestResult.attestationId ?? (row.attestation_json as Record<string, unknown>)?.attestationId ?? null,
       hash: attestResult.hash ?? certificateHash,
-      nodeRuntimeHash: attestResult.nodeRuntimeHash ?? (row.attestation_json as Record<string, unknown>)?.nodeRuntimeHash ?? null,
+      nodeRuntimeHash: attestResult.nodeRuntimeHash ?? null,
       receipt: attestResult.receipt ?? null,
       signatureB64Url: attestResult.signatureB64Url ?? null,
       attestorKeyId: attestResult.attestorKeyId ?? attestResult.kid ?? null,
+      attestedAt: attestResult.attestedAt ?? new Date().toISOString(),
+      nodeUrl,
+      protocolVersion: attestResult.protocolVersion ?? null,
     };
 
     // Update the attestation_json in the database
@@ -114,10 +132,12 @@ Deno.serve(async (req) => {
       return jsonResp({ ok: false, error: 'DB_UPDATE', message: updateErr.message }, 500);
     }
 
+    const hasSigned = !!(signedAttestation.receipt && signedAttestation.signatureB64Url && signedAttestation.attestorKeyId);
+
     return jsonResp({
       ok: true,
       attestation: signedAttestation,
-      stamp: signedAttestation.receipt ? 'signed' : 'legacy',
+      stamp: hasSigned ? 'signed' : 'legacy',
     }, 200);
   } catch (err) {
     const e = err as Error;
