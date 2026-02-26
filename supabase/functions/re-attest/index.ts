@@ -47,7 +47,13 @@ Deno.serve(async (req) => {
       return jsonResp({ ok: false, error: 'CONFIG', message: 'Missing NEXART_NODE_API_KEY. Please configure this secret.' }, 500);
     }
 
-    const nodeUrl = Deno.env.get('NEXART_NODE_URL') || 'https://nexart-canonical-renderer-production.up.railway.app';
+    let nodeUrl = (Deno.env.get('NEXART_NODE_URL') || 'https://nexart-canonical-renderer-production.up.railway.app').trim();
+    // Ensure protocol prefix exists
+    if (!nodeUrl.startsWith('http://') && !nodeUrl.startsWith('https://')) {
+      nodeUrl = `https://${nodeUrl}`;
+    }
+    // Remove trailing slash
+    nodeUrl = nodeUrl.replace(/\/+$/, '');
 
     // Fetch the existing bundle owned by this user
     const { data: row, error: fetchErr } = await supabaseAdmin
