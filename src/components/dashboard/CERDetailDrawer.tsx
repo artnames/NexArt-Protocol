@@ -273,8 +273,41 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
       const { data, error } = await supabase.functions.invoke("re-attest", {
         body: { usageEventId: Number(event.id) },
       });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.message || "Re-attestation failed");
+
+      // supabase.functions.invoke wraps non-2xx as error, but data may still contain details
+      if (error) {
+        // Try to get structured error details from the response
+        const errData = data as Record<string, unknown> | null;
+        const httpStatus = errData?.httpStatus ?? "";
+        const requestId = errData?.requestId ?? "";
+        const errMsg = errData?.message ?? error.message ?? "Unknown error";
+        const parts = [
+          httpStatus ? `HTTP ${httpStatus}` : "",
+          String(errMsg).slice(0, 300),
+          requestId ? `(requestId: ${requestId})` : "",
+        ].filter(Boolean).join(" — ");
+
+        toast({
+          variant: "destructive",
+          title: "Re-attestation Failed",
+          description: parts || "Could not reach the attestation node.",
+        });
+        return;
+      }
+
+      if (data?.error) {
+        const parts = [
+          data.httpStatus ? `HTTP ${data.httpStatus}` : "",
+          String(data.message || "Re-attestation failed").slice(0, 300),
+          data.requestId ? `(requestId: ${data.requestId})` : "",
+        ].filter(Boolean).join(" — ");
+        toast({
+          variant: "destructive",
+          title: "Re-attestation Failed",
+          description: parts,
+        });
+        return;
+      }
 
       const newStamp: StampStatus = data.stamp === "signed" ? "signed" : "legacy";
       setReAttestResult({ stamp: newStamp, offlineOk: newStamp === "signed" });
