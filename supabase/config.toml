@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.fetch-cer-bundle]
 verify_jwt = false
+
+[functions.re-attest]
+verify_jwt = false
