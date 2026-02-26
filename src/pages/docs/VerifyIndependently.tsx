@@ -9,7 +9,7 @@ const VerifyIndependently = () => {
     <PageLayout>
       <SEOHead
         title="Verify Independently | NexArt"
-        description="How auditors and third parties verify NexArt CER bundles without trusting a database — local integrity checks, node stamp verification, and browser vs server approaches."
+        description="How auditors and third parties verify NexArt CER bundles without trusting a database, local integrity checks, node stamp verification, and browser vs server approaches."
       />
 
       <PageHeader title="Verify Independently" subtitle="Auditor or third party? Verify without trusting a database." />
