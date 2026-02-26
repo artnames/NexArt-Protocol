@@ -12,6 +12,50 @@ function jsonResp(body: Record<string, unknown>, status: number) {
   });
 }
 
+// --- Canonical JSON + SHA-256 (same rules as @nexart/ai-execution & Recânon) ---
+function canonicalize(value: unknown): string {
+  if (value === null) return "null";
+  if (typeof value === "boolean") return value ? "true" : "false";
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) throw new Error(`Non-finite number: ${value}`);
+    return JSON.stringify(value);
+  }
+  if (typeof value === "string") return JSON.stringify(value);
+  if (Array.isArray(value)) return "[" + value.map(canonicalize).join(",") + "]";
+  if (typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    const entries = Object.keys(obj)
+      .sort()
+      .map((key) => {
+        const val = obj[key];
+        if (val === undefined) return null;
+        return JSON.stringify(key) + ":" + canonicalize(val);
+      })
+      .filter((e) => e !== null);
+    return "{" + entries.join(",") + "}";
+  }
+  throw new Error(`Unsupported type for canonical JSON: ${typeof value}`);
+}
+
+async function sha256Hex(data: string): Promise<string> {
+  const bytes = new TextEncoder().encode(data);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function computeCertificateHash(bundle: Record<string, unknown>): Promise<string> {
+  const hashInput = {
+    bundleType: bundle.bundleType,
+    createdAt: bundle.createdAt,
+    snapshot: bundle.snapshot,
+    version: bundle.version,
+  };
+  const canonical = canonicalize(hashInput);
+  return `sha256:${await sha256Hex(canonical)}`;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -72,12 +116,33 @@ Deno.serve(async (req) => {
     const endpoint = isRedacted ? '/api/stamp' : '/api/attest';
 
     // Build payload: full envelope minus existing attestation (node generates that)
-    const payloadObj: Record<string, unknown> = { ...storedBundle };
+    const payloadObj: Record<string, unknown> = JSON.parse(JSON.stringify(storedBundle));
     delete payloadObj.attestation;
     if (payloadObj.meta && typeof payloadObj.meta === 'object') {
       const meta = { ...(payloadObj.meta as Record<string, unknown>) };
       delete meta.attestation;
       payloadObj.meta = meta;
+    }
+
+    // For redacted bundles: recompute certificateHash over the redacted snapshot
+    // and preserve the original hash in provenance
+    if (isRedacted) {
+      const originalCertificateHash = payloadObj.certificateHash as string | null;
+      const redactedCertificateHash = await computeCertificateHash(payloadObj);
+      payloadObj.certificateHash = redactedCertificateHash;
+
+      // Set provenance metadata
+      const meta = (payloadObj.meta && typeof payloadObj.meta === 'object')
+        ? { ...(payloadObj.meta as Record<string, unknown>) }
+        : {};
+      meta.provenance = {
+        originalCertificateHash: originalCertificateHash ?? null,
+        kind: 'redacted_export',
+        redactedAt: new Date().toISOString(),
+      };
+      payloadObj.meta = meta;
+
+      console.info(`Redacted certificateHash recomputed: ${redactedCertificateHash} (original: ${originalCertificateHash})`);
     }
 
     // Ensure JSON-safe
@@ -143,7 +208,8 @@ Deno.serve(async (req) => {
     };
 
     // Persist signed receipt in attestation_json AND inside bundle.meta.attestation
-    const updatedBundle = JSON.parse(JSON.stringify(storedBundle)) as Record<string, unknown>;
+    // Start from the payload we sent (which has recomputed hash + provenance for redacted)
+    const updatedBundle = JSON.parse(JSON.stringify(payload)) as Record<string, unknown>;
     const meta = (updatedBundle.meta && typeof updatedBundle.meta === 'object')
       ? { ...(updatedBundle.meta as Record<string, unknown>) }
       : {};
@@ -163,12 +229,18 @@ Deno.serve(async (req) => {
     };
     updatedBundle.meta = meta;
 
+    const updateFields: Record<string, unknown> = {
+      attestation_json: signedAttestation,
+      cer_bundle_redacted: updatedBundle,
+    };
+    // Also update the certificate_hash column if we recomputed it
+    if (isRedacted && updatedBundle.certificateHash) {
+      updateFields.certificate_hash = updatedBundle.certificateHash;
+    }
+
     const { error: updateErr } = await supabaseAdmin
       .from('cer_bundles')
-      .update({
-        attestation_json: signedAttestation,
-        cer_bundle_redacted: updatedBundle,
-      })
+      .update(updateFields)
       .eq('usage_event_id', usageEventId)
       .eq('user_id', user.id);
 
