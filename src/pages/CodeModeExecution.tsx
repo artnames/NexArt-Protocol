@@ -16,7 +16,7 @@ const CodeModeExecution = () => {
     <PageLayout>
       <SEOHead 
         title="Code Mode — Creator's Guide"
-        description="The canonical guide for artists, builders, and AI systems writing NexArt Code Mode sketches. Protocol v1.2.0 · SDK v1.8.4 — LOCKED & STABLE."
+        description="The canonical guide for artists, builders, and AI systems writing NexArt Code Mode sketches. Protocol v1.2.0 · SDK v1.9.0 — LOCKED & STABLE."
       />
 
       {/* Header with breadcrumb */}
@@ -50,7 +50,7 @@ const CodeModeExecution = () => {
           <div className="text-body text-sm max-w-2xl mb-6 space-y-1">
             <p className="mb-1">Version: 1.2</p>
             <p className="mb-1">Protocol: NexArt Code Mode Protocol v1.2.0 (LOCKED)</p>
-            <p className="mb-1">SDK: @nexart/codemode-sdk v1.8.4</p>
+            <p className="mb-1">SDK: @nexart/codemode-sdk v1.9.0</p>
             <p className="mb-1">Status: CURRENT · IMPLEMENTED · ENFORCED</p>
             <p className="mb-1">Reference App: nexart.xyz</p>
             <p className="mb-0">Last Updated: January 2026</p>

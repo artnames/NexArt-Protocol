@@ -145,7 +145,7 @@ const BuilderRewards = () => {
               <li>• No claims can be made at this stage.</li>
             </ul>
             <p className="mt-4 text-body text-sm">
-              SDK v1.8.4 continues identity declaration only. Incentives are not active.
+              SDK v1.9.0 continues identity declaration only. Incentives are not active.
             </p>
             <p className="mt-2 text-caption text-sm">
               This page exists to define rules before implementation.

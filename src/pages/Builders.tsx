@@ -42,7 +42,7 @@ const Builders = () => {
 
           <h2>The Canonical SDK</h2>
 
-          <h3>@nexart/codemode-sdk v1.8.4</h3>
+          <h3>@nexart/codemode-sdk v1.9.0</h3>
 
           <p>
             <strong>Role:</strong> Canonical execution runtime for certification and archival
