@@ -306,6 +306,9 @@ export async function verifyStamp(
   // Verify signature
   const signatureBytes = base64UrlToBytes(attestation.signatureB64Url as string);
   const receiptBytes = new TextEncoder().encode(attestation.receipt as string);
+  // Create ArrayBuffer views compatible with WebCrypto
+  const sigBuffer = signatureBytes.buffer.slice(signatureBytes.byteOffset, signatureBytes.byteOffset + signatureBytes.byteLength);
+  const dataBuffer = receiptBytes.buffer.slice(receiptBytes.byteOffset, receiptBytes.byteOffset + receiptBytes.byteLength);
 
   try {
     const valid = await crypto.subtle.verify(
