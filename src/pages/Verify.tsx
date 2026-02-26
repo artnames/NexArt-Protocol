@@ -100,6 +100,11 @@ export default function Verify() {
       const verifyResult = await verifyBundle(parsed);
       setResult(verifyResult);
       setVerifying(false);
+
+      // Restore original fetch
+      if (import.meta.env.DEV && fetchGuard) {
+        globalThis.fetch = fetchGuard;
+      }
     },
     [jsonInput, toast],
   );
