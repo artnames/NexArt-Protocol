@@ -72,6 +72,7 @@ const navGroups = [
 
 // Standalone nav items (not in dropdowns)
 const standaloneItems = [
+  { href: "/verify", label: "Verify" },
   { href: "/pricing", label: "Pricing" },
   { href: "/dashboard", label: "Dashboard" },
 ];
