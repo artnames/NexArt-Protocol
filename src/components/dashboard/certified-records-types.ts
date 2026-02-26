@@ -352,19 +352,14 @@ export async function verifyExportBundle(
   rawBundleJson: Record<string, unknown>,
   displayedCertificateHash: string,
 ): Promise<{ status: "pass" | "fail"; reason: string | null }> {
-  const hashInput = {
-    bundleType: rawBundleJson.bundleType,
-    createdAt: rawBundleJson.createdAt,
-    snapshot: rawBundleJson.snapshot,
-    version: rawBundleJson.version,
-  };
-  const computed = await computeCertificateHash(hashInput);
-  if (computed === displayedCertificateHash) {
+  // Delegate to shared verifier to avoid logic drift
+  const result = await verifyBundleLocal(rawBundleJson);
+  if (result.ok) {
     return { status: "pass", reason: null };
   }
   return {
     status: "fail",
-    reason: `CERTIFICATE_HASH_MISMATCH: computed ${computed}, displayed ${displayedCertificateHash}`,
+    reason: `${result.reason}: ${result.detail || result.explanation}`,
   };
 }
 
