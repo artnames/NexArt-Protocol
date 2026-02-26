@@ -67,45 +67,27 @@ Deno.serve(async (req) => {
       return jsonResp({ ok: false, error: 'NOT_FOUND', message: 'Bundle not found or not owned by user' }, 404);
     }
 
-    // Build the full CER bundle payload to send to the node
+    // Build the attestable core payload — the node expects only
+    // { bundleType, version, createdAt, snapshot, certificateHash }
+    // Sending `meta` or `attestation` causes the node to canonicalize
+    // nested objects that may contain undefined values internally.
     const redactedBundle = row.cer_bundle_redacted as Record<string, unknown>;
+    const snapshot = redactedBundle.snapshot as Record<string, unknown> | undefined;
     const certificateHash = row.certificate_hash;
 
-    // Construct the full bundle
-    const rawPayload = {
-      ...redactedBundle,
-      certificateHash,
-      bundleType: row.bundle_type,
+    const corePayload = {
+      bundleType: row.bundle_type ?? redactedBundle.bundleType ?? null,
+      version: (redactedBundle.version as string) ?? "0.1",
+      createdAt: redactedBundle.createdAt ?? null,
+      snapshot: snapshot ?? null,
+      certificateHash: certificateHash ?? null,
     };
 
-    // Deep-sanitize: JSON round-trip strips undefined keys entirely
-    // (the node's canonical JSON serializer rejects `undefined`)
-    const fullPayload = JSON.parse(JSON.stringify(rawPayload)) as Record<string, unknown>;
+    // JSON round-trip strips any remaining undefined keys
+    const fullPayload = JSON.parse(JSON.stringify(corePayload));
 
-    // Debug: log any keys that were undefined before sanitization
-    function findUndefined(obj: unknown, path: string): string | null {
-      if (obj === undefined) return path;
-      if (obj === null || typeof obj !== 'object') return null;
-      if (Array.isArray(obj)) {
-        for (let i = 0; i < obj.length; i++) {
-          const r = findUndefined(obj[i], `${path}[${i}]`);
-          if (r) return r;
-        }
-        return null;
-      }
-      for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
-        const r = findUndefined(v, `${path}.${k}`);
-        if (r) return r;
-      }
-      return null;
-    }
-    const undefinedPath = findUndefined(rawPayload, 'payload');
-    if (undefinedPath) {
-      console.warn(`Stripped undefined at: ${undefinedPath}`);
-    }
-
-    // Call the node's /api/attest endpoint with auth
     console.info(`Re-attesting bundle ${usageEventId} via ${nodeUrl}/api/attest`);
+    console.info(`Payload keys: ${Object.keys(fullPayload).join(', ')}`);
     const attestResp = await fetch(`${nodeUrl}/api/attest`, {
       method: 'POST',
       headers: {
