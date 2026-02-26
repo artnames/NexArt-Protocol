@@ -449,7 +449,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
           <Section title="Stamp Status">
             <div className="flex items-center justify-between py-1.5">
               <span className="text-xs text-muted-foreground">Status</span>
-              <StampStatusBadge status={stampStatus} />
+              <StampStatusBadge status={stampStatus} offlineVerifiable={reAttestResult?.offlineOk} />
             </div>
             {reAttestResult?.offlineOk && (
               <div className="flex items-center gap-1.5 py-1">
