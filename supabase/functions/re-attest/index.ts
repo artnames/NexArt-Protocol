@@ -67,16 +67,28 @@ Deno.serve(async (req) => {
       return jsonResp({ ok: false, error: 'NOT_FOUND', message: 'Bundle not found or not owned by user' }, 404);
     }
 
+    // Deep-sanitize: replace undefined with null to prevent "Unsupported type for canonical JSON: undefined"
+    function sanitize(obj: unknown): unknown {
+      if (obj === undefined) return null;
+      if (obj === null || typeof obj !== 'object') return obj;
+      if (Array.isArray(obj)) return obj.map(item => sanitize(item === undefined ? null : item));
+      const result: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+        result[k] = sanitize(v === undefined ? null : v);
+      }
+      return result;
+    }
+
     // Build the full CER bundle payload to send to the node
     const redactedBundle = row.cer_bundle_redacted as Record<string, unknown>;
     const certificateHash = row.certificate_hash;
 
     // Construct the full bundle as it would appear for verification
-    const fullPayload: Record<string, unknown> = {
+    const fullPayload = sanitize({
       ...redactedBundle,
       certificateHash,
       bundleType: row.bundle_type,
-    };
+    }) as Record<string, unknown>;
 
     // Call the node's /api/attest endpoint with auth
     console.info(`Re-attesting bundle ${usageEventId} via ${nodeUrl}/api/attest`);
