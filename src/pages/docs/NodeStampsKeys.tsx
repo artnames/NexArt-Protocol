@@ -12,10 +12,7 @@ const NodeStampsKeys = () => {
         description="How NexArt attestation receipts are signed, how verifiers fetch public keys, and how key rotation works."
       />
 
-      <PageHeader
-        title="Node Stamps & Keys"
-        subtitle="How receipts are signed and how verifiers fetch keys."
-      />
+      <PageHeader title="Node Stamps & Keys" subtitle="How receipts are signed and how verifiers fetch keys." />
 
       <PageContent>
         <article className="prose-protocol prose-spec">
@@ -23,22 +20,53 @@ const NodeStampsKeys = () => {
           <nav className="mb-10 pb-6 border-b border-border">
             <p className="text-xs font-mono uppercase tracking-wide text-caption mb-3">On this page</p>
             <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm list-none pl-0">
-              <li><a href="#minimum-integration" className="text-body underline underline-offset-2 hover:text-foreground">Minimum Integration</a></li>
-              <li><a href="#receipt-fields" className="text-body underline underline-offset-2 hover:text-foreground">Receipt Fields</a></li>
-              <li><a href="#node-keys-endpoint" className="text-body underline underline-offset-2 hover:text-foreground">Node Keys Endpoint</a></li>
-              <li><a href="#key-rotation" className="text-body underline underline-offset-2 hover:text-foreground">Key Rotation</a></li>
-              <li><a href="#troubleshooting" className="text-body underline underline-offset-2 hover:text-foreground">Troubleshooting</a></li>
+              <li>
+                <a href="#minimum-integration" className="text-body underline underline-offset-2 hover:text-foreground">
+                  Minimum Integration
+                </a>
+              </li>
+              <li>
+                <a href="#receipt-fields" className="text-body underline underline-offset-2 hover:text-foreground">
+                  Receipt Fields
+                </a>
+              </li>
+              <li>
+                <a href="#node-keys-endpoint" className="text-body underline underline-offset-2 hover:text-foreground">
+                  Node Keys Endpoint
+                </a>
+              </li>
+              <li>
+                <a href="#key-rotation" className="text-body underline underline-offset-2 hover:text-foreground">
+                  Key Rotation
+                </a>
+              </li>
+              <li>
+                <a href="#troubleshooting" className="text-body underline underline-offset-2 hover:text-foreground">
+                  Troubleshooting
+                </a>
+              </li>
             </ul>
           </nav>
 
           {/* Minimum integration box */}
           <section id="minimum-integration">
             <div className="bg-muted/50 border border-border rounded-md p-5 my-6">
-              <p className="text-xs font-mono uppercase tracking-wide text-caption mb-3">Minimum Integration — 3 Steps</p>
+              <p className="text-xs font-mono uppercase tracking-wide text-caption mb-3">
+                Minimum Integration — 3 Steps
+              </p>
               <ol className="text-sm text-body space-y-2 pl-5 mb-0">
-                <li><strong>Extract receipt</strong> — Use <code>getAttestationReceipt(bundle)</code> to get the normalized receipt.</li>
-                <li><strong>Fetch node keys</strong> — Call <code>fetchNodeKeys(nodeUrl)</code> to get the public key document.</li>
-                <li><strong>Verify signature</strong> — Use <code>verifyBundleAttestation(bundle, {"{ nodeUrl }"})</code> for the full check.</li>
+                <li>
+                  <strong>Extract receipt</strong> — Use <code>getAttestationReceipt(bundle)</code> to get the
+                  normalized receipt.
+                </li>
+                <li>
+                  <strong>Fetch node keys</strong> — Call <code>fetchNodeKeys(nodeUrl)</code> to get the public key
+                  document.
+                </li>
+                <li>
+                  <strong>Verify signature</strong> — Use <code>verifyBundleAttestation(bundle, {"{ nodeUrl }"})</code>{" "}
+                  for the full check.
+                </li>
               </ol>
             </div>
           </section>
@@ -60,32 +88,102 @@ const NodeStampsKeys = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td><code>attestationId</code></td><td><code>string</code></td><td>Unique ID of this attestation event</td></tr>
-                  <tr><td><code>certificateHash</code></td><td><code>string</code></td><td>Must match <code>bundle.certificateHash</code></td></tr>
-                  <tr><td><code>nodeRuntimeHash</code></td><td><code>string</code></td><td>Hash of the node's runtime state at attestation time</td></tr>
-                  <tr><td><code>protocolVersion</code></td><td><code>string</code></td><td>Protocol version the node used for verification</td></tr>
-                  <tr><td><code>nodeId</code></td><td><code>string?</code></td><td>Identifier of the attestation node</td></tr>
-                  <tr><td><code>attestedAt</code></td><td><code>string?</code></td><td>ISO 8601 timestamp of attestation</td></tr>
-                  <tr><td><code>attestorKeyId</code></td><td><code>string?</code></td><td><code>kid</code> of the Ed25519 signing key (v0.5.0+)</td></tr>
-                  <tr><td><code>signatureB64Url</code></td><td><code>string?</code></td><td>Base64url-encoded Ed25519 signature (v0.5.0+)</td></tr>
+                  <tr>
+                    <td>
+                      <code>attestationId</code>
+                    </td>
+                    <td>
+                      <code>string</code>
+                    </td>
+                    <td>Unique ID of this attestation event</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <code>certificateHash</code>
+                    </td>
+                    <td>
+                      <code>string</code>
+                    </td>
+                    <td>
+                      Must match <code>bundle.certificateHash</code>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <code>nodeRuntimeHash</code>
+                    </td>
+                    <td>
+                      <code>string</code>
+                    </td>
+                    <td>Hash of the node's runtime state at attestation time</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <code>protocolVersion</code>
+                    </td>
+                    <td>
+                      <code>string</code>
+                    </td>
+                    <td>Protocol version the node used for verification</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <code>nodeId</code>
+                    </td>
+                    <td>
+                      <code>string?</code>
+                    </td>
+                    <td>Identifier of the attestation node</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <code>attestedAt</code>
+                    </td>
+                    <td>
+                      <code>string?</code>
+                    </td>
+                    <td>ISO 8601 timestamp of attestation</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <code>attestorKeyId</code>
+                    </td>
+                    <td>
+                      <code>string?</code>
+                    </td>
+                    <td>
+                      <code>kid</code> of the Ed25519 signing key (v0.5.0+)
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <code>signatureB64Url</code>
+                    </td>
+                    <td>
+                      <code>string?</code>
+                    </td>
+                    <td>Base64url-encoded Ed25519 signature (v0.5.0+)</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
 
-            <pre className="spec-code"><code>{`import { getAttestationReceipt } from '@nexart/ai-execution';
+            <pre className="spec-code">
+              <code>{`import { getAttestationReceipt } from '@nexart/ai-execution';
 
 const receipt = getAttestationReceipt(bundle);
 if (receipt) {
   console.log(receipt.attestationId);
   console.log(receipt.attestorKeyId);    // "key-2025-01"
   console.log(receipt.signatureB64Url);  // "aDEKyu...Q"
-}`}</code></pre>
+}`}</code>
+            </pre>
 
             <div className="bg-muted/50 border border-border rounded-md p-4 my-6">
               <p className="text-sm text-muted-foreground mb-0">
                 <strong>Multiple layouts supported:</strong> <code>getAttestationReceipt()</code> extracts receipts from
-                both top-level bundle fields and <code>meta.attestation</code>, depending on the producer.
-                The returned object is always normalized to the same <code>AttestationReceipt</code> shape.
+                both top-level bundle fields and <code>meta.attestation</code>, depending on the producer. The returned
+                object is always normalized to the same <code>AttestationReceipt</code> shape.
               </p>
             </div>
           </section>
@@ -93,11 +191,11 @@ if (receipt) {
           {/* Node keys endpoint */}
           <section id="node-keys-endpoint">
             <h2>Node Keys Endpoint</h2>
-            <p>
-              Every attestation node publishes its public keys at a well-known URL:
-            </p>
+            <p>Every attestation node publishes its public keys at a well-known URL:</p>
 
-            <pre className="spec-code"><code>{`GET {nodeUrl}/.well-known/nexart-node.json`}</code></pre>
+            <pre className="spec-code">
+              <code>{`GET {nodeUrl}/.well-known/nexart-node.json`}</code>
+            </pre>
 
             <p>
               <strong>Live endpoint:</strong>{" "}
@@ -125,24 +223,35 @@ if (receipt) {
                 <tbody>
                   <tr>
                     <td>JWK</td>
-                    <td><code>key.publicKeyJwk</code></td>
-                    <td>Web Crypto API (<code>crypto.subtle.importKey</code>)</td>
+                    <td>
+                      <code>key.publicKeyJwk</code>
+                    </td>
+                    <td>
+                      Web Crypto API (<code>crypto.subtle.importKey</code>)
+                    </td>
                   </tr>
                   <tr>
                     <td>SPKI (Base64)</td>
-                    <td><code>key.publicKeySpkiB64</code></td>
-                    <td>Node.js <code>crypto.createPublicKey</code></td>
+                    <td>
+                      <code>key.publicKeySpkiB64</code>
+                    </td>
+                    <td>
+                      Node.js <code>crypto.createPublicKey</code>
+                    </td>
                   </tr>
                   <tr>
                     <td>Raw (Base64url)</td>
-                    <td><code>key.publicKey</code></td>
+                    <td>
+                      <code>key.publicKey</code>
+                    </td>
                     <td>Direct 32-byte Ed25519 public key</td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
-            <pre className="spec-code"><code>{`import { fetchNodeKeys, selectNodeKey } from '@nexart/ai-execution';
+            <pre className="spec-code">
+              <code>{`import { fetchNodeKeys, selectNodeKey } from '@nexart/ai-execution';
 
 const doc = await fetchNodeKeys(
   'https://nexart-canonical-renderer-production.up.railway.app'
@@ -155,13 +264,16 @@ console.log(key.publicKeyJwk);
 // { kty: "OKP", crv: "Ed25519", x: "<base64url>" }
 
 console.log(key.publicKey);
-// "<base64url-encoded 32-byte Ed25519 public key>"`}</code></pre>
+// "<base64url-encoded 32-byte Ed25519 public key>"`}</code>
+            </pre>
 
             <div className="bg-muted/50 border border-border rounded-md p-4 my-6">
               <p className="text-sm text-muted-foreground mb-0">
-                <strong><code>selectNodeKey</code> selection order:</strong> explicit <code>kid</code> argument →
-                {" "}<code>activeKid</code> from the node document → first key in the array.
-                Always pass <code>receipt.attestorKeyId</code> when verifying a specific receipt.
+                <strong>
+                  <code>selectNodeKey</code> selection order:
+                </strong>{" "}
+                explicit <code>kid</code> argument → <code>activeKid</code> from the node document → first key in the
+                array. Always pass <code>receipt.attestorKeyId</code> when verifying a specific receipt.
               </p>
             </div>
           </section>
@@ -175,10 +287,19 @@ console.log(key.publicKey);
             </p>
 
             <ul>
-              <li><code>activeKid</code> — The <code>kid</code> of the key used for new attestations</li>
-              <li>Historical keys remain listed with their <code>kid</code> for backward-compatible verification</li>
-              <li><code>selectNodeKey(doc)</code> defaults to <code>activeKid</code> when no <code>kid</code> is specified</li>
-              <li>When verifying an old receipt, pass its <code>attestorKeyId</code> to <code>selectNodeKey(doc, kid)</code></li>
+              <li>
+                <code>activeKid</code> — The <code>kid</code> of the key used for new attestations
+              </li>
+              <li>
+                Historical keys remain listed with their <code>kid</code> for backward-compatible verification
+              </li>
+              <li>
+                <code>selectNodeKey(doc)</code> defaults to <code>activeKid</code> when no <code>kid</code> is specified
+              </li>
+              <li>
+                When verifying an old receipt, pass its <code>attestorKeyId</code> to{" "}
+                <code>selectNodeKey(doc, kid)</code>
+              </li>
             </ul>
           </section>
 
@@ -199,26 +320,41 @@ console.log(key.publicKey);
                 <tbody>
                   <tr>
                     <td>No receipt in bundle</td>
-                    <td><code>ATTESTATION_MISSING</code></td>
+                    <td>
+                      <code>ATTESTATION_MISSING</code>
+                    </td>
                     <td>Bundle was never attested, or attested before v0.5.0</td>
                     <td>Re-attest with current SDK, or accept local-only verification</td>
                   </tr>
                   <tr>
                     <td>Signature fails</td>
-                    <td><code>ATTESTATION_INVALID_SIGNATURE</code></td>
+                    <td>
+                      <code>ATTESTATION_INVALID_SIGNATURE</code>
+                    </td>
                     <td>Receipt was modified after signing</td>
                     <td>Obtain a fresh copy of the bundle</td>
                   </tr>
                   <tr>
                     <td>Key not found</td>
-                    <td><code>ATTESTATION_KEY_NOT_FOUND</code></td>
-                    <td>The <code>kid</code> in the receipt doesn't match any key in the node document</td>
-                    <td>Verify you are querying the same node that issued the receipt (<code>nodeUrl</code> must match the attesting node). Historical keys should remain published; if missing, contact the node operator</td>
+                    <td>
+                      <code>ATTESTATION_KEY_NOT_FOUND</code>
+                    </td>
+                    <td>
+                      The <code>kid</code> in the receipt doesn't match any key in the node document
+                    </td>
+                    <td>
+                      Verify you are querying the same node that issued the receipt (<code>nodeUrl</code> must match the
+                      attesting node). Historical keys should remain published; if missing, contact the node operator
+                    </td>
                   </tr>
                   <tr>
                     <td>Key format unsupported</td>
-                    <td><code>ATTESTATION_KEY_FORMAT_UNSUPPORTED</code></td>
-                    <td>Key has wrong <code>crv</code> or missing fields</td>
+                    <td>
+                      <code>ATTESTATION_KEY_FORMAT_UNSUPPORTED</code>
+                    </td>
+                    <td>
+                      Key has wrong <code>crv</code> or missing fields
+                    </td>
                     <td>Report to node operator — key document is malformed</td>
                   </tr>
                 </tbody>
@@ -228,8 +364,9 @@ console.log(key.publicKey);
             <div className="bg-muted/50 border border-border rounded-md p-4 my-6">
               <p className="text-sm text-muted-foreground mb-0">
                 <strong>"Stamp incomplete"</strong> is not an error. It means the bundle has legacy attestation fields
-                (pre-v0.5.0) without a signed receipt — these may appear at the top level or under <code>meta.attestation</code>.
-                Local integrity verification still works; only the node signature check is unavailable.
+                (pre-v0.5.0) without a signed receipt, these may appear at the top level or under{" "}
+                <code>meta.attestation</code>. Local integrity verification still works; only the node signature check
+                is unavailable.
               </p>
             </div>
           </section>
