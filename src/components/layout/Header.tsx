@@ -16,6 +16,15 @@ const navGroups = [
     ],
   },
   {
+    label: "Certification",
+    items: [
+      { href: "/docs/certification/code-mode", label: "Code Mode" },
+      { href: "/docs/certification/ai-execution", label: "AI Execution" },
+      { href: "/docs/certification/verify", label: "Verify Independently" },
+      { href: "/docs/certification/node-stamps", label: "Node Stamps & Keys" },
+    ],
+  },
+  {
     label: "Protocol",
     items: [
       { href: "/", label: "Home" },

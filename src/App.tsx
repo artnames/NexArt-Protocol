@@ -43,6 +43,10 @@ const Terms = lazy(() => import("./pages/Terms"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const AIExecutionIntegrity = lazy(() => import("./pages/protocol/AIExecutionIntegrity"));
 const AIExecutionDemo = lazy(() => import("./pages/demos/AIExecutionDemo"));
+const CodeModeCertification = lazy(() => import("./pages/docs/CodeModeCertification"));
+const AIExecutionCertification = lazy(() => import("./pages/docs/AIExecutionCertification"));
+const VerifyIndependently = lazy(() => import("./pages/docs/VerifyIndependently"));
+const NodeStampsKeys = lazy(() => import("./pages/docs/NodeStampsKeys"));
 
 // Auth-gated routes (heavy: AuthProvider + dashboard)
 const AuthGatedRoutes = lazy(() => import("./components/routing/AuthGatedRoutes"));
@@ -98,6 +102,10 @@ const App = () => (
               <Route path="/faq" element={<FAQ />} />
               <Route path="/protocol/ai-execution-integrity" element={<AIExecutionIntegrity />} />
               <Route path="/demos/ai-execution" element={<AIExecutionDemo />} />
+              <Route path="/docs/certification/code-mode" element={<CodeModeCertification />} />
+              <Route path="/docs/certification/ai-execution" element={<AIExecutionCertification />} />
+              <Route path="/docs/certification/verify" element={<VerifyIndependently />} />
+              <Route path="/docs/certification/node-stamps" element={<NodeStampsKeys />} />
 
               {/* Auth-gated routes: AuthProvider only mounts here */}
               <Route path="/auth" element={<AuthGatedRoutes />} />
