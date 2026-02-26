@@ -12,79 +12,12 @@ function jsonResp(body: Record<string, unknown>, status: number) {
   });
 }
 
-function findFirstUndefinedPath(value: unknown, basePath = 'payload'): string | null {
-  if (value === undefined) return basePath;
-  if (value === null || typeof value !== 'object') return null;
-
-  if (Array.isArray(value)) {
-    for (let i = 0; i < value.length; i += 1) {
-      const found = findFirstUndefinedPath(value[i], `${basePath}[${i}]`);
-      if (found) return found;
-    }
-    return null;
-  }
-
-  for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
-    const found = findFirstUndefinedPath(child, `${basePath}.${key}`);
-    if (found) return found;
-  }
-
-  return null;
-}
-
-function localDeepSanitize(value: unknown): unknown {
-  if (value === undefined) return undefined;
-  if (value === null || typeof value !== 'object') return value;
-
-  if (Array.isArray(value)) {
-    const out: unknown[] = [];
-    for (const item of value) {
-      const sanitized = localDeepSanitize(item);
-      if (sanitized !== undefined) out.push(sanitized);
-    }
-    return out;
-  }
-
-  const out: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-    const sanitized = localDeepSanitize(v);
-    if (sanitized !== undefined) out[k] = sanitized;
-  }
-  return out;
-}
-
-let sdkSanitizer: ((value: unknown) => unknown) | null | undefined = undefined;
-
-async function sanitizeForAttestationCompat(value: unknown): Promise<unknown> {
-  if (sdkSanitizer === undefined) {
-    try {
-      const mod = await import("npm:@nexart/ai-execution");
-      sdkSanitizer = typeof mod.sanitizeForAttestation === 'function'
-        ? (mod.sanitizeForAttestation as (input: unknown) => unknown)
-        : null;
-    } catch {
-      sdkSanitizer = null;
-    }
-  }
-
-  if (sdkSanitizer) {
-    try {
-      return sdkSanitizer(value);
-    } catch (err) {
-      console.warn('sanitizeForAttestation failed; using local fallback', (err as Error).message);
-    }
-  }
-
-  return localDeepSanitize(value);
-}
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Auth: require user JWT
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
@@ -106,11 +39,9 @@ Deno.serve(async (req) => {
       return jsonResp({ ok: false, error: 'VALIDATION', message: 'Missing usageEventId' }, 400);
     }
 
-    // Check required env vars
     const nodeApiKey = Deno.env.get('NEXART_NODE_API_KEY');
     if (!nodeApiKey) {
-      console.error('Missing NEXART_NODE_API_KEY environment variable');
-      return jsonResp({ ok: false, error: 'CONFIG', message: 'Missing NEXART_NODE_API_KEY. Please configure this secret.' }, 500);
+      return jsonResp({ ok: false, error: 'CONFIG', message: 'Missing NEXART_NODE_API_KEY.' }, 500);
     }
 
     let nodeUrl = (Deno.env.get('NEXART_NODE_URL') || 'https://nexart-canonical-renderer-production.up.railway.app').trim();
@@ -131,39 +62,33 @@ Deno.serve(async (req) => {
       return jsonResp({ ok: false, error: 'NOT_FOUND', message: 'Bundle not found or not owned by user' }, 404);
     }
 
-    const redactedBundle = row.cer_bundle_redacted as Record<string, unknown>;
-    const snapshot = redactedBundle.snapshot as Record<string, unknown> | undefined;
-    const certificateHash = row.certificate_hash;
+    // The stored redacted bundle IS the full envelope the node expects.
+    // It already has sensitive fields (input/output/prompt) removed by store-cer-bundle.
+    // We send it as-is, only stripping any existing attestation to avoid recursion.
+    const storedBundle = row.cer_bundle_redacted as Record<string, unknown>;
 
-    // Only send attestable core fields to node
-    const corePayload = {
-      bundleType: row.bundle_type ?? redactedBundle.bundleType ?? null,
-      version: (redactedBundle.version as string) ?? '0.1',
-      createdAt: redactedBundle.createdAt ?? null,
-      snapshot: snapshot ?? null,
-      certificateHash: certificateHash ?? null,
-    };
-
-    const firstUndefinedPath = findFirstUndefinedPath(corePayload);
-    const sdkSanitized = await sanitizeForAttestationCompat(corePayload);
-    const payload = JSON.parse(JSON.stringify(sdkSanitized));
-    const postSanitizeUndefinedPath = findFirstUndefinedPath(payload);
-
-    if (postSanitizeUndefinedPath) {
-      return jsonResp({
-        ok: false,
-        error: 'BAD_PAYLOAD',
-        message: 'Payload still contains undefined after sanitization',
-        firstUndefinedPath: postSanitizeUndefinedPath,
-      }, 400);
+    // Build the payload: full bundle minus attestation fields (node generates those)
+    const payloadObj: Record<string, unknown> = { ...storedBundle };
+    // Remove attestation-related fields that the node produces (not inputs)
+    delete payloadObj.attestation;
+    if (payloadObj.meta && typeof payloadObj.meta === 'object') {
+      const meta = { ...(payloadObj.meta as Record<string, unknown>) };
+      delete meta.attestation;
+      payloadObj.meta = meta;
     }
 
+    // Ensure JSON-safe (strip any undefined remnants)
+    const payload = JSON.parse(JSON.stringify(payloadObj));
+
+    const payloadKeys = Object.keys(payload);
+    const snapshotKeys = payload.snapshot ? Object.keys(payload.snapshot) : [];
     const payloadJson = JSON.stringify(payload);
     const payloadByteSize = new TextEncoder().encode(payloadJson).byteLength;
 
     console.info(`Re-attesting bundle ${usageEventId} via ${nodeUrl}/api/attest`);
-    console.info(`bundleType=${String(corePayload.bundleType)} certificateHash=${String(corePayload.certificateHash)}`);
-    console.info(`payloadByteSize=${payloadByteSize} firstUndefinedPath=${firstUndefinedPath ?? 'null'}`);
+    console.info(`bundleType=${payload.bundleType} certificateHash=${payload.certificateHash}`);
+    console.info(`payloadKeys=[${payloadKeys.join(',')}] snapshotKeys=[${snapshotKeys.join(',')}]`);
+    console.info(`payloadByteSize=${payloadByteSize}`);
 
     const attestResp = await fetch(`${nodeUrl}/api/attest`, {
       method: 'POST',
@@ -180,14 +105,16 @@ Deno.serve(async (req) => {
       try {
         errBody = await attestResp.text();
         errJson = JSON.parse(errBody);
-      } catch {
-        // keep raw text body
-      }
+      } catch { /* keep raw */ }
 
-      const upstreamMessage = (errJson?.message || errJson?.error || errBody || 'Unknown node error') as string;
+      const upstreamMessage = (errJson?.message || errJson?.error || errBody || 'Unknown') as string;
       const requestId = (errJson?.requestId || attestResp.headers.get('x-request-id') || null) as string | null;
 
-      console.error(`Node re-attest failed: HTTP ${attestResp.status}`, upstreamMessage.slice(0, 500));
+      console.error(`Node re-attest failed: HTTP ${attestResp.status}`, errBody.slice(0, 2000));
+      console.error(`Sent payload keys: [${payloadKeys.join(',')}]`);
+      console.error(`Sent snapshot keys: [${snapshotKeys.join(',')}]`);
+      console.error(`Payload preview: ${payloadJson.slice(0, 1500)}`);
+
       return jsonResp({
         ok: false,
         error: 'NODE_ERROR',
@@ -195,17 +122,16 @@ Deno.serve(async (req) => {
         httpStatus: attestResp.status,
         upstreamStatus: attestResp.status,
         upstreamMessage: upstreamMessage.slice(0, 500),
-        firstUndefinedPath,
         requestId,
       }, 502);
     }
 
     const attestResult = await attestResp.json() as Record<string, unknown>;
 
-    // Normalize signed receipt payload
+    // Normalize signed receipt
     const signedAttestation: Record<string, unknown> = {
       attestationId: attestResult.attestationId ?? (row.attestation_json as Record<string, unknown>)?.attestationId ?? null,
-      hash: attestResult.hash ?? certificateHash,
+      hash: attestResult.hash ?? row.certificate_hash,
       nodeRuntimeHash: attestResult.nodeRuntimeHash ?? null,
       receipt: attestResult.receipt ?? null,
       signatureB64Url: attestResult.signatureB64Url ?? null,
@@ -215,14 +141,13 @@ Deno.serve(async (req) => {
       protocolVersion: attestResult.protocolVersion ?? null,
     };
 
-    // Persist signed receipt both in attestation_json and bundle.meta.attestation
-    const updatedBundle = JSON.parse(JSON.stringify(redactedBundle)) as Record<string, unknown>;
+    // Persist signed receipt in attestation_json AND inside bundle.meta.attestation
+    const updatedBundle = JSON.parse(JSON.stringify(storedBundle)) as Record<string, unknown>;
     const meta = (updatedBundle.meta && typeof updatedBundle.meta === 'object')
-      ? (updatedBundle.meta as Record<string, unknown>)
+      ? { ...(updatedBundle.meta as Record<string, unknown>) }
       : {};
 
     meta.attestation = {
-      ...(meta.attestation as Record<string, unknown> | undefined ?? {}),
       receipt: signedAttestation.receipt ?? null,
       signatureB64Url: signedAttestation.signatureB64Url ?? null,
       attestorKeyId: signedAttestation.attestorKeyId ?? null,
