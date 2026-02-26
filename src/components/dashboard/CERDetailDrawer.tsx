@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Sheet,
   SheetContent,
@@ -18,10 +18,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Copy, Download, ChevronDown, RotateCcw, Image as ImageIcon } from "lucide-react";
+import { Copy, Download, ChevronDown, RotateCcw, Image as ImageIcon, ShieldCheck, ShieldAlert } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { CertifiedUsageEvent, NormalizedCER } from "./certified-records-types";
+import { verifyExportBundle } from "./certified-records-types";
 
 interface CERDetailDrawerProps {
   event: CertifiedUsageEvent | null;
@@ -32,6 +33,43 @@ interface CERDetailDrawerProps {
 function copyToClipboard(text: string, label: string, toast: ReturnType<typeof useToast>["toast"]) {
   navigator.clipboard.writeText(text);
   toast({ title: "Copied", description: `${label} copied to clipboard.` });
+}
+
+function VerificationBadge({ status, reason }: { status: NormalizedCER["verificationStatus"]; reason: string | null }) {
+  if (status === "pass") {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge className="font-mono text-xs bg-green-600/15 text-green-600 border-green-600/30 gap-1">
+              <ShieldCheck className="h-3 w-3" />
+              VERIFIED
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent><p className="text-xs">Certificate hash matches exported payload. Will pass Recânon verification.</p></TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+  if (status === "fail") {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge className="font-mono text-xs bg-red-600/15 text-red-600 border-red-600/30 gap-1">
+              <ShieldAlert className="h-3 w-3" />
+              MISMATCH
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent><p className="text-xs max-w-xs">{reason || "Certificate hash does not match payload."}</p></TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+  if (status === "pending") {
+    return <Badge className="font-mono text-xs bg-muted text-muted-foreground border-border">VERIFYING…</Badge>;
+  }
+  return <Badge className="font-mono text-xs bg-muted text-muted-foreground border-border">UNAVAILABLE</Badge>;
 }
 
 function StatusBadge({ completeness, statusCode }: { completeness: NormalizedCER["completeness"]; statusCode: number }) {
@@ -101,12 +139,28 @@ function InfoRow({ label, value }: { label: string; value: string | number | nul
 export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetailDrawerProps) {
   const { toast } = useToast();
   const [snapshotOpen, setSnapshotOpen] = useState(false);
-  const [verifying, setVerifying] = useState(false);
+  const [liveVerification, setLiveVerification] = useState<{ status: NormalizedCER["verificationStatus"]; reason: string | null }>({
+    status: "unavailable",
+    reason: null,
+  });
 
-  if (!event) return null;
+  const n = event?.normalized;
+  const hasBundle = n?.rawBundleJson !== null && n?.rawBundleJson !== undefined;
 
-  const n = event.normalized;
-  const hasBundle = n.rawBundleJson !== null;
+  // Run live verification when drawer opens with a bundle
+  useEffect(() => {
+    if (!open || !event || !n?.rawBundleJson || !n?.certificateHash) {
+      setLiveVerification({ status: "unavailable", reason: null });
+      return;
+    }
+    setLiveVerification({ status: "pending", reason: null });
+    verifyExportBundle(n.rawBundleJson, n.certificateHash).then((result) => {
+      setLiveVerification({ status: result.status, reason: result.reason });
+    });
+  }, [open, event?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!event || !n) return null;
+
   const hasCryptoEvidence = !!(n.inputHash || n.outputHash || n.certificateHash || n.attestationId);
   const hasParams = n.parameters !== null && Object.keys(n.parameters).length > 0;
 
@@ -124,10 +178,16 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
   }
 
   async function handleReVerify() {
-    setVerifying(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    toast({ title: "Re-Verification Complete", description: "Attestation status unchanged — no stored bundle to re-verify." });
-    setVerifying(false);
+    if (!n.rawBundleJson || !n.certificateHash) return;
+    setLiveVerification({ status: "pending", reason: null });
+    const result = await verifyExportBundle(n.rawBundleJson, n.certificateHash);
+    setLiveVerification({ status: result.status, reason: result.reason });
+    toast({
+      title: result.status === "pass" ? "Verification Passed" : "Verification Failed",
+      description: result.status === "pass"
+        ? "Certificate hash matches the exported payload."
+        : result.reason || "Hash mismatch detected.",
+    });
   }
 
   return (
@@ -135,7 +195,10 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto border-l border-border bg-background">
         <SheetHeader className="pb-4">
           <SheetTitle className="font-mono text-base">Certified Execution Record</SheetTitle>
-          <StatusBadge completeness={n.completeness} statusCode={n.upstreamStatus ?? 0} />
+          <div className="flex items-center gap-2">
+            <StatusBadge completeness={n.completeness} statusCode={n.upstreamStatus ?? 0} />
+            {hasBundle && <VerificationBadge status={liveVerification.status} reason={liveVerification.reason} />}
+          </div>
         </SheetHeader>
 
         <div className="space-y-6 pb-8">
@@ -150,6 +213,10 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
               <p>surface={n.surface} completeness={n.completeness}</p>
               {n.bundleType && <p>bundleType={n.bundleType}</p>}
               {n.certificateHash && <p>certificateHash={n.certificateHash}</p>}
+              {n.originalCertificateHash && n.originalCertificateHash !== n.certificateHash && (
+                <p>originalCertificateHash={n.originalCertificateHash}</p>
+              )}
+              {n.isRedactedExport && <p>export=redacted (hash recomputed over redacted payload)</p>}
               {n.artifactPath && <p>artifactPath={n.artifactPath}</p>}
             </CollapsibleContent>
           </Collapsible>
@@ -158,15 +225,23 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
           <p className="text-[11px] font-mono text-muted-foreground leading-relaxed border-l-2 border-border pl-3">
             {n.endpointNote}
           </p>
-          {hasBundle && (
+          {n.isRedactedExport && (
             <p className="text-[10px] font-mono text-muted-foreground/70 leading-relaxed border-l-2 border-muted pl-3">
-              Stored bundle is redacted; hashes remain verifiable.
+              This is a redacted export. It verifies integrity of the redacted record. Original content (input/output/prompt) is not included.
+            </p>
+          )}
+          {hasBundle && !n.isRedactedExport && (
+            <p className="text-[10px] font-mono text-muted-foreground/70 leading-relaxed border-l-2 border-muted pl-3">
+              Stored bundle is a full export; hashes are verifiable.
             </p>
           )}
 
           {/* Section A — Identity */}
           <Section title="Identity">
             <HashRow label="Certificate Hash" value={n.certificateHash} />
+            {n.originalCertificateHash && n.originalCertificateHash !== n.certificateHash && (
+              <HashRow label="Original Hash (pre-redaction)" value={n.originalCertificateHash} />
+            )}
             <InfoRow label="Execution ID" value={n.executionId} />
             <InfoRow
               label="Surface"
@@ -268,15 +343,19 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
                       className="font-mono text-xs"
                     >
                       <Download className="h-3.5 w-3.5 mr-1.5" />
-                      Download CER JSON
+                      {n.isRedactedExport ? "Download Verifiable Redacted CER" : "Download CER JSON"}
                     </Button>
                   </span>
                 </TooltipTrigger>
-                {!hasBundle && (
+                {!hasBundle ? (
                   <TooltipContent>
                     <p className="text-xs">No CER bundle stored for this run.</p>
                   </TooltipContent>
-                )}
+                ) : n.isRedactedExport ? (
+                  <TooltipContent>
+                    <p className="text-xs max-w-xs">This is redacted. It verifies integrity of the redacted record. Original content is not included.</p>
+                  </TooltipContent>
+                ) : null}
               </Tooltip>
             </TooltipProvider>
 
@@ -294,11 +373,11 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
               variant="outline"
               size="sm"
               onClick={handleReVerify}
-              disabled={verifying || !hasBundle}
+              disabled={liveVerification.status === "pending" || !hasBundle}
               className="font-mono text-xs"
             >
-              <RotateCcw className={`h-3.5 w-3.5 mr-1.5 ${verifying ? "animate-spin" : ""}`} />
-              {verifying ? "Verifying…" : "Re-Verify via Node"}
+              <RotateCcw className={`h-3.5 w-3.5 mr-1.5 ${liveVerification.status === "pending" ? "animate-spin" : ""}`} />
+              {liveVerification.status === "pending" ? "Verifying…" : "Re-Verify"}
             </Button>
           </div>
         </div>
