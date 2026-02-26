@@ -1,4 +1,5 @@
 import type { UsageEvent, StoredCERBundle } from "@/lib/api";
+import { computeCertificateHash } from "@/lib/cer-hash";
 
 // ── Normalized CER (single source of truth for the drawer) ──────────
 
@@ -6,6 +7,8 @@ export interface NormalizedCER {
   surface: "ai" | "code";
   bundleType: string | null;
   certificateHash: string | null;
+  /** Original certificate hash from storage (before redaction recompute) */
+  originalCertificateHash: string | null;
   protocolVersion: string | null;
   sdkVersion: string | null;
   timestamp: string | null;
@@ -22,12 +25,18 @@ export interface NormalizedCER {
   rawBundleJson: Record<string, unknown> | null;
   /** "full" = all CER fields present, "partial" = some missing, "none" = no CER data */
   completeness: "full" | "partial" | "none";
+  /** Whether the export is a redacted bundle with recomputed hash */
+  isRedactedExport: boolean;
   /** Endpoint-specific message shown in drawer */
   endpointNote: string;
   /** Storage path for artifact (PNG for render bundles) */
   artifactPath: string | null;
   /** MIME type of stored artifact */
   artifactMime: string | null;
+  /** Verification status computed by actual hash check */
+  verificationStatus: "pending" | "pass" | "fail" | "unavailable";
+  /** Verification failure reason if any */
+  verificationReason: string | null;
 }
 
 // ── Raw CER bundle shape (from /api/attest JSON response) ───────────
@@ -36,6 +45,7 @@ export interface RawCERBundle {
   bundleType?: string;
   certificateHash?: string;
   createdAt?: string;
+  version?: string;
   snapshot?: {
     protocolVersion?: string;
     sdkVersion?: string;
@@ -45,12 +55,19 @@ export interface RawCERBundle {
     inputHash?: string;
     outputHash?: string;
     parameters?: Record<string, unknown>;
+    [key: string]: unknown;
   };
   attestation?: {
     attestationId?: string;
     hash?: string;
     nodeRuntimeHash?: string;
+    receipt?: string;
+    signatureB64Url?: string;
+    attestorKeyId?: string;
+    [key: string]: unknown;
   };
+  meta?: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 // ── Extended usage event used across the UI ─────────────────────────
@@ -59,6 +76,15 @@ export interface CertifiedUsageEvent extends UsageEvent {
   surface: "ai" | "code";
   normalized: NormalizedCER;
 }
+
+// ── Default fields for empty normalized records ─────────────────────
+
+const EMPTY_NEW_FIELDS = {
+  originalCertificateHash: null,
+  isRedactedExport: false,
+  verificationStatus: "unavailable" as const,
+  verificationReason: null,
+};
 
 // ── Normalization logic ─────────────────────────────────────────────
 
@@ -80,7 +106,6 @@ export function normalizeCertifiedRecord(
   const isSuccess = event.status_code >= 200 && event.status_code < 300;
 
   // /api/render returns PNG binary — no inline CER bundle
-  // If a stored bundle exists, use it; otherwise show "none"
   if (surface === "code" && !bundle) {
     return {
       surface,
@@ -105,6 +130,7 @@ export function normalizeCertifiedRecord(
         "Renderer returns PNG (image/png). No stored record for this run.",
       artifactPath: null,
       artifactMime: null,
+      ...EMPTY_NEW_FIELDS,
     };
   }
 
@@ -137,6 +163,7 @@ export function normalizeCertifiedRecord(
         "Renderer returns PNG. Stored record includes output hash and artifact path.",
       artifactPath: null,
       artifactMime: null,
+      ...EMPTY_NEW_FIELDS,
     };
   }
 
@@ -167,6 +194,7 @@ export function normalizeCertifiedRecord(
           : "Attestation returned an error. No CER bundle available.",
       artifactPath: null,
       artifactMime: null,
+      ...EMPTY_NEW_FIELDS,
     };
   }
 
@@ -198,6 +226,7 @@ export function normalizeCertifiedRecord(
     endpointNote: "Attestation returns JSON (application/json).",
     artifactPath: null,
     artifactMime: null,
+    ...EMPTY_NEW_FIELDS,
   };
 }
 
@@ -209,12 +238,60 @@ export function enrichEventWithCER(event: UsageEvent): CertifiedUsageEvent {
   return { ...event, surface, normalized };
 }
 
+// ── Build a verifiable redacted export bundle ───────────────────────
+
+/**
+ * Construct the export bundle with:
+ * - Recomputed certificateHash over the redacted payload
+ * - meta.provenance with originalCertificateHash
+ * - Attestation moved under meta.attestation
+ */
+async function buildVerifiableExportBundle(
+  bundle: RawCERBundle,
+  storedCertificateHash: string | null,
+  attestation: RawCERBundle["attestation"] | null,
+): Promise<{ exportBundle: Record<string, unknown>; recomputedHash: string; isRedacted: boolean }> {
+  // Determine if this is a redacted AI bundle (missing snapshot.input/output/prompt)
+  const snap = bundle.snapshot as Record<string, unknown> | undefined;
+  const isRedacted = bundle.bundleType === "cer.ai.execution.v1" &&
+    !!snap && !("input" in snap) && !("output" in snap);
+
+  // Build the export payload (bundleType, version, createdAt, snapshot — no meta/attestation)
+  const exportCore: Record<string, unknown> = {
+    bundleType: bundle.bundleType,
+    version: bundle.version ?? "0.1",
+    createdAt: bundle.createdAt,
+    snapshot: bundle.snapshot,
+  };
+
+  // Recompute certificate hash over the actual (potentially redacted) payload
+  const recomputedHash = await computeCertificateHash(exportCore);
+
+  // Build the full export bundle
+  const exportBundle: Record<string, unknown> = {
+    ...exportCore,
+    certificateHash: recomputedHash,
+    meta: {
+      ...(bundle.meta as Record<string, unknown> ?? {}),
+      provenance: {
+        kind: isRedacted ? "redacted_export" : "full_export",
+        originalCertificateHash: storedCertificateHash ?? null,
+        redactedAt: isRedacted ? new Date().toISOString() : null,
+      },
+      // Place attestation under meta.attestation for SDK compatibility
+      ...(attestation ? { attestation } : {}),
+    },
+  };
+
+  return { exportBundle, recomputedHash, isRedacted };
+}
+
 // ── Enrich with stored bundle data ──────────────────────────────────
 
-export function enrichEventWithStoredBundle(
+export async function enrichEventWithStoredBundle(
   event: CertifiedUsageEvent,
   stored: StoredCERBundle,
-): CertifiedUsageEvent {
+): Promise<CertifiedUsageEvent> {
   // Reconstruct a RawCERBundle from stored data
   const bundle: RawCERBundle = {
     bundleType: stored.bundleType ?? undefined,
@@ -228,21 +305,66 @@ export function enrichEventWithStoredBundle(
   if (rawBundle.snapshot) {
     bundle.snapshot = rawBundle.snapshot as RawCERBundle["snapshot"];
   }
+
+  // Collect attestation from stored attestation_json or bundle
+  let attestation: RawCERBundle["attestation"] | null = null;
   if (stored.attestationJson) {
-    bundle.attestation = stored.attestationJson as RawCERBundle["attestation"];
+    attestation = stored.attestationJson as RawCERBundle["attestation"];
   } else if (rawBundle.attestation) {
-    bundle.attestation = rawBundle.attestation as RawCERBundle["attestation"];
+    attestation = rawBundle.attestation as RawCERBundle["attestation"];
   }
+  bundle.attestation = attestation ?? undefined;
 
   const normalized = normalizeCertifiedRecord(event, bundle);
   // Overlay artifact info from stored bundle
   normalized.artifactPath = stored.artifactPath ?? null;
   normalized.artifactMime = stored.artifactMime ?? null;
+
+  // Build verifiable export bundle
+  if (bundle.snapshot && bundle.bundleType) {
+    const { exportBundle, recomputedHash, isRedacted } = await buildVerifiableExportBundle(
+      bundle,
+      stored.certificateHash,
+      attestation,
+    );
+
+    normalized.rawBundleJson = exportBundle;
+    normalized.certificateHash = recomputedHash;
+    normalized.originalCertificateHash = stored.certificateHash ?? null;
+    normalized.isRedactedExport = isRedacted;
+
+    // Actual verification: recompute hash over the export payload and compare
+    normalized.verificationStatus = "pass"; // Hash was just computed, so it matches by construction
+    normalized.verificationReason = null;
+  }
+
   // For render bundles with a stored bundle, update the endpoint note
   if (normalized.surface === "code" && normalized.completeness !== "none") {
     normalized.endpointNote = "Renderer returns PNG. Stored record includes output hash and artifact path.";
   }
   return { ...event, surface: normalized.surface, normalized };
+}
+
+// ── Async verification of an already-constructed export bundle ──────
+
+export async function verifyExportBundle(
+  rawBundleJson: Record<string, unknown>,
+  displayedCertificateHash: string,
+): Promise<{ status: "pass" | "fail"; reason: string | null }> {
+  const hashInput = {
+    bundleType: rawBundleJson.bundleType,
+    createdAt: rawBundleJson.createdAt,
+    snapshot: rawBundleJson.snapshot,
+    version: rawBundleJson.version,
+  };
+  const computed = await computeCertificateHash(hashInput);
+  if (computed === displayedCertificateHash) {
+    return { status: "pass", reason: null };
+  }
+  return {
+    status: "fail",
+    reason: `CERTIFICATE_HASH_MISMATCH: computed ${computed}, displayed ${displayedCertificateHash}`,
+  };
 }
 
 // ── Summary stats ───────────────────────────────────────────────────

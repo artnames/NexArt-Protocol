@@ -75,14 +75,14 @@ export default function Usage() {
       }
 
       // Enrich events with stored bundles where available
-      const enriched = eventsData.map(ev => {
+      const enriched = await Promise.all(eventsData.map(async (ev) => {
         const base = enrichEventWithCER(ev);
         const stored = storedBundles[Number(ev.id)];
         if (stored) {
           return enrichEventWithStoredBundle(base, stored);
         }
         return base;
-      });
+      }));
 
       setRecentEvents(enriched);
     } catch (error) {
