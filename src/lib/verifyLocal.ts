@@ -314,8 +314,8 @@ export async function verifyStamp(
     const valid = await crypto.subtle.verify(
       { name: "Ed25519" },
       publicKey,
-      signatureBytes,
-      receiptBytes,
+      sigBuffer,
+      dataBuffer,
     );
 
     if (valid) {
