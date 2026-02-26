@@ -263,12 +263,14 @@ Deno.serve(async (req) => {
     }
 
     const hasSigned = !!(signedAttestation.receipt && signedAttestation.signatureB64Url && signedAttestation.attestorKeyId);
+    console.info(`hasSigned=${hasSigned} receipt=${!!signedAttestation.receipt} sig=${!!signedAttestation.signatureB64Url} kid=${!!signedAttestation.attestorKeyId}`);
 
     return jsonResp({
       ok: true,
       attestation: signedAttestation,
       stamp: hasSigned ? 'signed' : 'legacy',
       endpoint,
+      nodeResponseKeys: Object.keys(result),
     }, 200);
   } catch (err) {
     const e = err as Error;
