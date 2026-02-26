@@ -38,7 +38,7 @@ const NodeStampsKeys = () => {
               <ol className="text-sm text-body space-y-2 pl-5 mb-0">
                 <li><strong>Extract receipt</strong> — Use <code>getAttestationReceipt(bundle)</code> to get the normalized receipt.</li>
                 <li><strong>Fetch node keys</strong> — Call <code>fetchNodeKeys(nodeUrl)</code> to get the public key document.</li>
-                <li><strong>Verify signature</strong> — Use <code>verifyBundleAttestation(bundle, &#123; nodeUrl &#125;)</code> for the full check.</li>
+                <li><strong>Verify signature</strong> — Use <code>verifyBundleAttestation(bundle, {"{ nodeUrl }"})</code> for the full check.</li>
               </ol>
             </div>
           </section>
@@ -72,17 +72,21 @@ const NodeStampsKeys = () => {
               </table>
             </div>
 
-            <div className="spec-code">
-              <code>
-{`import { getAttestationReceipt } from '@nexart/ai-execution';
+            <pre className="spec-code"><code>{`import { getAttestationReceipt } from '@nexart/ai-execution';
 
 const receipt = getAttestationReceipt(bundle);
 if (receipt) {
   console.log(receipt.attestationId);
   console.log(receipt.attestorKeyId);    // "key-2025-01"
   console.log(receipt.signatureB64Url);  // "aDEKyu...Q"
-}`}
-              </code>
+}`}</code></pre>
+
+            <div className="bg-muted/50 border border-border rounded-md p-4 my-6">
+              <p className="text-sm text-muted-foreground mb-0">
+                <strong>Multiple layouts supported:</strong> <code>getAttestationReceipt()</code> extracts receipts from
+                both top-level bundle fields and <code>meta.attestation</code>, depending on the producer.
+                The returned object is always normalized to the same <code>AttestationReceipt</code> shape.
+              </p>
             </div>
           </section>
 
@@ -93,11 +97,7 @@ if (receipt) {
               Every attestation node publishes its public keys at a well-known URL:
             </p>
 
-            <div className="spec-code">
-              <code>
-{`GET {nodeUrl}/.well-known/nexart-node.json`}
-              </code>
-            </div>
+            <pre className="spec-code"><code>{`GET {nodeUrl}/.well-known/nexart-node.json`}</code></pre>
 
             <p>
               <strong>Live endpoint:</strong>{" "}
@@ -111,7 +111,7 @@ if (receipt) {
               </a>
             </p>
 
-            <p>The document contains keys in two formats:</p>
+            <p>The document contains keys in three formats:</p>
 
             <div className="overflow-x-auto my-6">
               <table className="spec-table">
@@ -125,26 +125,24 @@ if (receipt) {
                 <tbody>
                   <tr>
                     <td>JWK</td>
-                    <td><code>key.jwk</code></td>
+                    <td><code>key.publicKeyJwk</code></td>
                     <td>Web Crypto API (<code>crypto.subtle.importKey</code>)</td>
                   </tr>
                   <tr>
                     <td>SPKI (Base64)</td>
-                    <td><code>key.spkiB64</code></td>
+                    <td><code>key.publicKeySpkiB64</code></td>
                     <td>Node.js <code>crypto.createPublicKey</code></td>
                   </tr>
                   <tr>
                     <td>Raw (Base64url)</td>
-                    <td><code>key.rawB64Url</code></td>
+                    <td><code>key.publicKey</code></td>
                     <td>Direct 32-byte Ed25519 public key</td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
-            <div className="spec-code">
-              <code>
-{`import { fetchNodeKeys, selectNodeKey } from '@nexart/ai-execution';
+            <pre className="spec-code"><code>{`import { fetchNodeKeys, selectNodeKey } from '@nexart/ai-execution';
 
 const doc = await fetchNodeKeys(
   'https://nexart-canonical-renderer-production.up.railway.app'
@@ -152,9 +150,19 @@ const doc = await fetchNodeKeys(
 
 // Select key by kid (from receipt.attestorKeyId)
 const { key } = selectNodeKey(doc, receipt.attestorKeyId);
-console.log(key.jwk);
-// { kty: "OKP", crv: "Ed25519", x: "<base64url>" }`}
-              </code>
+
+console.log(key.publicKeyJwk);
+// { kty: "OKP", crv: "Ed25519", x: "<base64url>" }
+
+console.log(key.publicKey);
+// "<base64url-encoded 32-byte Ed25519 public key>"`}</code></pre>
+
+            <div className="bg-muted/50 border border-border rounded-md p-4 my-6">
+              <p className="text-sm text-muted-foreground mb-0">
+                <strong><code>selectNodeKey</code> selection order:</strong> explicit <code>kid</code> argument →
+                {" "}<code>activeKid</code> from the node document → first key in the array.
+                Always pass <code>receipt.attestorKeyId</code> when verifying a specific receipt.
+              </p>
             </div>
           </section>
 
@@ -205,7 +213,7 @@ console.log(key.jwk);
                     <td>Key not found</td>
                     <td><code>ATTESTATION_KEY_NOT_FOUND</code></td>
                     <td>The <code>kid</code> in the receipt doesn't match any key in the node document</td>
-                    <td>Check you're querying the correct node URL; key may have been retired</td>
+                    <td>Verify you are querying the same node that issued the receipt (<code>nodeUrl</code> must match the attesting node). Historical keys should remain published; if missing, contact the node operator</td>
                   </tr>
                   <tr>
                     <td>Key format unsupported</td>
@@ -220,8 +228,8 @@ console.log(key.jwk);
             <div className="bg-muted/50 border border-border rounded-md p-4 my-6">
               <p className="text-sm text-muted-foreground mb-0">
                 <strong>"Stamp incomplete"</strong> is not an error. It means the bundle has legacy attestation fields
-                (pre-v0.5.0) without a signed receipt. Local integrity verification still works — only the node
-                signature check is unavailable.
+                (pre-v0.5.0) without a signed receipt — these may appear at the top level or under <code>meta.attestation</code>.
+                Local integrity verification still works; only the node signature check is unavailable.
               </p>
             </div>
           </section>
