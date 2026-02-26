@@ -1,5 +1,6 @@
 import type { UsageEvent, StoredCERBundle } from "@/lib/api";
 import { computeCertificateHash } from "@/lib/cer-hash";
+import { verifyBundle as verifyBundleLocal } from "@/lib/verifyLocal";
 
 // ── Normalized CER (single source of truth for the drawer) ──────────
 
