@@ -12,10 +12,7 @@ const AIExecutionCertification = () => {
         description="Step-by-step guide to certifying AI/LLM execution records with tamper-evident CER bundles and node attestation."
       />
 
-      <PageHeader
-        title="AI Execution Certification"
-        subtitle="I call an LLM — how do I certify that record?"
-      />
+      <PageHeader title="AI Execution Certification" subtitle="I call an LLM, how do I certify that record?" />
 
       <PageContent>
         <article className="prose-protocol prose-spec">
@@ -23,26 +20,79 @@ const AIExecutionCertification = () => {
           <nav className="mb-10 pb-6 border-b border-border">
             <p className="text-xs font-mono uppercase tracking-wide text-caption mb-3">On this page</p>
             <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm list-none pl-0">
-              <li><a href="#minimum-integration" className="text-body underline underline-offset-2 hover:text-foreground">Minimum Integration</a></li>
-              <li><a href="#certify-decision" className="text-body underline underline-offset-2 hover:text-foreground">certifyDecision</a></li>
-              <li><a href="#certify-and-attest" className="text-body underline underline-offset-2 hover:text-foreground">certifyAndAttestDecision</a></li>
-              <li><a href="#verify" className="text-body underline underline-offset-2 hover:text-foreground">Verify</a></li>
-              <li><a href="#what-this-certifies" className="text-body underline underline-offset-2 hover:text-foreground">What This Certifies</a></li>
-              <li><a href="#redaction" className="text-body underline underline-offset-2 hover:text-foreground">Redaction</a></li>
-              <li><a href="#store-stamp" className="text-body underline underline-offset-2 hover:text-foreground">Store the Stamp</a></li>
-              <li><a href="#multi-step" className="text-body underline underline-offset-2 hover:text-foreground">Multi-Step Workflows</a></li>
-              <li><a href="#try-it" className="text-body underline underline-offset-2 hover:text-foreground">Try It</a></li>
+              <li>
+                <a href="#minimum-integration" className="text-body underline underline-offset-2 hover:text-foreground">
+                  Minimum Integration
+                </a>
+              </li>
+              <li>
+                <a href="#certify-decision" className="text-body underline underline-offset-2 hover:text-foreground">
+                  certifyDecision
+                </a>
+              </li>
+              <li>
+                <a href="#certify-and-attest" className="text-body underline underline-offset-2 hover:text-foreground">
+                  certifyAndAttestDecision
+                </a>
+              </li>
+              <li>
+                <a href="#verify" className="text-body underline underline-offset-2 hover:text-foreground">
+                  Verify
+                </a>
+              </li>
+              <li>
+                <a href="#what-this-certifies" className="text-body underline underline-offset-2 hover:text-foreground">
+                  What This Certifies
+                </a>
+              </li>
+              <li>
+                <a href="#redaction" className="text-body underline underline-offset-2 hover:text-foreground">
+                  Redaction
+                </a>
+              </li>
+              <li>
+                <a href="#store-stamp" className="text-body underline underline-offset-2 hover:text-foreground">
+                  Store the Stamp
+                </a>
+              </li>
+              <li>
+                <a href="#multi-step" className="text-body underline underline-offset-2 hover:text-foreground">
+                  Multi-Step Workflows
+                </a>
+              </li>
+              <li>
+                <a href="#try-it" className="text-body underline underline-offset-2 hover:text-foreground">
+                  Try It
+                </a>
+              </li>
             </ul>
           </nav>
 
           {/* Minimum integration box */}
           <section id="minimum-integration">
             <div className="bg-muted/50 border border-border rounded-md p-5 my-6">
-              <p className="text-xs font-mono uppercase tracking-wide text-caption mb-3">Minimum Integration — 3 Steps</p>
+              <p className="text-xs font-mono uppercase tracking-wide text-caption mb-3">
+                Minimum Integration — 3 Steps
+              </p>
               <ol className="text-sm text-body space-y-2 pl-5 mb-0">
-                <li><strong><code>certifyDecision()</code></strong> — Seal input, output, and parameters into a CER bundle. Returns a <code>cer</code> object.</li>
-                <li><strong><code>certifyAndAttestDecision()</code></strong> — Same as above, plus submit to a node for a signed receipt. Returns <code>{"{ bundle, receipt }"}</code>.</li>
-                <li><strong>Verify</strong> — <code>verify(cer)</code> after Step 1; <code>verify(bundle)</code> after Step 2. Add <code>verifyBundleAttestation(bundle, {"{ nodeUrl }"})</code> if a signed receipt is present.</li>
+                <li>
+                  <strong>
+                    <code>certifyDecision()</code>
+                  </strong>{" "}
+                  — Seal input, output, and parameters into a CER bundle. Returns a <code>cer</code> object.
+                </li>
+                <li>
+                  <strong>
+                    <code>certifyAndAttestDecision()</code>
+                  </strong>{" "}
+                  — Same as above, plus submit to a node for a signed receipt. Returns{" "}
+                  <code>{"{ bundle, receipt }"}</code>.
+                </li>
+                <li>
+                  <strong>Verify</strong> — <code>verify(cer)</code> after Step 1; <code>verify(bundle)</code> after
+                  Step 2. Add <code>verifyBundleAttestation(bundle, {"{ nodeUrl }"})</code> if a signed receipt is
+                  present.
+                </li>
               </ol>
             </div>
           </section>
@@ -50,11 +100,10 @@ const AIExecutionCertification = () => {
           {/* Step 1: certifyDecision */}
           <section id="certify-decision">
             <h2>Step 1 — certifyDecision()</h2>
-            <p>
-              The simplest path. Pass your LLM call details and get a sealed CER bundle object in one call.
-            </p>
+            <p>The simplest path. Pass your LLM call details and get a sealed CER bundle object in one call.</p>
 
-            <pre className="spec-code"><code>{`import { certifyDecision } from '@nexart/ai-execution';
+            <pre className="spec-code">
+              <code>{`import { certifyDecision } from '@nexart/ai-execution';
 
 const cer = certifyDecision({
   provider: 'openai',
@@ -74,11 +123,13 @@ console.log(cer.certificateHash);
 // "sha256:a1b2c3..."
 
 console.log(cer.bundleType);
-// "cer.ai.execution.v1"`}</code></pre>
+// "cer.ai.execution.v1"`}</code>
+            </pre>
 
             <p>
-              The returned <code>cer</code> object is a complete CER bundle. Its <code>certificateHash</code> is a SHA-256 digest of the canonical JSON of <code>{"{ bundleType, version, createdAt, snapshot }"}</code>.
-              Any post-hoc change to the input, output, or parameters invalidates it.
+              The returned <code>cer</code> object is a complete CER bundle. Its <code>certificateHash</code> is a
+              SHA-256 digest of the canonical JSON of <code>{"{ bundleType, version, createdAt, snapshot }"}</code>. Any
+              post-hoc change to the input, output, or parameters invalidates it.
             </p>
           </section>
 
@@ -87,10 +138,12 @@ console.log(cer.bundleType);
             <h2>Step 2 — certifyAndAttestDecision()</h2>
             <p>
               One-call integration: certifies the decision and submits it to a canonical node for a signed receipt.
-              Returns <code>{"{ bundle, receipt }"}</code> — the sealed CER bundle and the node's signed attestation receipt.
+              Returns <code>{"{ bundle, receipt }"}</code>, the sealed CER bundle and the node's signed attestation
+              receipt.
             </p>
 
-            <pre className="spec-code"><code>{`import { certifyAndAttestDecision } from '@nexart/ai-execution';
+            <pre className="spec-code">
+              <code>{`import { certifyAndAttestDecision } from '@nexart/ai-execution';
 
 const { bundle, receipt } = await certifyAndAttestDecision(
   {
@@ -117,7 +170,8 @@ console.log(receipt.signatureB64Url);
 // Ed25519 signature over the receipt
 
 console.log(receipt.attestorKeyId);
-// Key ID for offline verification`}</code></pre>
+// Key ID for offline verification`}</code>
+            </pre>
 
             <div className="bg-muted/50 border border-border rounded-md p-4 my-6">
               <p className="text-sm text-muted-foreground mb-0">
@@ -130,11 +184,10 @@ console.log(receipt.attestorKeyId);
           {/* Step 3: Verify */}
           <section id="verify">
             <h2>Step 3 — Verify</h2>
-            <p>
-              Verification works in two layers. Use the object returned by the step you chose:
-            </p>
+            <p>Verification works in two layers. Use the object returned by the step you chose:</p>
 
-            <pre className="spec-code"><code>{`import { verify, verifyBundleAttestation } from '@nexart/ai-execution';
+            <pre className="spec-code">
+              <code>{`import { verify, verifyBundleAttestation } from '@nexart/ai-execution';
 
 // After Step 1 (certifyDecision) — pass the cer object directly:
 const result = verify(cer);
@@ -150,7 +203,8 @@ const stamp = await verifyBundleAttestation(bundle, {
   nodeUrl: 'https://nexart-canonical-renderer-production.up.railway.app',
 });
 console.log(stamp.ok);   // true
-console.log(stamp.code); // "OK"`}</code></pre>
+console.log(stamp.code); // "OK"`}</code>
+            </pre>
           </section>
 
           {/* What this certifies */}
@@ -160,28 +214,33 @@ console.log(stamp.code); // "OK"`}</code></pre>
               <p className="text-sm text-body mb-0">
                 <strong>Integrity, not determinism.</strong> A CER certifies that the recorded input, output, and
                 parameters have not been modified after the fact. It does <em>not</em> guarantee that the AI model will
-                produce the same output again — LLMs are not deterministic. It also does not verify provider identity.
+                produce the same output again, LLMs are not deterministic. It also does not verify provider identity.
               </p>
             </div>
             <ul>
-              <li><strong>PASS</strong> — The record is internally consistent. Hashes match the sealed payload.</li>
-              <li><strong>FAIL</strong> — Integrity breach. The record does not match its hashes.</li>
-              <li><strong>ERROR</strong> — Missing fields or invalid formatting.</li>
+              <li>
+                <strong>PASS</strong> — The record is internally consistent. Hashes match the sealed payload.
+              </li>
+              <li>
+                <strong>FAIL</strong> — Integrity breach. The record does not match its hashes.
+              </li>
+              <li>
+                <strong>ERROR</strong> — Missing fields or invalid formatting.
+              </li>
             </ul>
           </section>
 
           {/* Redaction */}
           <section id="redaction">
             <h2>Redaction Guidance</h2>
-            <p>
-              You may need to redact sensitive fields (PII, proprietary prompts) before sharing a CER bundle.
-            </p>
+            <p>You may need to redact sensitive fields (PII, proprietary prompts) before sharing a CER bundle.</p>
 
             <div className="spec-warning">
               <p className="text-sm text-body mb-0">
                 <strong>Redaction invalidates verification — by design.</strong> Once a CER bundle is sealed, any
-                modification to hashed fields will cause <code>verify()</code> to return <code>CERTIFICATE_HASH_MISMATCH</code>.
-                This is the intended behavior: it proves the original record was tamper-free at sealing time.
+                modification to hashed fields will cause <code>verify()</code> to return{" "}
+                <code>CERTIFICATE_HASH_MISMATCH</code>. This is the intended behavior: it proves the original record was
+                tamper-free at sealing time.
               </p>
             </div>
 
@@ -189,8 +248,14 @@ console.log(stamp.code); // "OK"`}</code></pre>
               <strong>Recommended patterns:</strong>
             </p>
             <ul>
-              <li><strong>Redact before sealing</strong> — Remove sensitive fields before calling <code>certifyDecision()</code>. The sealed bundle will verify cleanly with the redacted content.</li>
-              <li><strong>Store full + share redacted</strong> — Seal the full bundle for your private archive, then share a redacted copy externally. The redacted copy won't pass <code>verify()</code>, but the original will.</li>
+              <li>
+                <strong>Redact before sealing</strong> — Remove sensitive fields before calling{" "}
+                <code>certifyDecision()</code>. The sealed bundle will verify cleanly with the redacted content.
+              </li>
+              <li>
+                <strong>Store full + share redacted</strong> — Seal the full bundle for your private archive, then share
+                a redacted copy externally. The redacted copy won't pass <code>verify()</code>, but the original will.
+              </li>
             </ul>
 
             <div className="overflow-x-auto my-6">
@@ -209,12 +274,16 @@ console.log(stamp.code); // "OK"`}</code></pre>
                     <td>✅ Yes</td>
                   </tr>
                   <tr>
-                    <td>Set to <code>null</code></td>
+                    <td>
+                      Set to <code>null</code>
+                    </td>
                     <td>Hash mismatch (expected)</td>
                     <td>✅ Yes</td>
                   </tr>
                   <tr>
-                    <td>Set to <code>undefined</code></td>
+                    <td>
+                      Set to <code>undefined</code>
+                    </td>
                     <td>Breaks canonical JSON serialization</td>
                     <td>❌ Never</td>
                   </tr>
@@ -223,7 +292,7 @@ console.log(stamp.code); // "OK"`}</code></pre>
             </div>
 
             <p>
-              Use <code>sanitizeForAttestation(bundle)</code> before archiving — it strips <code>undefined</code> values
+              Use <code>sanitizeForAttestation(bundle)</code> before archiving, it strips <code>undefined</code> values
               and rejects non-serializable types that would break canonical JSON.
             </p>
           </section>
@@ -232,11 +301,12 @@ console.log(stamp.code); // "OK"`}</code></pre>
           <section id="store-stamp">
             <h2>Store the Stamp</h2>
             <p>
-              If you used <code>certifyAndAttestDecision()</code>, persist the receipt fields alongside the bundle
-              so offline stamp verification works later — without needing to contact the node again.
+              If you used <code>certifyAndAttestDecision()</code>, persist the receipt fields alongside the bundle so
+              offline stamp verification works later, without needing to contact the node again.
             </p>
 
-            <pre className="spec-code"><code>{`// Persist these fields from the receipt:
+            <pre className="spec-code">
+              <code>{`// Persist these fields from the receipt:
 await db.insert('cer_bundles', {
   certificate_hash: bundle.certificateHash,
   cer_bundle: bundle,
@@ -245,11 +315,17 @@ await db.insert('cer_bundles', {
   attestation_id: receipt.attestationId,
   signature_b64url: receipt.signatureB64Url,
   attestor_key_id: receipt.attestorKeyId,  // kid
-});`}</code></pre>
+});`}</code>
+            </pre>
 
             <p>
               The <code>attestorKeyId</code> (kid) maps to the node's public key published at its{" "}
-              <a href="https://nexart-canonical-renderer-production.up.railway.app/.well-known/nexart-node.json" target="_blank" rel="noopener noreferrer" className="text-body underline underline-offset-2 hover:text-foreground">
+              <a
+                href="https://nexart-canonical-renderer-production.up.railway.app/.well-known/nexart-node.json"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-body underline underline-offset-2 hover:text-foreground"
+              >
                 .well-known/nexart-node.json
               </a>{" "}
               endpoint. This enables fully offline Ed25519 signature verification.
@@ -260,10 +336,12 @@ await db.insert('cer_bundles', {
           <section id="multi-step">
             <h2>Multi-Step Workflows</h2>
             <p>
-              For agentic pipelines with multiple LLM calls, use <code>RunBuilder</code> to chain steps with <code>prevStepHash</code> linking:
+              For agentic pipelines with multiple LLM calls, use <code>RunBuilder</code> to chain steps with{" "}
+              <code>prevStepHash</code> linking:
             </p>
 
-            <pre className="spec-code"><code>{`import { RunBuilder } from '@nexart/ai-execution';
+            <pre className="spec-code">
+              <code>{`import { RunBuilder } from '@nexart/ai-execution';
 
 const run = new RunBuilder({
   runId: 'analysis-run',
@@ -289,7 +367,8 @@ run.step({
 });
 
 const summary = run.finalize();
-// { runId, stepCount: 2, steps: [...], finalStepHash: "sha256:..." }`}</code></pre>
+// { runId, stepCount: 2, steps: [...], finalStepHash: "sha256:..." }`}</code>
+            </pre>
           </section>
 
           {/* Try it */}
@@ -300,13 +379,29 @@ const summary = run.finalize();
                 <strong>Issue → Verify → Audit:</strong>
               </p>
               <ol className="text-sm text-body space-y-2 pl-5 mb-4">
-                <li>Issue an AI CER at{" "}
-                  <a href="https://nexartaiauditor.xyz" target="_blank" rel="noopener noreferrer" className="text-body underline underline-offset-2 hover:text-foreground">nexartaiauditor.xyz</a>
+                <li>
+                  Issue an AI CER at{" "}
+                  <a
+                    href="https://nexartaiauditor.xyz"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-body underline underline-offset-2 hover:text-foreground"
+                  >
+                    nexartaiauditor.xyz
+                  </a>
                 </li>
                 <li>Download the CER JSON</li>
-                <li>Verify independently at{" "}
-                  <a href="https://recanon.xyz" target="_blank" rel="noopener noreferrer" className="text-body underline underline-offset-2 hover:text-foreground">recanon.xyz</a>
-                  {" "}— upload the JSON to audit integrity
+                <li>
+                  Verify independently at{" "}
+                  <a
+                    href="https://recanon.xyz"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-body underline underline-offset-2 hover:text-foreground"
+                  >
+                    recanon.xyz
+                  </a>{" "}
+                  — upload the JSON to audit integrity
                 </li>
               </ol>
             </div>
