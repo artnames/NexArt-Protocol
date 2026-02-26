@@ -56,12 +56,12 @@ function deriveStampStatus(n: NormalizedCER): StampStatus {
   return "not_stamped";
 }
 
-function StampStatusBadge({ status }: { status: StampStatus }) {
+function StampStatusBadge({ status, offlineVerifiable }: { status: StampStatus; offlineVerifiable?: boolean }) {
   if (status === "signed") {
     return (
       <Badge className="font-mono text-xs bg-green-600/15 text-green-600 border-green-600/30 gap-1">
         <Stamp className="h-3 w-3" />
-        Stamped (signed)
+        {offlineVerifiable ? "Stamped (signed, offline-verifiable)" : "Stamped (signed)"}
       </Badge>
     );
   }
