@@ -229,12 +229,18 @@ Deno.serve(async (req) => {
     };
     updatedBundle.meta = meta;
 
+    const updateFields: Record<string, unknown> = {
+      attestation_json: signedAttestation,
+      cer_bundle_redacted: updatedBundle,
+    };
+    // Also update the certificate_hash column if we recomputed it
+    if (isRedacted && updatedBundle.certificateHash) {
+      updateFields.certificate_hash = updatedBundle.certificateHash;
+    }
+
     const { error: updateErr } = await supabaseAdmin
       .from('cer_bundles')
-      .update({
-        attestation_json: signedAttestation,
-        cer_bundle_redacted: updatedBundle,
-      })
+      .update(updateFields)
       .eq('usage_event_id', usageEventId)
       .eq('user_id', user.id);
 
