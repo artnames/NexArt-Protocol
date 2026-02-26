@@ -110,9 +110,10 @@ Deno.serve(async (req) => {
       const upstreamMessage = (errJson?.message || errJson?.error || errBody || 'Unknown') as string;
       const requestId = (errJson?.requestId || attestResp.headers.get('x-request-id') || null) as string | null;
 
-      console.error(`Node re-attest failed: HTTP ${attestResp.status}`, upstreamMessage.slice(0, 500));
+      console.error(`Node re-attest failed: HTTP ${attestResp.status}`, errBody.slice(0, 2000));
       console.error(`Sent payload keys: [${payloadKeys.join(',')}]`);
       console.error(`Sent snapshot keys: [${snapshotKeys.join(',')}]`);
+      console.error(`Payload preview: ${payloadJson.slice(0, 1500)}`);
 
       return jsonResp({
         ok: false,
