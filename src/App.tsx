@@ -47,6 +47,7 @@ const CodeModeCertification = lazy(() => import("./pages/docs/CodeModeCertificat
 const AIExecutionCertification = lazy(() => import("./pages/docs/AIExecutionCertification"));
 const VerifyIndependently = lazy(() => import("./pages/docs/VerifyIndependently"));
 const NodeStampsKeys = lazy(() => import("./pages/docs/NodeStampsKeys"));
+const Verify = lazy(() => import("./pages/Verify"));
 
 // Auth-gated routes (heavy: AuthProvider + dashboard)
 const AuthGatedRoutes = lazy(() => import("./components/routing/AuthGatedRoutes"));
