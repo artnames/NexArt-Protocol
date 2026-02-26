@@ -55,6 +55,17 @@ export default function Verify() {
         return;
       }
 
+      // Dev guard: warn if any fetch fires during auto-verify
+      let fetchGuard: ((input: RequestInfo | URL, init?: RequestInit) => Promise<Response>) | null = null;
+      if (import.meta.env.DEV) {
+        const origFetch = globalThis.fetch;
+        fetchGuard = origFetch;
+        globalThis.fetch = (...args: Parameters<typeof origFetch>) => {
+          console.warn("[Verify dev guard] Unexpected fetch during auto-verify:", args[0]);
+          return origFetch(...args);
+        };
+      }
+
       setVerifying(true);
       setResult(null);
       setStampResult(null);
@@ -81,6 +92,7 @@ export default function Verify() {
             protocolVersion: null,
           },
         });
+        if (import.meta.env.DEV && fetchGuard) globalThis.fetch = fetchGuard;
         setVerifying(false);
         return;
       }
@@ -89,6 +101,11 @@ export default function Verify() {
       const verifyResult = await verifyBundle(parsed);
       setResult(verifyResult);
       setVerifying(false);
+
+      // Restore original fetch
+      if (import.meta.env.DEV && fetchGuard) {
+        globalThis.fetch = fetchGuard;
+      }
     },
     [jsonInput, toast],
   );
@@ -214,7 +231,7 @@ export default function Verify() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Main verdict */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <Badge
                   className={`font-mono text-sm px-3 py-1 ${
                     result.ok
@@ -227,6 +244,10 @@ export default function Verify() {
                 <Badge variant="outline" className="font-mono text-[10px]">
                   {result.reason}
                 </Badge>
+                <span className="text-[10px] font-mono text-muted-foreground flex items-center gap-1 ml-auto">
+                  <ShieldCheck className="h-3 w-3" />
+                  Verified locally in your browser
+                </span>
               </div>
 
               {/* Plain English explanation */}
@@ -340,56 +361,74 @@ export default function Verify() {
                 </div>
               )}
 
-              {/* Stamp status */}
-              {stampFields && stampFields.hasStamp && (
-                <div className="border-t border-border pt-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Stamp className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
-                      Node Attestation Stamp
-                    </span>
-                  </div>
-                  {stampFields.isLegacy && !stampResult && (
-                    <p className="text-xs text-muted-foreground">
-                      Stamped (legacy) — not offline-verifiable. Legacy stamps require contacting the attestation node.
-                    </p>
-                  )}
-                  {stampFields.isSigned && !stampResult && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="font-mono text-xs"
-                      onClick={handleStampVerify}
-                      disabled={stampVerifying}
-                    >
-                      {stampVerifying ? (
-                        <>
-                          <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                          Verifying stamp…
-                        </>
-                      ) : (
-                        <>
-                          <ShieldCheck className="h-3.5 w-3.5 mr-1.5" />
-                          Verify stamp offline
-                        </>
-                      )}
-                    </Button>
-                  )}
-                  {stampResult && (
+              {/* Stamp status — always shown */}
+              {stampFields && (
+                <Card className="border border-border bg-muted/20">
+                  <CardContent className="p-4 space-y-3">
                     <div className="flex items-center gap-2">
-                      <Badge
-                        className={`font-mono text-xs ${
-                          stampResult.ok
-                            ? "bg-green-600/15 text-green-600 border-green-600/30"
-                            : "bg-yellow-600/15 text-yellow-600 border-yellow-600/30"
-                        }`}
-                      >
-                        {stampResult.ok ? "Stamp: Verified offline" : stampResult.reason}
+                      <Stamp className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
+                        Stamp Status
+                      </span>
+                      <Badge variant="outline" className="font-mono text-[10px] ml-auto">
+                        {!stampFields.hasStamp
+                          ? "Not stamped"
+                          : stampFields.isLegacy
+                            ? "Legacy"
+                            : "Signed"}
                       </Badge>
-                      <span className="text-xs text-muted-foreground">{stampResult.explanation}</span>
                     </div>
-                  )}
-                </div>
+
+                    {!stampFields.hasStamp && (
+                      <p className="text-xs text-muted-foreground">
+                        No attestation stamp is present on this record.
+                      </p>
+                    )}
+
+                    {stampFields.isLegacy && !stampResult && (
+                      <p className="text-xs text-muted-foreground">
+                        Stamped (legacy) — not offline-verifiable. Legacy stamps require contacting the attestation node.
+                      </p>
+                    )}
+
+                    {stampFields.isSigned && !stampResult && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="font-mono text-xs"
+                        onClick={handleStampVerify}
+                        disabled={stampVerifying}
+                      >
+                        {stampVerifying ? (
+                          <>
+                            <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                            Verifying stamp…
+                          </>
+                        ) : (
+                          <>
+                            <ShieldCheck className="h-3.5 w-3.5 mr-1.5" />
+                            Verify stamp (offline)
+                          </>
+                        )}
+                      </Button>
+                    )}
+
+                    {stampResult && (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge
+                          className={`font-mono text-xs ${
+                            stampResult.ok
+                              ? "bg-green-600/15 text-green-600 border-green-600/30"
+                              : "bg-yellow-600/15 text-yellow-600 border-yellow-600/30"
+                          }`}
+                        >
+                          {stampResult.ok ? "Stamp: Verified offline" : stampResult.reason}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">{stampResult.explanation}</span>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               )}
 
               {/* Technical details accordion */}
