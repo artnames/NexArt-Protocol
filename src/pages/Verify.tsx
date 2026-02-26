@@ -6,25 +6,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  ShieldCheck, ShieldAlert, Upload, Copy, Download,
-  ChevronDown, Loader2, FileText, Stamp, Info,
+  ShieldCheck,
+  ShieldAlert,
+  Upload,
+  Copy,
+  Download,
+  ChevronDown,
+  Loader2,
+  FileText,
+  Stamp,
+  Info,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
-  verifyBundle, verifyStamp, getStampFields,
-  type VerifyResult, type StampVerifyResult,
+  verifyBundle,
+  verifyStamp,
+  getStampFields,
+  type VerifyResult,
+  type StampVerifyResult,
 } from "@/lib/verifyLocal";
 
 function copyText(text: string, label: string, toast: ReturnType<typeof useToast>["toast"]) {
@@ -45,52 +47,68 @@ export default function Verify() {
   const [techOpen, setTechOpen] = useState(false);
   const [rawOpen, setRawOpen] = useState(false);
 
-  const handleVerify = useCallback(async (raw?: string) => {
-    const text = raw ?? jsonInput;
-    if (!text.trim()) {
-      toast({ variant: "destructive", title: "Empty input", description: "Paste or upload a CER JSON file." });
-      return;
-    }
+  const handleVerify = useCallback(
+    async (raw?: string) => {
+      const text = raw ?? jsonInput;
+      if (!text.trim()) {
+        toast({ variant: "destructive", title: "Empty input", description: "Paste or upload a CER JSON file." });
+        return;
+      }
 
-    setVerifying(true);
-    setResult(null);
-    setStampResult(null);
-    setParsedBundle(null);
+      setVerifying(true);
+      setResult(null);
+      setStampResult(null);
+      setParsedBundle(null);
 
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(text);
-    } catch {
-      setResult({
-        ok: false, reason: "SCHEMA_ERROR",
-        explanation: "The input is not valid JSON. Please check for syntax errors.",
-        computedHash: null, recordedHash: null,
-        detail: "JSON.parse() failed.",
-        meta: { bundleType: null, createdAt: null, appId: null, provider: null, model: null, executionId: null, protocolVersion: null },
-      });
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        setResult({
+          ok: false,
+          reason: "SCHEMA_ERROR",
+          explanation: "The input is not valid JSON. Please check for syntax errors.",
+          computedHash: null,
+          recordedHash: null,
+          detail: "JSON.parse() failed.",
+          meta: {
+            bundleType: null,
+            createdAt: null,
+            appId: null,
+            provider: null,
+            model: null,
+            executionId: null,
+            protocolVersion: null,
+          },
+        });
+        setVerifying(false);
+        return;
+      }
+
+      setParsedBundle(parsed as Record<string, unknown>);
+      const verifyResult = await verifyBundle(parsed);
+      setResult(verifyResult);
       setVerifying(false);
-      return;
-    }
+    },
+    [jsonInput, toast],
+  );
 
-    setParsedBundle(parsed as Record<string, unknown>);
-    const verifyResult = await verifyBundle(parsed);
-    setResult(verifyResult);
-    setVerifying(false);
-  }, [jsonInput, toast]);
-
-  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const text = reader.result as string;
-      setJsonInput(text);
-      handleVerify(text);
-    };
-    reader.readAsText(file);
-    // Reset so same file can be re-uploaded
-    e.target.value = "";
-  }, [handleVerify]);
+  const handleFileUpload = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const text = reader.result as string;
+        setJsonInput(text);
+        handleVerify(text);
+      };
+      reader.readAsText(file);
+      // Reset so same file can be re-uploaded
+      e.target.value = "";
+    },
+    [handleVerify],
+  );
 
   const handleStampVerify = useCallback(async () => {
     if (!parsedBundle) return;
@@ -121,7 +139,7 @@ export default function Verify() {
       />
       <PageHeader
         title="Verify"
-        subtitle="Paste or upload a CER JSON file to verify its integrity. All verification runs locally in your browser — no data is sent to any server."
+        subtitle="Paste or upload a CER JSON file to verify its integrity. All verification runs locally in your browser, no data is sent to any server."
       />
 
       <div className="max-w-5xl mx-auto px-6 py-12 sm:py-16 space-y-8">
@@ -147,9 +165,15 @@ export default function Verify() {
                 className="font-mono text-xs"
               >
                 {verifying ? (
-                  <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />Verifying…</>
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                    Verifying…
+                  </>
                 ) : (
-                  <><ShieldCheck className="h-3.5 w-3.5 mr-1.5" />Verify</>
+                  <>
+                    <ShieldCheck className="h-3.5 w-3.5 mr-1.5" />
+                    Verify
+                  </>
                 )}
               </Button>
               <input
@@ -159,11 +183,7 @@ export default function Verify() {
                 className="hidden"
                 onChange={handleFileUpload}
               />
-              <Button
-                variant="outline"
-                onClick={() => fileRef.current?.click()}
-                className="font-mono text-xs"
-              >
+              <Button variant="outline" onClick={() => fileRef.current?.click()} className="font-mono text-xs">
                 <Upload className="h-3.5 w-3.5 mr-1.5" />
                 Upload File
               </Button>
@@ -177,10 +197,11 @@ export default function Verify() {
 
         {/* Result card */}
         {result && (
-          <Card className={result.ok
-            ? "border-green-600/30 bg-green-600/[0.03]"
-            : "border-destructive/30 bg-destructive/[0.03]"
-          }>
+          <Card
+            className={
+              result.ok ? "border-green-600/30 bg-green-600/[0.03]" : "border-destructive/30 bg-destructive/[0.03]"
+            }
+          >
             <CardHeader>
               <CardTitle className="font-mono text-sm flex items-center gap-2">
                 {result.ok ? (
@@ -194,11 +215,13 @@ export default function Verify() {
             <CardContent className="space-y-6">
               {/* Main verdict */}
               <div className="flex items-center gap-3">
-                <Badge className={`font-mono text-sm px-3 py-1 ${
-                  result.ok
-                    ? "bg-green-600/15 text-green-600 border-green-600/30"
-                    : "bg-red-600/15 text-red-600 border-red-600/30"
-                }`}>
+                <Badge
+                  className={`font-mono text-sm px-3 py-1 ${
+                    result.ok
+                      ? "bg-green-600/15 text-green-600 border-green-600/30"
+                      : "bg-red-600/15 text-red-600 border-red-600/30"
+                  }`}
+                >
                   {result.ok ? "Integrity: Verified" : "Integrity: Not Verified"}
                 </Badge>
                 <Badge variant="outline" className="font-mono text-[10px]">
@@ -207,49 +230,72 @@ export default function Verify() {
               </div>
 
               {/* Plain English explanation */}
-              <p className="text-sm text-foreground leading-relaxed">
-                {result.explanation}
-              </p>
+              <p className="text-sm text-foreground leading-relaxed">{result.explanation}</p>
 
               {/* Redacted export banner */}
-              {parsedBundle?.meta && (parsedBundle.meta as Record<string, unknown>)?.provenance &&
-                ((parsedBundle.meta as Record<string, unknown>).provenance as Record<string, unknown>)?.kind === "redacted_export" && (
-                <div className="border border-border rounded-md bg-muted/30 p-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Info className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span className="font-mono text-xs font-medium">Redacted Export (Verifiable)</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    This file hides sensitive fields. It is still independently verifiable. The original (unredacted) hash is shown for reference.
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-border">
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">Redacted Certificate Hash (this file)</span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-mono text-xs text-foreground truncate">{result.recordedHash ?? "—"}</span>
-                        {result.recordedHash && (
-                          <button onClick={() => copyText(result.recordedHash!, "Redacted hash", toast)} className="shrink-0 text-muted-foreground hover:text-foreground"><Copy className="h-3 w-3" /></button>
-                        )}
+              {parsedBundle?.meta &&
+                (parsedBundle.meta as Record<string, unknown>)?.provenance &&
+                ((parsedBundle.meta as Record<string, unknown>).provenance as Record<string, unknown>)?.kind ===
+                  "redacted_export" && (
+                  <div className="border border-border rounded-md bg-muted/30 p-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Info className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span className="font-mono text-xs font-medium">Redacted Export (Verifiable)</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      This file hides sensitive fields. It is still independently verifiable. The original (unredacted)
+                      hash is shown for reference.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-border">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+                          Redacted Certificate Hash (this file)
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-xs text-foreground truncate">
+                            {result.recordedHash ?? "—"}
+                          </span>
+                          {result.recordedHash && (
+                            <button
+                              onClick={() => copyText(result.recordedHash!, "Redacted hash", toast)}
+                              className="shrink-0 text-muted-foreground hover:text-foreground"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+                          Original Hash (reference only)
+                        </span>
+                        {(() => {
+                          const origHash = (
+                            (parsedBundle!.meta as Record<string, unknown>).provenance as Record<string, unknown>
+                          ).originalCertificateHash as string | undefined;
+                          return origHash ? (
+                            <>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono text-xs text-foreground truncate">{origHash}</span>
+                                <button
+                                  onClick={() => copyText(origHash, "Original hash", toast)}
+                                  className="shrink-0 text-muted-foreground hover:text-foreground"
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </button>
+                              </div>
+                              <p className="text-[9px] font-mono text-muted-foreground/60">
+                                The original hash cannot be verified from a redacted export.
+                              </p>
+                            </>
+                          ) : (
+                            <span className="font-mono text-xs text-muted-foreground">—</span>
+                          );
+                        })()}
                       </div>
                     </div>
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">Original Hash (reference only)</span>
-                      {(() => {
-                        const origHash = ((parsedBundle!.meta as Record<string, unknown>).provenance as Record<string, unknown>).originalCertificateHash as string | undefined;
-                        return origHash ? (
-                          <>
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-mono text-xs text-foreground truncate">{origHash}</span>
-                              <button onClick={() => copyText(origHash, "Original hash", toast)} className="shrink-0 text-muted-foreground hover:text-foreground"><Copy className="h-3 w-3" /></button>
-                            </div>
-                            <p className="text-[9px] font-mono text-muted-foreground/60">The original hash cannot be verified from a redacted export.</p>
-                          </>
-                        ) : <span className="font-mono text-xs text-muted-foreground">—</span>;
-                      })()}
-                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* Metadata summary */}
               {result.meta.bundleType && (
@@ -287,12 +333,7 @@ export default function Verify() {
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDownload}
-                    className="font-mono text-xs"
-                  >
+                  <Button variant="outline" size="sm" onClick={handleDownload} className="font-mono text-xs">
                     <Download className="h-3.5 w-3.5 mr-1.5" />
                     Download record
                   </Button>
@@ -322,19 +363,27 @@ export default function Verify() {
                       disabled={stampVerifying}
                     >
                       {stampVerifying ? (
-                        <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />Verifying stamp…</>
+                        <>
+                          <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                          Verifying stamp…
+                        </>
                       ) : (
-                        <><ShieldCheck className="h-3.5 w-3.5 mr-1.5" />Verify stamp offline</>
+                        <>
+                          <ShieldCheck className="h-3.5 w-3.5 mr-1.5" />
+                          Verify stamp offline
+                        </>
                       )}
                     </Button>
                   )}
                   {stampResult && (
                     <div className="flex items-center gap-2">
-                      <Badge className={`font-mono text-xs ${
-                        stampResult.ok
-                          ? "bg-green-600/15 text-green-600 border-green-600/30"
-                          : "bg-yellow-600/15 text-yellow-600 border-yellow-600/30"
-                      }`}>
+                      <Badge
+                        className={`font-mono text-xs ${
+                          stampResult.ok
+                            ? "bg-green-600/15 text-green-600 border-green-600/30"
+                            : "bg-yellow-600/15 text-yellow-600 border-yellow-600/30"
+                        }`}
+                      >
                         {stampResult.ok ? "Stamp: Verified offline" : stampResult.reason}
                       </Badge>
                       <span className="text-xs text-muted-foreground">{stampResult.explanation}</span>
@@ -407,9 +456,7 @@ function MetaRow({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="flex items-baseline justify-between gap-2">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="font-mono text-xs text-foreground text-right truncate max-w-[200px]">
-        {value || "—"}
-      </span>
+      <span className="font-mono text-xs text-foreground text-right truncate max-w-[200px]">{value || "—"}</span>
     </div>
   );
 }
