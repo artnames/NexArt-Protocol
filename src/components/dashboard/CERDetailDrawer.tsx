@@ -213,6 +213,13 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
   const isRedacted = n?.isRedactedExport ?? false;
   const isMismatch = liveVerification.status === "fail";
 
+  // Detect redacted bundle (input/output/prompt stripped)
+  const bundleIsRedacted = useMemo(() => {
+    const snap = (n?.rawBundleJson as Record<string, unknown>)?.snapshot as Record<string, unknown> | undefined;
+    if (!snap) return false;
+    return snap.input == null || snap.output == null || snap.prompt == null;
+  }, [n]);
+
   const stampStatus = useMemo(() => {
     if (reAttestResult) return reAttestResult.stamp;
     return n ? deriveStampStatus(n) : "not_stamped";
