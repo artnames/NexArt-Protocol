@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Sheet,
   SheetContent,
@@ -18,7 +18,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Copy, Download, ChevronDown, RotateCcw, Image as ImageIcon, ShieldCheck, ShieldAlert } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  Copy, Download, ChevronDown, RotateCcw, Image as ImageIcon,
+  ShieldCheck, ShieldAlert, ShieldQuestion, Stamp, Info, Ban,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { CertifiedUsageEvent, NormalizedCER } from "./certified-records-types";
@@ -35,18 +39,69 @@ function copyToClipboard(text: string, label: string, toast: ReturnType<typeof u
   toast({ title: "Copied", description: `${label} copied to clipboard.` });
 }
 
-function VerificationBadge({ status, reason }: { status: NormalizedCER["verificationStatus"]; reason: string | null }) {
+// ── Stamp status derivation ─────────────────────────────────────────
+
+type StampStatus = "not_stamped" | "legacy" | "signed";
+
+function deriveStampStatus(n: NormalizedCER): StampStatus {
+  const meta = n.rawBundleJson?.meta as Record<string, unknown> | undefined;
+  const att = (meta?.attestation ?? null) as Record<string, unknown> | null;
+
+  // Also check top-level normalized fields
+  const hasReceipt = !!att?.receipt || !!att?.signatureB64Url;
+  const hasLegacy = !!(n.attestationId || n.nodeRuntimeHash || att?.attestationId || att?.nodeRuntimeHash);
+
+  if (hasReceipt) return "signed";
+  if (hasLegacy) return "legacy";
+  return "not_stamped";
+}
+
+function StampStatusBadge({ status }: { status: StampStatus }) {
+  if (status === "signed") {
+    return (
+      <Badge className="font-mono text-xs bg-green-600/15 text-green-600 border-green-600/30 gap-1">
+        <Stamp className="h-3 w-3" />
+        Stamped (signed)
+      </Badge>
+    );
+  }
+  if (status === "legacy") {
+    return (
+      <Badge className="font-mono text-xs bg-yellow-600/15 text-yellow-600 border-yellow-600/30 gap-1">
+        <Stamp className="h-3 w-3" />
+        Stamped (legacy)
+      </Badge>
+    );
+  }
+  return (
+    <Badge className="font-mono text-xs bg-muted text-muted-foreground border-border gap-1">
+      <ShieldQuestion className="h-3 w-3" />
+      Not stamped
+    </Badge>
+  );
+}
+
+// ── Integrity label ─────────────────────────────────────────────────
+
+function IntegrityBadge({ status, reason, isRedacted }: {
+  status: NormalizedCER["verificationStatus"];
+  reason: string | null;
+  isRedacted: boolean;
+}) {
   if (status === "pass") {
+    const label = isRedacted ? "Integrity: Verified (Redacted Export)" : "Integrity: Verified";
     return (
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <Badge className="font-mono text-xs bg-green-600/15 text-green-600 border-green-600/30 gap-1">
               <ShieldCheck className="h-3 w-3" />
-              VERIFIED
+              {label}
             </Badge>
           </TooltipTrigger>
-          <TooltipContent><p className="text-xs">Certificate hash matches exported payload. Will pass Recânon verification.</p></TooltipContent>
+          <TooltipContent>
+            <p className="text-xs max-w-xs">Certificate hash matches exported payload. Will pass Recânon verification.</p>
+          </TooltipContent>
         </Tooltip>
       </TooltipProvider>
     );
@@ -58,18 +113,20 @@ function VerificationBadge({ status, reason }: { status: NormalizedCER["verifica
           <TooltipTrigger asChild>
             <Badge className="font-mono text-xs bg-red-600/15 text-red-600 border-red-600/30 gap-1">
               <ShieldAlert className="h-3 w-3" />
-              MISMATCH
+              Integrity: Mismatch
             </Badge>
           </TooltipTrigger>
-          <TooltipContent><p className="text-xs max-w-xs">{reason || "Certificate hash does not match payload."}</p></TooltipContent>
+          <TooltipContent>
+            <p className="text-xs max-w-xs">{reason || "Certificate hash does not match payload."}</p>
+          </TooltipContent>
         </Tooltip>
       </TooltipProvider>
     );
   }
   if (status === "pending") {
-    return <Badge className="font-mono text-xs bg-muted text-muted-foreground border-border">VERIFYING…</Badge>;
+    return <Badge className="font-mono text-xs bg-muted text-muted-foreground border-border">Verifying…</Badge>;
   }
-  return <Badge className="font-mono text-xs bg-muted text-muted-foreground border-border">UNAVAILABLE</Badge>;
+  return <Badge className="font-mono text-xs bg-muted text-muted-foreground border-border">Unavailable</Badge>;
 }
 
 function StatusBadge({ completeness, statusCode }: { completeness: NormalizedCER["completeness"]; statusCode: number }) {
@@ -77,7 +134,7 @@ function StatusBadge({ completeness, statusCode }: { completeness: NormalizedCER
     return <Badge className="font-mono text-xs bg-red-600/15 text-red-600 border-red-600/30">FAIL</Badge>;
   }
   if (completeness === "full") {
-    return <Badge className="font-mono text-xs bg-green-600/15 text-green-600 border-green-600/30">PASS</Badge>;
+    return <Badge className="font-mono text-xs bg-green-600/15 text-green-600 border-green-600/30">FULL</Badge>;
   }
   if (completeness === "partial") {
     return <Badge className="font-mono text-xs bg-yellow-600/15 text-yellow-600 border-yellow-600/30">PARTIAL</Badge>;
@@ -85,7 +142,7 @@ function StatusBadge({ completeness, statusCode }: { completeness: NormalizedCER
   return <Badge className="font-mono text-xs bg-muted text-muted-foreground border-border">UNAVAILABLE</Badge>;
 }
 
-function HashRow({ label, value }: { label: string; value: string | null }) {
+function HashRow({ label, value, note }: { label: string; value: string | null; note?: string }) {
   const { toast } = useToast();
   if (!value) return (
     <div className="flex items-start justify-between gap-2 py-1.5">
@@ -94,17 +151,22 @@ function HashRow({ label, value }: { label: string; value: string | null }) {
     </div>
   );
   return (
-    <div className="flex items-start justify-between gap-2 py-1.5">
-      <span className="text-xs text-muted-foreground shrink-0">{label}</span>
-      <div className="flex items-center gap-1.5 min-w-0">
-        <span className="font-mono text-xs text-foreground truncate">{value}</span>
-        <button
-          onClick={() => copyToClipboard(value, label, toast)}
-          className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <Copy className="h-3 w-3" />
-        </button>
+    <div className="space-y-0.5">
+      <div className="flex items-start justify-between gap-2 py-1.5">
+        <span className="text-xs text-muted-foreground shrink-0">{label}</span>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="font-mono text-xs text-foreground truncate">{value}</span>
+          <button
+            onClick={() => copyToClipboard(value, label, toast)}
+            className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Copy className="h-3 w-3" />
+          </button>
+        </div>
       </div>
+      {note && (
+        <p className="text-[9px] font-mono text-muted-foreground/60 pl-1">{note}</p>
+      )}
     </div>
   );
 }
@@ -143,9 +205,18 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
     status: "unavailable",
     reason: null,
   });
+  const [reAttesting, setReAttesting] = useState(false);
+  const [reAttestResult, setReAttestResult] = useState<{ stamp: StampStatus; offlineOk?: boolean } | null>(null);
 
   const n = event?.normalized;
   const hasBundle = n?.rawBundleJson !== null && n?.rawBundleJson !== undefined;
+  const isRedacted = n?.isRedactedExport ?? false;
+  const isMismatch = liveVerification.status === "fail";
+
+  const stampStatus = useMemo(() => {
+    if (reAttestResult) return reAttestResult.stamp;
+    return n ? deriveStampStatus(n) : "not_stamped";
+  }, [n, reAttestResult]);
 
   // Run live verification when drawer opens with a bundle
   useEffect(() => {
@@ -159,11 +230,16 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
     });
   }, [open, event?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Reset re-attest state when drawer changes
+  useEffect(() => {
+    setReAttestResult(null);
+    setReAttesting(false);
+  }, [event?.id]);
+
   if (!event || !n) return null;
 
   const hasCryptoEvidence = !!(n.inputHash || n.outputHash || n.certificateHash || n.attestationId);
   const hasParams = n.parameters !== null && Object.keys(n.parameters).length > 0;
-
   const snapshotJson = n.snapshotJson ? JSON.stringify(n.snapshotJson, null, 2) : null;
 
   function handleDownloadCER() {
@@ -190,18 +266,80 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
     });
   }
 
+  async function handleReAttest() {
+    setReAttesting(true);
+    setReAttestResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("re-attest", {
+        body: { usageEventId: Number(event.id) },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.message || "Re-attestation failed");
+
+      const newStamp: StampStatus = data.stamp === "signed" ? "signed" : "legacy";
+      setReAttestResult({ stamp: newStamp, offlineOk: newStamp === "signed" });
+
+      toast({
+        title: newStamp === "signed" ? "Signed Receipt Obtained" : "Re-attestation Complete",
+        description: newStamp === "signed"
+          ? "Stamp: Verified offline. Signed receipt stored."
+          : "Legacy attestation updated. No signed receipt returned by node.",
+      });
+    } catch (err) {
+      const e = err as Error;
+      toast({
+        variant: "destructive",
+        title: "Re-attestation Failed",
+        description: e.message || "Could not reach the attestation node.",
+      });
+    } finally {
+      setReAttesting(false);
+    }
+  }
+
+  // Download disabled when MISMATCH
+  const downloadDisabled = !hasBundle || isMismatch;
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto border-l border-border bg-background">
         <SheetHeader className="pb-4">
           <SheetTitle className="font-mono text-base">Certified Execution Record</SheetTitle>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <StatusBadge completeness={n.completeness} statusCode={n.upstreamStatus ?? 0} />
-            {hasBundle && <VerificationBadge status={liveVerification.status} reason={liveVerification.reason} />}
+            {hasBundle && (
+              <IntegrityBadge
+                status={liveVerification.status}
+                reason={liveVerification.reason}
+                isRedacted={isRedacted}
+              />
+            )}
           </div>
         </SheetHeader>
 
         <div className="space-y-6 pb-8">
+          {/* A) Redacted Export Banner */}
+          {isRedacted && hasBundle && (
+            <Alert className="border-border bg-muted/30">
+              <Info className="h-4 w-4" />
+              <AlertTitle className="font-mono text-xs">Redacted Export (Verifiable)</AlertTitle>
+              <AlertDescription className="text-xs text-muted-foreground leading-relaxed">
+                This download is redacted to protect sensitive fields. It is still independently verifiable. The original (unredacted) record hash is shown for reference.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* A) Mismatch guardrail banner */}
+          {isMismatch && hasBundle && (
+            <Alert className="border-destructive/50 bg-destructive/5">
+              <Ban className="h-4 w-4 text-destructive" />
+              <AlertTitle className="font-mono text-xs text-destructive">Export Blocked</AlertTitle>
+              <AlertDescription className="text-xs text-destructive/80">
+                This export would not verify. Please refresh or contact support.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Debug lookup line */}
           <Collapsible className="border border-border rounded px-3 py-1.5">
             <CollapsibleTrigger className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors font-mono w-full">
@@ -225,23 +363,26 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
           <p className="text-[11px] font-mono text-muted-foreground leading-relaxed border-l-2 border-border pl-3">
             {n.endpointNote}
           </p>
-          {n.isRedactedExport && (
-            <p className="text-[10px] font-mono text-muted-foreground/70 leading-relaxed border-l-2 border-muted pl-3">
-              This is a redacted export. It verifies integrity of the redacted record. Original content (input/output/prompt) is not included.
-            </p>
-          )}
-          {hasBundle && !n.isRedactedExport && (
-            <p className="text-[10px] font-mono text-muted-foreground/70 leading-relaxed border-l-2 border-muted pl-3">
-              Stored bundle is a full export; hashes are verifiable.
-            </p>
+
+          {/* A) Dual hash display */}
+          {hasBundle && (
+            <Section title="Certificate Hashes">
+              <HashRow
+                label={isRedacted ? "Redacted Certificate Hash (this download)" : "Certificate Hash"}
+                value={n.certificateHash}
+              />
+              {isRedacted && n.originalCertificateHash && (
+                <HashRow
+                  label="Original Certificate Hash (historic, unredacted)"
+                  value={n.originalCertificateHash}
+                  note="Original hash cannot be verified from this redacted export."
+                />
+              )}
+            </Section>
           )}
 
-          {/* Section A — Identity */}
+          {/* Section — Identity */}
           <Section title="Identity">
-            <HashRow label="Certificate Hash" value={n.certificateHash} />
-            {n.originalCertificateHash && n.originalCertificateHash !== n.certificateHash && (
-              <HashRow label="Original Hash (pre-redaction)" value={n.originalCertificateHash} />
-            )}
             <InfoRow label="Execution ID" value={n.executionId} />
             <InfoRow
               label="Surface"
@@ -254,18 +395,48 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
             <InfoRow label="Timestamp" value={n.timestamp} />
           </Section>
 
-          {/* Section B — Cryptographic Evidence */}
+          {/* Section — Cryptographic Evidence */}
           <Section title="Cryptographic Evidence" unavailable={!hasCryptoEvidence}>
             <HashRow label="Input Hash" value={n.inputHash} />
             <HashRow label="Output Hash" value={n.outputHash} />
-            <HashRow label="Certificate Hash" value={n.certificateHash} />
             <HashRow label="Attestation ID" value={n.attestationId} />
             <HashRow label="Node Runtime Hash" value={n.nodeRuntimeHash} />
             <InfoRow label="Upstream Status" value={n.upstreamStatus} />
             <InfoRow label="Duration" value={n.durationMs != null ? `${n.durationMs}ms` : null} />
           </Section>
 
-          {/* Section C — Execution Parameters */}
+          {/* B) Stamp Status */}
+          <Section title="Stamp Status">
+            <div className="flex items-center justify-between py-1.5">
+              <span className="text-xs text-muted-foreground">Status</span>
+              <StampStatusBadge status={stampStatus} />
+            </div>
+            {reAttestResult?.offlineOk && (
+              <div className="flex items-center gap-1.5 py-1">
+                <ShieldCheck className="h-3 w-3 text-green-600" />
+                <span className="text-xs text-green-600 font-mono">Stamp: Verified offline</span>
+              </div>
+            )}
+            {stampStatus === "legacy" && !reAttesting && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="font-mono text-xs mt-2 w-full"
+                onClick={handleReAttest}
+              >
+                <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+                Re-attest to generate signed receipt
+              </Button>
+            )}
+            {reAttesting && (
+              <div className="flex items-center gap-2 py-2">
+                <RotateCcw className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                <span className="text-xs font-mono text-muted-foreground">Re-attesting…</span>
+              </div>
+            )}
+          </Section>
+
+          {/* Section — Execution Parameters */}
           <Section title="Execution Parameters" unavailable={!hasParams}>
             {hasParams && n.surface === "ai" ? (
               <>
@@ -303,7 +474,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
             )}
           </Section>
 
-          {/* Section D — Artifact */}
+          {/* Section — Artifact */}
           {n.artifactPath && (
             <Section title="Output Artifact">
               <InfoRow label="Type" value={n.artifactMime} />
@@ -329,7 +500,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
             </Section>
           )}
 
-          {/* Section E — Actions */}
+          {/* Section — Actions */}
           <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
             <TooltipProvider>
               <Tooltip>
@@ -339,19 +510,23 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
                       variant="outline"
                       size="sm"
                       onClick={handleDownloadCER}
-                      disabled={!hasBundle}
+                      disabled={downloadDisabled}
                       className="font-mono text-xs"
                     >
                       <Download className="h-3.5 w-3.5 mr-1.5" />
-                      {n.isRedactedExport ? "Download Verifiable Redacted CER" : "Download CER JSON"}
+                      {isRedacted ? "Download Verifiable Redacted CER" : "Download CER JSON"}
                     </Button>
                   </span>
                 </TooltipTrigger>
-                {!hasBundle ? (
+                {isMismatch ? (
+                  <TooltipContent>
+                    <p className="text-xs max-w-xs">This export would not verify. Please refresh or contact support.</p>
+                  </TooltipContent>
+                ) : !hasBundle ? (
                   <TooltipContent>
                     <p className="text-xs">No CER bundle stored for this run.</p>
                   </TooltipContent>
-                ) : n.isRedactedExport ? (
+                ) : isRedacted ? (
                   <TooltipContent>
                     <p className="text-xs max-w-xs">This is redacted. It verifies integrity of the redacted record. Original content is not included.</p>
                   </TooltipContent>
