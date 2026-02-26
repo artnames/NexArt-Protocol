@@ -208,7 +208,8 @@ Deno.serve(async (req) => {
     };
 
     // Persist signed receipt in attestation_json AND inside bundle.meta.attestation
-    const updatedBundle = JSON.parse(JSON.stringify(storedBundle)) as Record<string, unknown>;
+    // Start from the payload we sent (which has recomputed hash + provenance for redacted)
+    const updatedBundle = JSON.parse(JSON.stringify(payload)) as Record<string, unknown>;
     const meta = (updatedBundle.meta && typeof updatedBundle.meta === 'object')
       ? { ...(updatedBundle.meta as Record<string, unknown>) }
       : {};
