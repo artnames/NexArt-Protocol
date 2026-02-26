@@ -29,6 +29,7 @@ const AIExecutionCertification = () => {
               <li><a href="#verify" className="text-body underline underline-offset-2 hover:text-foreground">Verify</a></li>
               <li><a href="#what-this-certifies" className="text-body underline underline-offset-2 hover:text-foreground">What This Certifies</a></li>
               <li><a href="#redaction" className="text-body underline underline-offset-2 hover:text-foreground">Redaction</a></li>
+              <li><a href="#store-stamp" className="text-body underline underline-offset-2 hover:text-foreground">Store the Stamp</a></li>
               <li><a href="#multi-step" className="text-body underline underline-offset-2 hover:text-foreground">Multi-Step Workflows</a></li>
               <li><a href="#try-it" className="text-body underline underline-offset-2 hover:text-foreground">Try It</a></li>
             </ul>
@@ -39,9 +40,9 @@ const AIExecutionCertification = () => {
             <div className="bg-muted/50 border border-border rounded-md p-5 my-6">
               <p className="text-xs font-mono uppercase tracking-wide text-caption mb-3">Minimum Integration — 3 Steps</p>
               <ol className="text-sm text-body space-y-2 pl-5 mb-0">
-                <li><strong><code>certifyDecision()</code></strong> — Seal input, output, and parameters into a CER bundle.</li>
-                <li><strong><code>certifyAndAttestDecision()</code></strong> — Same as above, plus submit to a node for a signed receipt.</li>
-                <li><strong>Verify</strong> — <code>verify(bundle)</code> for local integrity; <code>verifyBundleAttestation(bundle, &#123; nodeUrl &#125;)</code> if a signed receipt is present.</li>
+                <li><strong><code>certifyDecision()</code></strong> — Seal input, output, and parameters into a CER bundle. Returns a <code>cer</code> object.</li>
+                <li><strong><code>certifyAndAttestDecision()</code></strong> — Same as above, plus submit to a node for a signed receipt. Returns <code>{"{ bundle, receipt }"}</code>.</li>
+                <li><strong>Verify</strong> — <code>verify(cer)</code> after Step 1; <code>verify(bundle)</code> after Step 2. Add <code>verifyBundleAttestation(bundle, {"{ nodeUrl }"})</code> if a signed receipt is present.</li>
               </ol>
             </div>
           </section>
@@ -50,12 +51,10 @@ const AIExecutionCertification = () => {
           <section id="certify-decision">
             <h2>Step 1 — certifyDecision()</h2>
             <p>
-              The simplest path. Pass your LLM call details and get a sealed CER bundle in one call.
+              The simplest path. Pass your LLM call details and get a sealed CER bundle object in one call.
             </p>
 
-            <div className="spec-code">
-              <code>
-{`import { certifyDecision } from '@nexart/ai-execution';
+            <pre className="spec-code"><code>{`import { certifyDecision } from '@nexart/ai-execution';
 
 const cer = certifyDecision({
   provider: 'openai',
@@ -75,12 +74,10 @@ console.log(cer.certificateHash);
 // "sha256:a1b2c3..."
 
 console.log(cer.bundleType);
-// "cer.ai.execution.v1"`}
-              </code>
-            </div>
+// "cer.ai.execution.v1"`}</code></pre>
 
             <p>
-              The <code>certificateHash</code> is a SHA-256 digest of the canonical JSON of <code>&#123; bundleType, version, createdAt, snapshot &#125;</code>.
+              The returned <code>cer</code> object is a complete CER bundle. Its <code>certificateHash</code> is a SHA-256 digest of the canonical JSON of <code>{"{ bundleType, version, createdAt, snapshot }"}</code>.
               Any post-hoc change to the input, output, or parameters invalidates it.
             </p>
           </section>
@@ -90,11 +87,10 @@ console.log(cer.bundleType);
             <h2>Step 2 — certifyAndAttestDecision()</h2>
             <p>
               One-call integration: certifies the decision and submits it to a canonical node for a signed receipt.
+              Returns <code>{"{ bundle, receipt }"}</code> — the sealed CER bundle and the node's signed attestation receipt.
             </p>
 
-            <div className="spec-code">
-              <code>
-{`import { certifyAndAttestDecision } from '@nexart/ai-execution';
+            <pre className="spec-code"><code>{`import { certifyAndAttestDecision } from '@nexart/ai-execution';
 
 const { bundle, receipt } = await certifyAndAttestDecision(
   {
@@ -107,16 +103,21 @@ const { bundle, receipt } = await certifyAndAttestDecision(
   },
   {
     nodeUrl: 'https://nexart-canonical-renderer-production.up.railway.app',
-    apiKey: process.env.NEXART_API_KEY,
+    apiKey: process.env.NEXART_NODE_API_KEY,
   }
 );
 
+console.log(bundle.certificateHash);
+// "sha256:d4e5f6..."
+
 console.log(receipt.attestationId);
 // "att-xyz789..."
+
 console.log(receipt.signatureB64Url);
-// Ed25519 signature`}
-              </code>
-            </div>
+// Ed25519 signature over the receipt
+
+console.log(receipt.attestorKeyId);
+// Key ID for offline verification`}</code></pre>
 
             <div className="bg-muted/50 border border-border rounded-md p-4 my-6">
               <p className="text-sm text-muted-foreground mb-0">
@@ -130,26 +131,26 @@ console.log(receipt.signatureB64Url);
           <section id="verify">
             <h2>Step 3 — Verify</h2>
             <p>
-              Verification works in two layers:
+              Verification works in two layers. Use the object returned by the step you chose:
             </p>
 
-            <div className="spec-code">
-              <code>
-{`import { verify, verifyBundleAttestation } from '@nexart/ai-execution';
+            <pre className="spec-code"><code>{`import { verify, verifyBundleAttestation } from '@nexart/ai-execution';
 
-// 1. Local integrity — checks certificate hash, input/output hashes
-const result = verify(bundle);
+// After Step 1 (certifyDecision) — pass the cer object directly:
+const result = verify(cer);
 console.log(result.ok);   // true
 console.log(result.code); // "OK"
 
-// 2. Node stamp — verifies Ed25519 signed receipt (if present)
+// After Step 2 (certifyAndAttestDecision) — pass the bundle:
+const result2 = verify(bundle);
+console.log(result2.ok);  // true
+
+// Node stamp verification — verifies Ed25519 signed receipt (if present)
 const stamp = await verifyBundleAttestation(bundle, {
   nodeUrl: 'https://nexart-canonical-renderer-production.up.railway.app',
 });
 console.log(stamp.ok);   // true
-console.log(stamp.code); // "OK"`}
-              </code>
-            </div>
+console.log(stamp.code); // "OK"`}</code></pre>
           </section>
 
           {/* What this certifies */}
@@ -173,8 +174,24 @@ console.log(stamp.code); // "OK"`}
           <section id="redaction">
             <h2>Redaction Guidance</h2>
             <p>
-              You may need to redact sensitive fields (PII, proprietary prompts) before storing or sharing a CER bundle.
+              You may need to redact sensitive fields (PII, proprietary prompts) before sharing a CER bundle.
             </p>
+
+            <div className="spec-warning">
+              <p className="text-sm text-body mb-0">
+                <strong>Redaction invalidates verification — by design.</strong> Once a CER bundle is sealed, any
+                modification to hashed fields will cause <code>verify()</code> to return <code>CERTIFICATE_HASH_MISMATCH</code>.
+                This is the intended behavior: it proves the original record was tamper-free at sealing time.
+              </p>
+            </div>
+
+            <p className="mt-4">
+              <strong>Recommended patterns:</strong>
+            </p>
+            <ul>
+              <li><strong>Redact before sealing</strong> — Remove sensitive fields before calling <code>certifyDecision()</code>. The sealed bundle will verify cleanly with the redacted content.</li>
+              <li><strong>Store full + share redacted</strong> — Seal the full bundle for your private archive, then share a redacted copy externally. The redacted copy won't pass <code>verify()</code>, but the original will.</li>
+            </ul>
 
             <div className="overflow-x-auto my-6">
               <table className="spec-table">
@@ -198,7 +215,7 @@ console.log(stamp.code); // "OK"`}
                   </tr>
                   <tr>
                     <td>Set to <code>undefined</code></td>
-                    <td>Breaks canonical JSON</td>
+                    <td>Breaks canonical JSON serialization</td>
                     <td>❌ Never</td>
                   </tr>
                 </tbody>
@@ -206,7 +223,36 @@ console.log(stamp.code); // "OK"`}
             </div>
 
             <p>
-              Use <code>sanitizeForAttestation(bundle)</code> before archiving — it removes <code>undefined</code> values and rejects non-serializable types.
+              Use <code>sanitizeForAttestation(bundle)</code> before archiving — it strips <code>undefined</code> values
+              and rejects non-serializable types that would break canonical JSON.
+            </p>
+          </section>
+
+          {/* Store the stamp */}
+          <section id="store-stamp">
+            <h2>Store the Stamp</h2>
+            <p>
+              If you used <code>certifyAndAttestDecision()</code>, persist the receipt fields alongside the bundle
+              so offline stamp verification works later — without needing to contact the node again.
+            </p>
+
+            <pre className="spec-code"><code>{`// Persist these fields from the receipt:
+await db.insert('cer_bundles', {
+  certificate_hash: bundle.certificateHash,
+  cer_bundle: bundle,
+
+  // Required for offline stamp verification
+  attestation_id: receipt.attestationId,
+  signature_b64url: receipt.signatureB64Url,
+  attestor_key_id: receipt.attestorKeyId,  // kid
+});`}</code></pre>
+
+            <p>
+              The <code>attestorKeyId</code> (kid) maps to the node's public key published at its{" "}
+              <a href="https://nexart-canonical-renderer-production.up.railway.app/.well-known/nexart-node.json" target="_blank" rel="noopener noreferrer" className="text-body underline underline-offset-2 hover:text-foreground">
+                .well-known/nexart-node.json
+              </a>{" "}
+              endpoint. This enables fully offline Ed25519 signature verification.
             </p>
           </section>
 
@@ -217,9 +263,7 @@ console.log(stamp.code); // "OK"`}
               For agentic pipelines with multiple LLM calls, use <code>RunBuilder</code> to chain steps with <code>prevStepHash</code> linking:
             </p>
 
-            <div className="spec-code">
-              <code>
-{`import { RunBuilder } from '@nexart/ai-execution';
+            <pre className="spec-code"><code>{`import { RunBuilder } from '@nexart/ai-execution';
 
 const run = new RunBuilder({
   runId: 'analysis-run',
@@ -245,9 +289,7 @@ run.step({
 });
 
 const summary = run.finalize();
-// { runId, stepCount: 2, steps: [...], finalStepHash: "sha256:..." }`}
-              </code>
-            </div>
+// { runId, stepCount: 2, steps: [...], finalStepHash: "sha256:..." }`}</code></pre>
           </section>
 
           {/* Try it */}
