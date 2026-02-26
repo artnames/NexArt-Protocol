@@ -145,6 +145,15 @@ Deno.serve(async (req) => {
       console.info(`Redacted certificateHash recomputed: ${redactedCertificateHash} (original: ${originalCertificateHash})`);
     }
 
+    // Ensure JSON-safe
+    const payload = JSON.parse(JSON.stringify(payloadObj));
+    const payloadJson = JSON.stringify(payload);
+    const payloadByteSize = new TextEncoder().encode(payloadJson).byteLength;
+
+    console.info(`Re-attesting bundle ${usageEventId} via ${nodeUrl}${endpoint} (isRedacted=${isRedacted})`);
+    console.info(`bundleType=${payload.bundleType} certificateHash=${payload.certificateHash}`);
+    console.info(`payloadByteSize=${payloadByteSize}`);
+
     const nodeResp = await fetch(`${nodeUrl}${endpoint}`, {
       method: 'POST',
       headers: {
