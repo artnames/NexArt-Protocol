@@ -55,6 +55,17 @@ export default function Verify() {
         return;
       }
 
+      // Dev guard: warn if any fetch fires during auto-verify
+      let fetchGuard: ((input: RequestInfo | URL, init?: RequestInit) => Promise<Response>) | null = null;
+      if (import.meta.env.DEV) {
+        const origFetch = globalThis.fetch;
+        fetchGuard = origFetch;
+        globalThis.fetch = (...args: Parameters<typeof origFetch>) => {
+          console.warn("[Verify dev guard] Unexpected fetch during auto-verify:", args[0]);
+          return origFetch(...args);
+        };
+      }
+
       setVerifying(true);
       setResult(null);
       setStampResult(null);
