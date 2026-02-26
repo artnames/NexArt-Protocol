@@ -457,7 +457,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
                 <span className="text-xs text-green-600 font-mono">Stamp: Verified offline</span>
               </div>
             )}
-            {stampStatus === "legacy" && !reAttesting && (
+            {(stampStatus === "legacy" || stampStatus === "not_stamped") && !reAttesting && (
               <Button
                 variant="outline"
                 size="sm"
@@ -465,7 +465,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
                 onClick={handleReAttest}
               >
                 <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
-                Re-attest to generate signed receipt
+                {bundleIsRedacted ? "Generate signed stamp" : "Re-attest to generate signed receipt"}
               </Button>
             )}
             {reAttesting && (
