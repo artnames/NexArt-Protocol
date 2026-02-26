@@ -142,7 +142,7 @@ const BuildersCertification = () => {
   "codeHash": "sha256:...",
   "outputHash": "sha256:...",
   "timestamp": "2025-01-27T...",
-  "rendererVersion": "1.8.4"
+  "rendererVersion": "1.9.0"
 }`}</code>
           </div>
           <p>

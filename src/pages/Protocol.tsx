@@ -93,7 +93,7 @@ const Protocol = () => {
 
             <p className="text-caption text-sm">
               Protocol versions define guarantees. Runtime versions are implementations that adhere to those guarantees.
-              SDK v1.8.4 supports optional passive builder identity via manifest registration, without affecting
+              SDK v1.9.0 supports optional passive builder identity via manifest registration, without affecting
               execution or determinism.
             </p>
           </section>

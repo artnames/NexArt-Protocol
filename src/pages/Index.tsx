@@ -144,7 +144,7 @@ const Index = () => {
                 <li>Canonical execution semantics</li>
                 <li>Deterministic, reproducible runs</li>
                 <li>
-                  Enforced via <code className="text-xs bg-muted px-1 py-0.5 rounded">@nexart/codemode-sdk v1.8.4</code>
+                  Enforced via <code className="text-xs bg-muted px-1 py-0.5 rounded">@nexart/codemode-sdk v1.9.0</code>
                 </li>
                 <li>Protocol v1.2.0 — Locked &amp; Stable</li>
               </ul>
