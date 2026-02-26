@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
     const endpoint = isRedacted ? '/api/stamp' : '/api/attest';
 
     // Build payload: full envelope minus existing attestation (node generates that)
-    const payloadObj: Record<string, unknown> = { ...storedBundle };
+    const payloadObj: Record<string, unknown> = JSON.parse(JSON.stringify(storedBundle));
     delete payloadObj.attestation;
     if (payloadObj.meta && typeof payloadObj.meta === 'object') {
       const meta = { ...(payloadObj.meta as Record<string, unknown>) };
@@ -124,14 +124,26 @@ Deno.serve(async (req) => {
       payloadObj.meta = meta;
     }
 
-    // Ensure JSON-safe
-    const payload = JSON.parse(JSON.stringify(payloadObj));
-    const payloadJson = JSON.stringify(payload);
-    const payloadByteSize = new TextEncoder().encode(payloadJson).byteLength;
+    // For redacted bundles: recompute certificateHash over the redacted snapshot
+    // and preserve the original hash in provenance
+    if (isRedacted) {
+      const originalCertificateHash = payloadObj.certificateHash as string | null;
+      const redactedCertificateHash = await computeCertificateHash(payloadObj);
+      payloadObj.certificateHash = redactedCertificateHash;
 
-    console.info(`Re-attesting bundle ${usageEventId} via ${nodeUrl}${endpoint} (isRedacted=${isRedacted})`);
-    console.info(`bundleType=${payload.bundleType} certificateHash=${payload.certificateHash}`);
-    console.info(`payloadByteSize=${payloadByteSize}`);
+      // Set provenance metadata
+      const meta = (payloadObj.meta && typeof payloadObj.meta === 'object')
+        ? { ...(payloadObj.meta as Record<string, unknown>) }
+        : {};
+      meta.provenance = {
+        originalCertificateHash: originalCertificateHash ?? null,
+        kind: 'redacted_export',
+        redactedAt: new Date().toISOString(),
+      };
+      payloadObj.meta = meta;
+
+      console.info(`Redacted certificateHash recomputed: ${redactedCertificateHash} (original: ${originalCertificateHash})`);
+    }
 
     const nodeResp = await fetch(`${nodeUrl}${endpoint}`, {
       method: 'POST',
