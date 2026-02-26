@@ -214,7 +214,7 @@ export default function Verify() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Main verdict */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <Badge
                   className={`font-mono text-sm px-3 py-1 ${
                     result.ok
@@ -227,6 +227,10 @@ export default function Verify() {
                 <Badge variant="outline" className="font-mono text-[10px]">
                   {result.reason}
                 </Badge>
+                <span className="text-[10px] font-mono text-muted-foreground flex items-center gap-1 ml-auto">
+                  <ShieldCheck className="h-3 w-3" />
+                  Verified locally in your browser
+                </span>
               </div>
 
               {/* Plain English explanation */}
