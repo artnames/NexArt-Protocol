@@ -38,7 +38,7 @@ const VerifyIndependently = () => {
               <ol className="text-sm text-body space-y-2 pl-5 mb-0">
                 <li><strong>Load</strong> — Parse the CER bundle JSON (use <code>importCer(json)</code> or <code>JSON.parse</code>).</li>
                 <li><strong>Verify locally</strong> — Call <code>verify(bundle)</code> to check certificate hash and snapshot hashes.</li>
-                <li><strong>Verify stamp</strong> — If a signed receipt is present, call <code>verifyBundleAttestation(bundle, &#123; nodeUrl &#125;)</code>.</li>
+                <li><strong>Verify stamp</strong> — If a signed receipt is present, call <code>verifyBundleAttestation(bundle, {"{ nodeUrl }"})</code>.</li>
               </ol>
             </div>
           </section>
@@ -51,9 +51,7 @@ const VerifyIndependently = () => {
               No network call is needed. This works entirely offline.
             </p>
 
-            <div className="spec-code">
-              <code>
-{`import { verify } from '@nexart/ai-execution';
+            <pre className="spec-code"><code>{`import { verify } from '@nexart/ai-execution';
 // or for Code Mode:
 // import { verify } from '@nexart/codemode-sdk';
 
@@ -64,14 +62,14 @@ if (result.ok) {
   console.log('✓ Record intact — hashes match');
 } else {
   console.log('✗ Integrity breach:', result.code);
-  console.log('  Details:', result.details);
-}`}
-              </code>
-            </div>
+  console.log('  Reason:', result.details?.reason);
+  console.log('  Expected:', result.details?.expected);
+  console.log('  Actual:', result.details?.actual);
+}`}</code></pre>
 
             <p>What gets checked:</p>
             <ul>
-              <li><code>certificateHash</code> — SHA-256 of canonical JSON of <code>&#123; bundleType, version, createdAt, snapshot &#125;</code></li>
+              <li><code>certificateHash</code> — SHA-256 of canonical JSON of <code>{"{ bundleType, version, createdAt, snapshot }"}</code></li>
               <li><code>inputHash</code> — SHA-256 of the input field</li>
               <li><code>outputHash</code> — SHA-256 of the output field</li>
               <li>Schema validity — correct <code>bundleType</code>, <code>version</code>, required fields present</li>
@@ -83,21 +81,23 @@ if (result.ok) {
             <h2>Node Stamp Verification</h2>
             <p>
               If the bundle includes a signed receipt (from a canonical attestation node), you can verify the Ed25519
-              signature offline. The only network call is fetching the node's public keys.
+              signature offline. The <strong>only network call</strong> is fetching the node's public keys from{" "}
+              <code>/.well-known/nexart-node.json</code> — <code>verifyBundleAttestation</code> does <em>not</em> call{" "}
+              <code>/api/attest</code> or submit anything to the node.
             </p>
 
-            <div className="spec-code">
-              <code>
-{`import { verifyBundleAttestation } from '@nexart/ai-execution';
+            <pre className="spec-code"><code>{`import { verifyBundleAttestation } from '@nexart/ai-execution';
 
 const result = await verifyBundleAttestation(bundle, {
   nodeUrl: 'https://nexart-canonical-renderer-production.up.railway.app',
 });
 
 console.log(result.ok);   // true or false
-console.log(result.code); // "OK", "ATTESTATION_INVALID_SIGNATURE", etc.`}
-              </code>
-            </div>
+console.log(result.code); // "OK", "ATTESTATION_INVALID_SIGNATURE", etc.
+
+// Detailed mismatch info (when result.ok is false):
+console.log(result.details);
+// { reason: "signature_mismatch", kid: "key-2025-01", ... }`}</code></pre>
 
             <p>This performs the following automatically:</p>
             <ol>
@@ -126,15 +126,15 @@ console.log(result.code); // "OK", "ATTESTATION_INVALID_SIGNATURE", etc.`}
                 <tbody>
                   <tr>
                     <td>Browser</td>
-                    <td><code>crypto.subtle.digest</code></td>
-                    <td><code>crypto.subtle.verify</code></td>
-                    <td>Works in all modern browsers via Web Crypto API</td>
+                    <td>WebCrypto (<code>crypto.subtle.digest</code>)</td>
+                    <td>SDK verifier (<code>@noble/ed25519</code>)</td>
+                    <td>No native Ed25519 in WebCrypto; SDK bundles a pure-JS verifier</td>
                   </tr>
                   <tr>
                     <td>Node.js</td>
                     <td><code>crypto.createHash</code></td>
-                    <td><code>crypto.verify</code></td>
-                    <td>Built-in, no dependencies needed</td>
+                    <td><code>@noble/ed25519</code> or built-in <code>crypto.verify</code></td>
+                    <td>SDK uses noble by default; may use built-in crypto when available</td>
                   </tr>
                 </tbody>
               </table>
@@ -192,8 +192,17 @@ console.log(result.code); // "OK", "ATTESTATION_INVALID_SIGNATURE", etc.`}
             </div>
 
             <p>
+              Legacy stamp fields may appear either at the top level of the bundle or nested under <code>meta.attestation</code>,
+              depending on the producer. The SDK's <code>getAttestationReceipt()</code> normalizes both locations automatically.
+            </p>
+
+            <p>
               <code>verifyBundleAttestation()</code> returns <code>ATTESTATION_MISSING</code> when no signed receipt is found.
               This does not invalidate the bundle itself — local integrity can still pass.
+            </p>
+
+            <p>
+              <strong>Fix:</strong> Re-attest the bundle with a current node to obtain <code>receipt</code> + <code>signature</code> + <code>kid</code>.
             </p>
           </section>
 
