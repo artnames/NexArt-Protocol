@@ -95,7 +95,7 @@ const { bundle, receipt } = await certifyAndAttestDecision(
   },
   {
     nodeUrl: 'https://nexart-canonical-renderer-production.up.railway.app',
-    apiKey: process.env.NEXART_API_KEY,
+    apiKey: process.env.NEXART_NODE_API_KEY,
   }
 );
 
@@ -174,17 +174,24 @@ console.log(stamp.code); // "OK"`}
 
             <h3 className="mt-6">Certificate hash computation</h3>
             <p>
-              The <code>certificateHash</code> is SHA-256 of the UTF-8 bytes of the canonical JSON of exactly:
+              The <code>certificateHash</code> is SHA-256 of the UTF-8 bytes of the canonical JSON of exactly four fields:
             </p>
             <div className="spec-code">
-              <code>{`{ bundleType, version, createdAt, snapshot }`}</code>
+              <code>
+{`sha256(canonicalJson({ bundleType, version, createdAt, snapshot }))`}
+              </code>
             </div>
+            <p>
+              Everything else is <strong>excluded</strong> from the certificate hash, regardless of where it appears in the bundle:
+            </p>
             <ul>
-              <li><code>meta</code> is <strong>excluded</strong> from the certificate hash</li>
-              <li>Attestation fields (<code>receipt</code>, <code>signature</code>) are <strong>excluded</strong></li>
-              <li>Key ordering is recursive (canonical JSON)</li>
-              <li>This computation is identical across all SDK versions</li>
+              <li><code>meta</code> — excluded (user metadata, tags, etc.)</li>
+              <li><code>receipt</code>, <code>signature</code>, <code>attestorKeyId</code> — excluded (attestation fields)</li>
+              <li><code>attestationId</code>, <code>nodeRuntimeHash</code> — excluded (legacy attestation fields)</li>
+              <li>Any other top-level or nested attestation data — excluded</li>
             </ul>
+            <p>
+              Key ordering is recursive (canonical JSON). This computation is identical across all SDK versions.</p>
           </section>
 
           {/* ── Snapshot Format ── */}
@@ -241,11 +248,26 @@ console.log(stamp.code); // "OK"`}
               </table>
             </div>
 
-            <div className="bg-muted/50 border border-border rounded-md p-4 my-6">
-              <p className="text-sm text-muted-foreground mb-0">
-                <strong>Normalization rule:</strong> All optional fields must be set to <code>null</code> (never <code>undefined</code>).
-                This ensures compatibility with canonical JSON serialization and node attestation.
-              </p>
+            <h3 className="mt-6">Redaction and sanitization</h3>
+            <p>
+              You may need to redact sensitive fields (PII, proprietary prompts) before storing or sharing a CER.
+            </p>
+            <ul>
+              <li><strong>Delete the key</strong> — safe. Hash will no longer match (expected for redacted records).</li>
+              <li><strong>Set to <code>null</code></strong> — safe. Hash will no longer match (expected).</li>
+              <li><strong>Never set to <code>undefined</code></strong> — <code>undefined</code> is not valid JSON and will break canonical serialization.</li>
+            </ul>
+            <p>
+              Before archiving or attesting, call <code>sanitizeForAttestation(bundle)</code> to strip any <code>undefined</code> values
+              and reject non-serializable types (BigInt, functions, symbols):
+            </p>
+            <div className="spec-code">
+              <code>
+{`import { sanitizeForAttestation } from '@nexart/ai-execution';
+
+// Deep-clones the bundle, removes undefined keys, rejects BigInt/functions
+const clean = sanitizeForAttestation(bundle);`}
+              </code>
             </div>
 
             <h3 className="mt-6">Auto-generated fields</h3>
@@ -256,22 +278,49 @@ console.log(stamp.code); // "OK"`}
               <li><code>type</code> — always <code>"ai.execution.v1"</code></li>
               <li><code>protocolVersion</code> — always <code>"1.2.0"</code></li>
               <li><code>executionSurface</code> — always <code>"ai"</code></li>
-              <li><code>inputHash</code> — SHA-256 of canonical JSON of input</li>
-              <li><code>outputHash</code> — SHA-256 of canonical JSON of output</li>
+              <li><code>inputHash</code> — SHA-256 of input (strings: raw UTF-8 bytes; objects: canonical JSON bytes)</li>
+              <li><code>outputHash</code> — SHA-256 of output (strings: raw UTF-8 bytes; objects: canonical JSON bytes)</li>
             </ul>
           </section>
 
           {/* ── Hashing Rules ── */}
           <section id="hashing-rules" className="mt-12">
             <h2>Canonical Hashing Rules</h2>
+
+            <h3 className="mt-6">inputHash / outputHash</h3>
             <ul>
-              <li><strong>Canonical JSON</strong> — keys sorted lexicographically at every nesting level, no whitespace</li>
-              <li><strong>UTF-8 hashing</strong> — input and output hashed as raw UTF-8 byte sequences</li>
-              <li><strong>Hash format</strong> — <code>sha256:&lt;64 hex chars&gt;</code></li>
-              <li><strong>Numbers</strong> — must be finite. <code>NaN</code>, <code>Infinity</code> rejected</li>
-              <li><strong>undefined values</strong> — omitted (key dropped). Use <code>null</code> instead</li>
-              <li><strong>Canonicalization frozen for v1</strong> — rules will not change. Any stricter canonicalization ships as a new bundle type</li>
+              <li><strong>String values</strong> — hashed as raw UTF-8 byte sequences (no canonicalization needed)</li>
+              <li><strong>Object values</strong> — serialized to canonical JSON first, then hashed as UTF-8 bytes</li>
             </ul>
+
+            <div className="spec-code">
+              <code>
+{`// String input → hash raw UTF-8 bytes
+inputHash = "sha256:" + sha256(utf8Bytes("What is 2+2?"))
+
+// Object input → canonicalize first, then hash
+inputHash = "sha256:" + sha256(utf8Bytes(canonicalJson({ locale: "en-US", text: "Hello" })))`}
+              </code>
+            </div>
+
+            <h3 className="mt-6">Canonical JSON rules</h3>
+            <ul>
+              <li>Keys sorted lexicographically (Unicode codepoint order) at every nesting level</li>
+              <li>No whitespace between tokens</li>
+              <li>Array order preserved</li>
+              <li><code>null</code> serialized as <code>null</code></li>
+              <li>Numbers must be finite — <code>NaN</code>, <code>Infinity</code>, <code>-Infinity</code> rejected (throw)</li>
+              <li><code>undefined</code> values in object properties are omitted (key dropped) — use <code>null</code> instead</li>
+              <li>BigInt, functions, Symbol rejected (throw)</li>
+            </ul>
+
+            <h3 className="mt-6">Hash format</h3>
+            <div className="spec-code">
+              <code>{`sha256:<64 lowercase hex characters>`}</code>
+            </div>
+            <p>
+              Canonicalization is frozen for v1. Any future stricter canonicalization will ship as a new bundle type (<code>cer.ai.execution.v2</code>), never as a modification to v1.
+            </p>
           </section>
 
           {/* ── Node Attestation ── */}
