@@ -56,12 +56,12 @@ function deriveStampStatus(n: NormalizedCER): StampStatus {
   return "not_stamped";
 }
 
-function StampStatusBadge({ status }: { status: StampStatus }) {
+function StampStatusBadge({ status, offlineVerifiable }: { status: StampStatus; offlineVerifiable?: boolean }) {
   if (status === "signed") {
     return (
       <Badge className="font-mono text-xs bg-green-600/15 text-green-600 border-green-600/30 gap-1">
         <Stamp className="h-3 w-3" />
-        Stamped (signed)
+        {offlineVerifiable ? "Stamped (signed, offline-verifiable)" : "Stamped (signed)"}
       </Badge>
     );
   }
@@ -212,6 +212,13 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
   const hasBundle = n?.rawBundleJson !== null && n?.rawBundleJson !== undefined;
   const isRedacted = n?.isRedactedExport ?? false;
   const isMismatch = liveVerification.status === "fail";
+
+  // Detect redacted bundle (input/output/prompt stripped)
+  const bundleIsRedacted = useMemo(() => {
+    const snap = (n?.rawBundleJson as Record<string, unknown>)?.snapshot as Record<string, unknown> | undefined;
+    if (!snap) return false;
+    return snap.input == null || snap.output == null || snap.prompt == null;
+  }, [n]);
 
   const stampStatus = useMemo(() => {
     if (reAttestResult) return reAttestResult.stamp;
@@ -442,7 +449,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
           <Section title="Stamp Status">
             <div className="flex items-center justify-between py-1.5">
               <span className="text-xs text-muted-foreground">Status</span>
-              <StampStatusBadge status={stampStatus} />
+              <StampStatusBadge status={stampStatus} offlineVerifiable={reAttestResult?.offlineOk} />
             </div>
             {reAttestResult?.offlineOk && (
               <div className="flex items-center gap-1.5 py-1">
@@ -450,7 +457,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
                 <span className="text-xs text-green-600 font-mono">Stamp: Verified offline</span>
               </div>
             )}
-            {stampStatus === "legacy" && !reAttesting && (
+            {(stampStatus === "legacy" || stampStatus === "not_stamped") && !reAttesting && (
               <Button
                 variant="outline"
                 size="sm"
@@ -458,7 +465,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
                 onClick={handleReAttest}
               >
                 <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
-                Re-attest to generate signed receipt
+                {bundleIsRedacted ? "Generate signed stamp" : "Re-attest to generate signed receipt"}
               </Button>
             )}
             {reAttesting && (

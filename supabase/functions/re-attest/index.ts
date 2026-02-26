@@ -62,14 +62,17 @@ Deno.serve(async (req) => {
       return jsonResp({ ok: false, error: 'NOT_FOUND', message: 'Bundle not found or not owned by user' }, 404);
     }
 
-    // The stored redacted bundle IS the full envelope the node expects.
-    // It already has sensitive fields (input/output/prompt) removed by store-cer-bundle.
-    // We send it as-is, only stripping any existing attestation to avoid recursion.
     const storedBundle = row.cer_bundle_redacted as Record<string, unknown>;
 
-    // Build the payload: full bundle minus attestation fields (node generates those)
+    // Determine if bundle is redacted
+    const snap = (storedBundle?.snapshot ?? {}) as Record<string, unknown>;
+    const isRedacted = snap.input == null || snap.output == null || snap.prompt == null;
+
+    // Choose endpoint based on redaction status
+    const endpoint = isRedacted ? '/api/stamp' : '/api/attest';
+
+    // Build payload: full envelope minus existing attestation (node generates that)
     const payloadObj: Record<string, unknown> = { ...storedBundle };
-    // Remove attestation-related fields that the node produces (not inputs)
     delete payloadObj.attestation;
     if (payloadObj.meta && typeof payloadObj.meta === 'object') {
       const meta = { ...(payloadObj.meta as Record<string, unknown>) };
@@ -77,20 +80,16 @@ Deno.serve(async (req) => {
       payloadObj.meta = meta;
     }
 
-    // Ensure JSON-safe (strip any undefined remnants)
+    // Ensure JSON-safe
     const payload = JSON.parse(JSON.stringify(payloadObj));
-
-    const payloadKeys = Object.keys(payload);
-    const snapshotKeys = payload.snapshot ? Object.keys(payload.snapshot) : [];
     const payloadJson = JSON.stringify(payload);
     const payloadByteSize = new TextEncoder().encode(payloadJson).byteLength;
 
-    console.info(`Re-attesting bundle ${usageEventId} via ${nodeUrl}/api/attest`);
+    console.info(`Re-attesting bundle ${usageEventId} via ${nodeUrl}${endpoint} (isRedacted=${isRedacted})`);
     console.info(`bundleType=${payload.bundleType} certificateHash=${payload.certificateHash}`);
-    console.info(`payloadKeys=[${payloadKeys.join(',')}] snapshotKeys=[${snapshotKeys.join(',')}]`);
     console.info(`payloadByteSize=${payloadByteSize}`);
 
-    const attestResp = await fetch(`${nodeUrl}/api/attest`, {
+    const nodeResp = await fetch(`${nodeUrl}${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -99,46 +98,48 @@ Deno.serve(async (req) => {
       body: payloadJson,
     });
 
-    if (!attestResp.ok) {
+    if (!nodeResp.ok) {
       let errBody = '';
       let errJson: Record<string, unknown> | null = null;
       try {
-        errBody = await attestResp.text();
+        errBody = await nodeResp.text();
         errJson = JSON.parse(errBody);
       } catch { /* keep raw */ }
 
       const upstreamMessage = (errJson?.message || errJson?.error || errBody || 'Unknown') as string;
-      const requestId = (errJson?.requestId || attestResp.headers.get('x-request-id') || null) as string | null;
+      const requestId = (errJson?.requestId || nodeResp.headers.get('x-request-id') || null) as string | null;
 
-      console.error(`Node re-attest failed: HTTP ${attestResp.status}`, errBody.slice(0, 2000));
-      console.error(`Sent payload keys: [${payloadKeys.join(',')}]`);
-      console.error(`Sent snapshot keys: [${snapshotKeys.join(',')}]`);
-      console.error(`Payload preview: ${payloadJson.slice(0, 1500)}`);
+      console.error(`Node ${endpoint} failed: HTTP ${nodeResp.status}`, errBody.slice(0, 2000));
+
+      // Propagate upstream status faithfully (400 → 400, not 502)
+      const clientStatus = nodeResp.status >= 400 && nodeResp.status < 500 ? nodeResp.status : 502;
 
       return jsonResp({
         ok: false,
         error: 'NODE_ERROR',
-        message: `Node returned HTTP ${attestResp.status}: ${upstreamMessage.slice(0, 300)}`,
-        httpStatus: attestResp.status,
-        upstreamStatus: attestResp.status,
+        message: `Node returned HTTP ${nodeResp.status}: ${upstreamMessage.slice(0, 300)}`,
+        httpStatus: nodeResp.status,
+        upstreamStatus: nodeResp.status,
         upstreamMessage: upstreamMessage.slice(0, 500),
         requestId,
-      }, 502);
+      }, clientStatus);
     }
 
-    const attestResult = await attestResp.json() as Record<string, unknown>;
+    const result = await nodeResp.json() as Record<string, unknown>;
 
-    // Normalize signed receipt
+    // Normalize signed receipt — include all fields the node may return
     const signedAttestation: Record<string, unknown> = {
-      attestationId: attestResult.attestationId ?? (row.attestation_json as Record<string, unknown>)?.attestationId ?? null,
-      hash: attestResult.hash ?? row.certificate_hash,
-      nodeRuntimeHash: attestResult.nodeRuntimeHash ?? null,
-      receipt: attestResult.receipt ?? null,
-      signatureB64Url: attestResult.signatureB64Url ?? null,
-      attestorKeyId: attestResult.attestorKeyId ?? attestResult.kid ?? null,
-      attestedAt: attestResult.attestedAt ?? new Date().toISOString(),
+      mode: isRedacted ? 'stamp' : 'attest',
+      attestationId: result.attestationId ?? (row.attestation_json as Record<string, unknown>)?.attestationId ?? null,
+      hash: result.hash ?? row.certificate_hash,
+      nodeRuntimeHash: result.nodeRuntimeHash ?? null,
+      receipt: result.receipt ?? null,
+      signatureB64Url: result.signatureB64Url ?? null,
+      attestorKeyId: result.attestorKeyId ?? result.kid ?? null,
+      attestedAt: result.attestedAt ?? new Date().toISOString(),
       nodeUrl,
-      protocolVersion: attestResult.protocolVersion ?? null,
+      protocolVersion: result.protocolVersion ?? null,
+      checks: result.checks ?? null,
     };
 
     // Persist signed receipt in attestation_json AND inside bundle.meta.attestation
@@ -148,6 +149,8 @@ Deno.serve(async (req) => {
       : {};
 
     meta.attestation = {
+      mode: signedAttestation.mode,
+      checks: signedAttestation.checks ?? null,
       receipt: signedAttestation.receipt ?? null,
       signatureB64Url: signedAttestation.signatureB64Url ?? null,
       attestorKeyId: signedAttestation.attestorKeyId ?? null,
@@ -180,6 +183,7 @@ Deno.serve(async (req) => {
       ok: true,
       attestation: signedAttestation,
       stamp: hasSigned ? 'signed' : 'legacy',
+      endpoint,
     }, 200);
   } catch (err) {
     const e = err as Error;
