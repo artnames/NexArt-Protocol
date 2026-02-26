@@ -211,6 +211,46 @@ export default function Verify() {
                 {result.explanation}
               </p>
 
+              {/* Redacted export banner */}
+              {parsedBundle?.meta && (parsedBundle.meta as Record<string, unknown>)?.provenance &&
+                ((parsedBundle.meta as Record<string, unknown>).provenance as Record<string, unknown>)?.kind === "redacted_export" && (
+                <div className="border border-border rounded-md bg-muted/30 p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Info className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <span className="font-mono text-xs font-medium">Redacted Export (Verifiable)</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    This file hides sensitive fields. It is still independently verifiable. The original (unredacted) hash is shown for reference.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-border">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">Redacted Certificate Hash (this file)</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono text-xs text-foreground truncate">{result.recordedHash ?? "—"}</span>
+                        {result.recordedHash && (
+                          <button onClick={() => copyText(result.recordedHash!, "Redacted hash", toast)} className="shrink-0 text-muted-foreground hover:text-foreground"><Copy className="h-3 w-3" /></button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">Original Hash (reference only)</span>
+                      {(() => {
+                        const origHash = ((parsedBundle!.meta as Record<string, unknown>).provenance as Record<string, unknown>).originalCertificateHash as string | undefined;
+                        return origHash ? (
+                          <>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono text-xs text-foreground truncate">{origHash}</span>
+                              <button onClick={() => copyText(origHash, "Original hash", toast)} className="shrink-0 text-muted-foreground hover:text-foreground"><Copy className="h-3 w-3" /></button>
+                            </div>
+                            <p className="text-[9px] font-mono text-muted-foreground/60">The original hash cannot be verified from a redacted export.</p>
+                          </>
+                        ) : <span className="font-mono text-xs text-muted-foreground">—</span>;
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Metadata summary */}
               {result.meta.bundleType && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 py-3 border-t border-b border-border">
