@@ -192,19 +192,32 @@ Deno.serve(async (req) => {
 
     const result = await nodeResp.json() as Record<string, unknown>;
 
+    // Debug: log node response shape (no secrets)
+    console.info(`Node response keys: ${JSON.stringify(Object.keys(result))}`);
+    console.info(`receipt type: ${typeof result.receipt}, keys: ${result.receipt && typeof result.receipt === 'object' ? JSON.stringify(Object.keys(result.receipt as Record<string, unknown>)) : String(result.receipt)}`);
+    console.info(`signatureB64Url present: ${!!result.signatureB64Url}, attestorKeyId present: ${!!result.attestorKeyId}, kid present: ${!!result.kid}`);
+    // Check if fields are nested inside an attestation/stamp wrapper
+    const nested = (result.attestation ?? result.stamp ?? result.data ?? null) as Record<string, unknown> | null;
+    if (nested && typeof nested === 'object') {
+      console.info(`Nested object keys: ${JSON.stringify(Object.keys(nested))}`);
+    }
+
+    // Extract fields — check top-level first, then nested wrapper
+    const src = { ...result, ...(nested ?? {}) };
+
     // Normalize signed receipt — include all fields the node may return
     const signedAttestation: Record<string, unknown> = {
       mode: isRedacted ? 'stamp' : 'attest',
-      attestationId: result.attestationId ?? (row.attestation_json as Record<string, unknown>)?.attestationId ?? null,
-      hash: result.hash ?? row.certificate_hash,
-      nodeRuntimeHash: result.nodeRuntimeHash ?? null,
-      receipt: result.receipt ?? null,
-      signatureB64Url: result.signatureB64Url ?? null,
-      attestorKeyId: result.attestorKeyId ?? result.kid ?? null,
-      attestedAt: result.attestedAt ?? new Date().toISOString(),
+      attestationId: src.attestationId ?? (row.attestation_json as Record<string, unknown>)?.attestationId ?? null,
+      hash: src.hash ?? src.certificateHash ?? row.certificate_hash,
+      nodeRuntimeHash: src.nodeRuntimeHash ?? null,
+      receipt: src.receipt ?? null,
+      signatureB64Url: src.signatureB64Url ?? src.signature ?? null,
+      attestorKeyId: src.attestorKeyId ?? src.kid ?? null,
+      attestedAt: src.attestedAt ?? src.timestamp ?? new Date().toISOString(),
       nodeUrl,
-      protocolVersion: result.protocolVersion ?? null,
-      checks: result.checks ?? null,
+      protocolVersion: src.protocolVersion ?? null,
+      checks: src.checks ?? null,
     };
 
     // Persist signed receipt in attestation_json AND inside bundle.meta.attestation
@@ -250,12 +263,14 @@ Deno.serve(async (req) => {
     }
 
     const hasSigned = !!(signedAttestation.receipt && signedAttestation.signatureB64Url && signedAttestation.attestorKeyId);
+    console.info(`hasSigned=${hasSigned} receipt=${!!signedAttestation.receipt} sig=${!!signedAttestation.signatureB64Url} kid=${!!signedAttestation.attestorKeyId}`);
 
     return jsonResp({
       ok: true,
       attestation: signedAttestation,
       stamp: hasSigned ? 'signed' : 'legacy',
       endpoint,
+      nodeResponseKeys: Object.keys(result),
     }, 200);
   } catch (err) {
     const e = err as Error;
