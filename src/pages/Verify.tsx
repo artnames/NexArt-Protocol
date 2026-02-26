@@ -92,6 +92,7 @@ export default function Verify() {
             protocolVersion: null,
           },
         });
+        if (import.meta.env.DEV && fetchGuard) globalThis.fetch = fetchGuard;
         setVerifying(false);
         return;
       }
