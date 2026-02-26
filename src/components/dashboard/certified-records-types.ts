@@ -1,4 +1,5 @@
 import type { UsageEvent, StoredCERBundle } from "@/lib/api";
+import { computeCertificateHash } from "@/lib/cer-hash";
 
 // ── Normalized CER (single source of truth for the drawer) ──────────
 
@@ -6,6 +7,8 @@ export interface NormalizedCER {
   surface: "ai" | "code";
   bundleType: string | null;
   certificateHash: string | null;
+  /** Original certificate hash from storage (before redaction recompute) */
+  originalCertificateHash: string | null;
   protocolVersion: string | null;
   sdkVersion: string | null;
   timestamp: string | null;
@@ -22,12 +25,18 @@ export interface NormalizedCER {
   rawBundleJson: Record<string, unknown> | null;
   /** "full" = all CER fields present, "partial" = some missing, "none" = no CER data */
   completeness: "full" | "partial" | "none";
+  /** Whether the export is a redacted bundle with recomputed hash */
+  isRedactedExport: boolean;
   /** Endpoint-specific message shown in drawer */
   endpointNote: string;
   /** Storage path for artifact (PNG for render bundles) */
   artifactPath: string | null;
   /** MIME type of stored artifact */
   artifactMime: string | null;
+  /** Verification status computed by actual hash check */
+  verificationStatus: "pending" | "pass" | "fail" | "unavailable";
+  /** Verification failure reason if any */
+  verificationReason: string | null;
 }
 
 // ── Raw CER bundle shape (from /api/attest JSON response) ───────────
