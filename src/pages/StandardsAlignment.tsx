@@ -106,7 +106,7 @@ const StandardsAlignment = () => {
             <div className="border border-border bg-muted/30 rounded-md p-5">
               <ol className="space-y-3 text-sm text-body list-decimal pl-5">
                 <li><strong className="text-foreground">Record</strong> — issue a CER for each AI execution (inputs, parameters, outputs bound together with a certificate hash).</li>
-                <li><strong className="text-foreground">Stamp</strong> — optionally request a signed receipt from a NexArt node to add an independent, offline-verifiable integrity seal.</li>
+                <li><strong className="text-foreground">Stamp</strong> — optionally request a signed receipt from a NexArt node to add an independent, offline-verifiable integrity seal. The stamp confirms integrity checks and signs a receipt; it does not validate decision correctness.</li>
                 <li><strong className="text-foreground">Archive</strong> — export the CER (redacted if needed) as a portable JSON artifact for long-term retention.</li>
                 <li><strong className="text-foreground">Verify</strong> — at audit time, re-verify the certificate hash and stamp independently using public keys or the browser verifier.</li>
               </ol>
@@ -286,10 +286,9 @@ const StandardsAlignment = () => {
                 <span className="text-caption ml-1">— /verify</span>
               </li>
               <li>
-                <a href="https://nexart-canonical-renderer-production.up.railway.app/.well-known/nexart-node.json" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-caption transition-colors inline-flex items-center gap-1.5">
-                  Node public keys <ExternalLink className="h-3.5 w-3.5" />
+                <a href="https://nexart-canonical-renderer-production.up.railway.app/.well-known/nexart-node.json" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-caption transition-colors inline-flex items-center gap-1.5 break-all">
+                  https://nexart-canonical-renderer-production.up.railway.app/.well-known/nexart-node.json <ExternalLink className="h-3.5 w-3.5 shrink-0" />
                 </a>
-                <span className="text-caption ml-1 font-mono text-xs">/.well-known/nexart-node.json</span>
               </li>
             </ul>
           </section>
