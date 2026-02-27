@@ -22,6 +22,9 @@ const StandardsAlignment = () => {
           <div className="border border-border bg-muted/30 rounded-md p-5 space-y-2">
             <p className="text-sm font-medium text-foreground">Important</p>
             <p className="text-sm text-body">
+              NexArt is an evidence layer: it produces tamper-evident audit artifacts (records + stamps) that can be verified independently.
+            </p>
+            <p className="text-sm text-body">
               NexArt provides verifiable execution evidence. It does not by itself make an organization compliant.
             </p>
             <p className="text-sm text-body">
