@@ -168,7 +168,7 @@ const StandardsAlignment = () => {
                     ["AU — Audit & Accountability", "Supports independent verification without trusting the originating app", "Offline verification + node keys"],
                     ["SI — System Integrity", "Detects unauthorized changes to recorded executions", "Reason codes + mismatch details"],
                     ["CM — Configuration Management", "Version-pinned semantics (protocol + SDK) help reproduce the meaning of historic records", "Protocol version + sdkVersion"],
-                    ["SC — System & Comms Protection (supporting)", "Separates proof from sensitive content (receipt/signature vs raw inputs)", "Signed receipt + redacted exports"],
+                    ["SC (supporting: audit confidentiality via redaction)", "Separates proof from sensitive content (receipt/signature vs raw inputs)", "Signed receipt + redacted exports"],
                     ["IR — Incident Response (supporting)", "Provides clear forensic artifacts for what changed and when (or what verified)", "Verification details + provenance"],
                   ].map(([area, how, artifact], i) => (
                     <TableRow key={i}>
