@@ -106,7 +106,7 @@ const StandardsAlignment = () => {
             <div className="border border-border bg-muted/30 rounded-md p-5">
               <ol className="space-y-3 text-sm text-body list-decimal pl-5">
                 <li><strong className="text-foreground">Record</strong> — issue a CER for each AI execution (inputs, parameters, outputs bound together with a certificate hash).</li>
-                <li><strong className="text-foreground">Stamp</strong> — optionally request a signed receipt from a NexArt node to add an independent, offline-verifiable integrity seal.</li>
+                <li><strong className="text-foreground">Stamp</strong> — optionally request a signed receipt from a NexArt node to add an independent, offline-verifiable integrity seal. The stamp confirms integrity checks and signs a receipt; it does not validate decision correctness.</li>
                 <li><strong className="text-foreground">Archive</strong> — export the CER (redacted if needed) as a portable JSON artifact for long-term retention.</li>
                 <li><strong className="text-foreground">Verify</strong> — at audit time, re-verify the certificate hash and stamp independently using public keys or the browser verifier.</li>
               </ol>
