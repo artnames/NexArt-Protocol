@@ -286,10 +286,9 @@ const StandardsAlignment = () => {
                 <span className="text-caption ml-1">— /verify</span>
               </li>
               <li>
-                <a href="https://nexart-canonical-renderer-production.up.railway.app/.well-known/nexart-node.json" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-caption transition-colors inline-flex items-center gap-1.5">
-                  Node public keys <ExternalLink className="h-3.5 w-3.5" />
+                <a href="https://nexart-canonical-renderer-production.up.railway.app/.well-known/nexart-node.json" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-caption transition-colors inline-flex items-center gap-1.5 break-all">
+                  https://nexart-canonical-renderer-production.up.railway.app/.well-known/nexart-node.json <ExternalLink className="h-3.5 w-3.5 shrink-0" />
                 </a>
-                <span className="text-caption ml-1 font-mono text-xs">/.well-known/nexart-node.json</span>
               </li>
             </ul>
           </section>
