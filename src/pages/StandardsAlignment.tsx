@@ -132,7 +132,7 @@ const StandardsAlignment = () => {
                     ["Processing Integrity", "Shows exactly what was recorded as inputs/params/outputs for automated decisions", "CER snapshot fields"],
                     ["Processing Integrity", "Detects post-hoc modifications with clear reason codes", "FAIL + reason code + details"],
                     ["Confidentiality", "Enables redaction while preserving verifiability of the exported artifact", "Redacted CER + redacted hash + provenance"],
-                    ["Availability (indirect)", "Provides portable audit artifacts that can be verified offline", "Exported CER + local verify"],
+                    ["Availability (indirect: audit portability)", "Provides portable audit artifacts that can be verified offline", "Exported CER + local verify"],
                     ["Privacy (supporting)", "Helps limit disclosure through selective redaction and proof separation", "Redaction + provenance guidance"],
                   ].map(([area, how, artifact], i) => (
                     <TableRow key={i}>
