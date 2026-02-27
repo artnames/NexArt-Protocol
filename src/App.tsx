@@ -109,6 +109,7 @@ const App = () => (
               <Route path="/docs/certification/verify" element={<VerifyIndependently />} />
               <Route path="/docs/certification/node-stamps" element={<NodeStampsKeys />} />
               <Route path="/verify" element={<Verify />} />
+              <Route path="/reference/standards" element={<StandardsAlignment />} />
 
               {/* Auth-gated routes: AuthProvider only mounts here */}
               <Route path="/auth" element={<AuthGatedRoutes />} />
