@@ -83,7 +83,7 @@ const StandardsAlignment = () => {
                   {[
                     ["Tamper-evident decision trail", "Certificate hash over canonical record", "CER JSON + verify PASS/FAIL"],
                     ["Proof that logs weren't edited post-hoc", "Hash mismatch detection + reason codes", "Verification report + reason codes"],
-                    ["Third-party integrity stamp", "Signed receipt (Ed25519) + public key discovery", "Receipt + signature + /.well-known/nexart-node.json"],
+                    ["Third-party integrity stamp", "Signed receipt (Ed25519) + public key discovery", "Signed receipt (receipt + signatureB64Url + attestorKeyId) + node keys document (/.well-known/nexart-node.json)"],
                     ["Reproducible execution (where deterministic)", "Deterministic snapshots + replay", "Code Mode CER + replay output"],
                     ["Traceability of automated decisions", "Workflow/run IDs + step chaining (agent workflows)", "RunBuilder chain + final hash"],
                     ["Privacy-preserving audit sharing", "Redacted export + provenance", "Redacted CER + meta.provenance"],
@@ -107,7 +107,7 @@ const StandardsAlignment = () => {
               <ol className="space-y-3 text-sm text-body list-decimal pl-5">
                 <li><strong className="text-foreground">Record</strong> — issue a CER for each AI execution (inputs, parameters, outputs bound together with a certificate hash).</li>
                 <li><strong className="text-foreground">Stamp</strong> — optionally request a signed receipt from a NexArt node to add an independent, offline-verifiable integrity seal. The stamp confirms integrity checks and signs a receipt; it does not validate decision correctness.</li>
-                <li><strong className="text-foreground">Archive</strong> — export the CER (redacted if needed) as a portable JSON artifact for long-term retention.</li>
+                <li><strong className="text-foreground">Archive</strong> — export the CER (redacted if needed) as a portable JSON artifact for long-term retention. CERs are portable JSON artifacts suitable for long-term retention and independent verification.</li>
                 <li><strong className="text-foreground">Verify</strong> — at audit time, re-verify the certificate hash and stamp independently using public keys or the browser verifier.</li>
               </ol>
             </div>
