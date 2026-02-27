@@ -22,6 +22,9 @@ const StandardsAlignment = () => {
           <div className="border border-border bg-muted/30 rounded-md p-5 space-y-2">
             <p className="text-sm font-medium text-foreground">Important</p>
             <p className="text-sm text-body">
+              NexArt is an evidence layer: it produces tamper-evident audit artifacts (records + stamps) that can be verified independently.
+            </p>
+            <p className="text-sm text-body">
               NexArt provides verifiable execution evidence. It does not by itself make an organization compliant.
             </p>
             <p className="text-sm text-body">
@@ -59,6 +62,7 @@ const StandardsAlignment = () => {
               <li><strong className="text-foreground">Deterministic re-execution (Code Mode)</strong> — for deterministic workloads, you can re-run the snapshot and reproduce the same output.</li>
               <li><strong className="text-foreground">Verification reason codes</strong> — PASS / FAIL plus machine-readable reason codes explaining what didn't match.</li>
               <li><strong className="text-foreground">Redacted exports + provenance</strong> — you can remove sensitive fields and still produce a verifiable artifact, while preserving the original historic hash as reference.</li>
+              <li><strong className="text-foreground">Legacy stamps</strong> — older records may show a legacy stamp (attestation ID without signed receipt). These still verify for integrity but aren't offline signature-verifiable.</li>
             </ul>
           </section>
 
@@ -96,6 +100,19 @@ const StandardsAlignment = () => {
             </div>
           </section>
 
+          {/* Typical audit workflow */}
+          <section>
+            <h2 className="text-xl font-serif text-foreground mb-4">Typical audit workflow</h2>
+            <div className="border border-border bg-muted/30 rounded-md p-5">
+              <ol className="space-y-3 text-sm text-body list-decimal pl-5">
+                <li><strong className="text-foreground">Record</strong> — issue a CER for each AI execution (inputs, parameters, outputs bound together with a certificate hash).</li>
+                <li><strong className="text-foreground">Stamp</strong> — optionally request a signed receipt from a NexArt node to add an independent, offline-verifiable integrity seal.</li>
+                <li><strong className="text-foreground">Archive</strong> — export the CER (redacted if needed) as a portable JSON artifact for long-term retention.</li>
+                <li><strong className="text-foreground">Verify</strong> — at audit time, re-verify the certificate hash and stamp independently using public keys or the browser verifier.</li>
+              </ol>
+            </div>
+          </section>
+
           {/* C1 — SOC 2 */}
           <section id="soc2">
             <h2 className="text-xl font-serif text-foreground mb-4">SOC 2 mapping</h2>
@@ -115,7 +132,7 @@ const StandardsAlignment = () => {
                     ["Processing Integrity", "Shows exactly what was recorded as inputs/params/outputs for automated decisions", "CER snapshot fields"],
                     ["Processing Integrity", "Detects post-hoc modifications with clear reason codes", "FAIL + reason code + details"],
                     ["Confidentiality", "Enables redaction while preserving verifiability of the exported artifact", "Redacted CER + redacted hash + provenance"],
-                    ["Availability (indirect)", "Provides portable audit artifacts that can be verified offline", "Exported CER + local verify"],
+                    ["Availability (indirect: audit portability)", "Provides portable audit artifacts that can be verified offline", "Exported CER + local verify"],
                     ["Privacy (supporting)", "Helps limit disclosure through selective redaction and proof separation", "Redaction + provenance guidance"],
                   ].map(([area, how, artifact], i) => (
                     <TableRow key={i}>
@@ -151,7 +168,7 @@ const StandardsAlignment = () => {
                     ["AU — Audit & Accountability", "Supports independent verification without trusting the originating app", "Offline verification + node keys"],
                     ["SI — System Integrity", "Detects unauthorized changes to recorded executions", "Reason codes + mismatch details"],
                     ["CM — Configuration Management", "Version-pinned semantics (protocol + SDK) help reproduce the meaning of historic records", "Protocol version + sdkVersion"],
-                    ["SC — System & Comms Protection (supporting)", "Separates proof from sensitive content (receipt/signature vs raw inputs)", "Signed receipt + redacted exports"],
+                    ["SC (supporting: audit confidentiality via redaction)", "Separates proof from sensitive content (receipt/signature vs raw inputs)", "Signed receipt + redacted exports"],
                     ["IR — Incident Response (supporting)", "Provides clear forensic artifacts for what changed and when (or what verified)", "Verification details + provenance"],
                   ].map(([area, how, artifact], i) => (
                     <TableRow key={i}>
