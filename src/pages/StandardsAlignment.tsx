@@ -83,7 +83,7 @@ const StandardsAlignment = () => {
                   {[
                     ["Tamper-evident decision trail", "Certificate hash over canonical record", "CER JSON + verify PASS/FAIL"],
                     ["Proof that logs weren't edited post-hoc", "Hash mismatch detection + reason codes", "Verification report + reason codes"],
-                    ["Third-party integrity stamp", "Signed receipt (Ed25519) + public key discovery", "Receipt + signature + /.well-known/nexart-node.json"],
+                    ["Third-party integrity stamp", "Signed receipt (Ed25519) + public key discovery", "Signed receipt (receipt + signatureB64Url + attestorKeyId) + node keys document (/.well-known/nexart-node.json)"],
                     ["Reproducible execution (where deterministic)", "Deterministic snapshots + replay", "Code Mode CER + replay output"],
                     ["Traceability of automated decisions", "Workflow/run IDs + step chaining (agent workflows)", "RunBuilder chain + final hash"],
                     ["Privacy-preserving audit sharing", "Redacted export + provenance", "Redacted CER + meta.provenance"],
