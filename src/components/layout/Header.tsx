@@ -66,6 +66,7 @@ const navGroups = [
       { href: "/non-goals", label: "Non-Goals" },
       { href: "/governance", label: "Governance" },
       { href: "/security", label: "Security" },
+      { href: "/reference/standards", label: "Standards Alignment" },
     ],
   },
 ];

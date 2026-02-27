@@ -48,6 +48,7 @@ const AIExecutionCertification = lazy(() => import("./pages/docs/AIExecutionCert
 const VerifyIndependently = lazy(() => import("./pages/docs/VerifyIndependently"));
 const NodeStampsKeys = lazy(() => import("./pages/docs/NodeStampsKeys"));
 const Verify = lazy(() => import("./pages/Verify"));
+const StandardsAlignment = lazy(() => import("./pages/StandardsAlignment"));
 
 // Auth-gated routes (heavy: AuthProvider + dashboard)
 const AuthGatedRoutes = lazy(() => import("./components/routing/AuthGatedRoutes"));
@@ -108,6 +109,7 @@ const App = () => (
               <Route path="/docs/certification/verify" element={<VerifyIndependently />} />
               <Route path="/docs/certification/node-stamps" element={<NodeStampsKeys />} />
               <Route path="/verify" element={<Verify />} />
+              <Route path="/reference/standards" element={<StandardsAlignment />} />
 
               {/* Auth-gated routes: AuthProvider only mounts here */}
               <Route path="/auth" element={<AuthGatedRoutes />} />
