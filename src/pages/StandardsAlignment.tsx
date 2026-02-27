@@ -62,6 +62,7 @@ const StandardsAlignment = () => {
               <li><strong className="text-foreground">Deterministic re-execution (Code Mode)</strong> — for deterministic workloads, you can re-run the snapshot and reproduce the same output.</li>
               <li><strong className="text-foreground">Verification reason codes</strong> — PASS / FAIL plus machine-readable reason codes explaining what didn't match.</li>
               <li><strong className="text-foreground">Redacted exports + provenance</strong> — you can remove sensitive fields and still produce a verifiable artifact, while preserving the original historic hash as reference.</li>
+              <li><strong className="text-foreground">Legacy stamps</strong> — older records may show a legacy stamp (attestation ID without signed receipt). These still verify for integrity but aren't offline signature-verifiable.</li>
             </ul>
           </section>
 
