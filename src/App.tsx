@@ -49,6 +49,7 @@ const VerifyIndependently = lazy(() => import("./pages/docs/VerifyIndependently"
 const NodeStampsKeys = lazy(() => import("./pages/docs/NodeStampsKeys"));
 const Verify = lazy(() => import("./pages/Verify"));
 const StandardsAlignment = lazy(() => import("./pages/StandardsAlignment"));
+const CERRetentionPolicy = lazy(() => import("./pages/legal/CERRetentionPolicy"));
 
 // Auth-gated routes (heavy: AuthProvider + dashboard)
 const AuthGatedRoutes = lazy(() => import("./components/routing/AuthGatedRoutes"));
