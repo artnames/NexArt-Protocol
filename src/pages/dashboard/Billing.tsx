@@ -40,7 +40,7 @@ const plans = [
     description: "Serious Indie & Startups",
     limit: "5,000 certified runs / month",
     icon: Zap,
-    features: ["Commercial CodeMode usage", "Priority access to canonical node", "Email support"],
+    features: ["Commercial CodeMode usage", "Priority access to attestation node", "Email support"],
     note: null,
     cta: "Contact",
     ctaAction: "contact",
