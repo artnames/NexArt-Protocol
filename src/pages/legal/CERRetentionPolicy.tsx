@@ -51,6 +51,9 @@ const CERRetentionPolicy = () => {
             <li>Retention is extended for fraud investigation, abuse prevention, or legal compliance</li>
           </ul>
           <p>
+            NexArt does not guarantee indefinite hosting of CER bundles beyond the applicable retention period.
+          </p>
+          <p>
             Exported CER JSON files remain independently verifiable offline indefinitely using the public SDK.
           </p>
 
