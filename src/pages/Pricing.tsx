@@ -209,7 +209,7 @@ const Pricing = () => {
 
       <PageHeader
         title="Pricing"
-        subtitle="Deterministic execution is free. Certified determinism is what you pay for."
+        subtitle="Execution is free. Independent certification is what you pay for."
       />
 
       <PageContent>
