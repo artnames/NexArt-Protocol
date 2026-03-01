@@ -4,7 +4,7 @@ const Footer = () => {
   return (
     <footer className="border-t border-border mt-24">
       <div className="max-w-5xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-[1fr_1fr_2fr_auto] gap-x-6 gap-y-8 mb-10">
+        <div className="grid grid-cols-2 md:grid-cols-[1fr_1fr_2fr_auto_auto] gap-x-6 gap-y-8 mb-10">
           {/* Protocol */}
           <div>
             <h4 className="text-xs font-mono text-foreground mb-4 tracking-wide">Protocol</h4>
@@ -22,16 +22,6 @@ const Footer = () => {
               <li>
                 <Link to="/protocol-compliance" className="text-caption hover:text-foreground transition-colors">
                   Compliance
-                </Link>
-              </li>
-              <li>
-                <Link to="/privacy" className="text-caption hover:text-foreground transition-colors">
-                  Privacy
-                </Link>
-              </li>
-              <li>
-                <Link to="/terms" className="text-caption hover:text-foreground transition-colors">
-                  Terms
                 </Link>
               </li>
             </ul>
@@ -107,6 +97,28 @@ const Footer = () => {
                 <a href="https://byxcollection.xyz" target="_blank" rel="noopener noreferrer" className="text-caption hover:text-foreground transition-colors">
                   ByX — Generative Collections
                 </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div>
+            <h4 className="text-xs font-mono text-foreground mb-4 tracking-wide">Legal</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link to="/privacy" className="text-caption hover:text-foreground transition-colors">
+                  Privacy
+                </Link>
+              </li>
+              <li>
+                <Link to="/terms" className="text-caption hover:text-foreground transition-colors">
+                  Terms
+                </Link>
+              </li>
+              <li>
+                <Link to="/legal/cer-retention-policy" className="text-caption hover:text-foreground transition-colors">
+                  CER Retention Policy
+                </Link>
               </li>
             </ul>
           </div>
