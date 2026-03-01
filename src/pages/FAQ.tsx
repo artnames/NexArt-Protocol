@@ -156,12 +156,12 @@ const faqItems = [
     answer: (
       <>
         <p className="mb-3">
-          Pricing is based on certified executions (successful canonical renders). Quota is account-level and shared across API keys.
+          Execution is free for both surfaces. Pricing is based on certified executions (Code Mode canonical renders) and independent attestation/stamping (AI Execution CER). Quota is account-level and shared across API keys.
         </p>
         <ul className="list-disc list-inside space-y-1 text-muted-foreground mb-3">
-          <li>A single certified render is typically ~100–300ms</li>
-          <li>Certifying a procedural world seed or simulation step is usually fractions of a cent at Pro-level pricing</li>
-          <li>Verification and replay cost the same as a render (they re-execute the snapshot)</li>
+          <li>Code Mode: A single certified render is typically ~100–300ms</li>
+          <li>AI Execution: CER creation is free; optional node attestation with signed receipts is a paid operation</li>
+          <li>Code Mode verification and replay cost the same as a render (they re-execute the snapshot)</li>
         </ul>
         <p>
           See{" "}
