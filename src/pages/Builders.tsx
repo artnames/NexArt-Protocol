@@ -19,7 +19,7 @@ const Builders = () => {
       <PageContent>
         <div className="prose-protocol">
           <p>
-            NexArt is an open protocol for deterministic generative systems. It separates system definition, execution
+            NexArt is an open execution protocol for deterministic and integrity-bound systems. It separates system definition, execution
             semantics, and outputs so results remain portable, verifiable, and stable across time and environments.
           </p>
 
@@ -40,6 +40,54 @@ const Builders = () => {
 
           <p>No prior NexArt knowledge is required.</p>
 
+          <h2>Execution Surfaces</h2>
+
+          <p>
+            NexArt supports multiple execution surfaces under the same protocol:
+          </p>
+
+          <h3>CodeMode — Deterministic Rendering</h3>
+          <p className="text-xs font-mono text-caption">@nexart/codemode-sdk v1.9.0</p>
+          <p>
+            <strong>Role:</strong> Canonical execution runtime for deterministic generative systems
+            <br />
+            <strong>Environment:</strong> Node.js (server-side)
+            <br />
+            <strong>Protocol:</strong> v1.2.0 execution semantics
+          </p>
+          <ul>
+            <li>Produces canonical PNG and MP4 outputs</li>
+            <li>Deterministic execution with pinned semantics</li>
+            <li>Used by nexart.xyz in production</li>
+            <li>Required for canonical rendering certification, minting, and long-term archival verification</li>
+          </ul>
+
+          <h3>AI Execution — Tamper-Evident Records</h3>
+          <p className="text-xs font-mono text-caption">@nexart/ai-execution v0.6.0</p>
+          <p>
+            <strong>Role:</strong> Tamper-evident execution records (CER) for AI and LLM systems
+            <br />
+            <strong>Environment:</strong> Node.js (server-side)
+            <br />
+            <strong>Protocol:</strong> v1.2.0
+          </p>
+          <ul>
+            <li>Produces Certified Execution Records (CER)</li>
+            <li>Cryptographic binding of inputs, outputs, and parameters</li>
+            <li>Optional node attestation with signed receipts</li>
+            <li>Independent offline verification</li>
+          </ul>
+          <p><strong>Use this when:</strong></p>
+          <ul>
+            <li>You need integrity guarantees over AI decisions</li>
+            <li>You require audit-ready execution records</li>
+            <li>You are implementing AI systems under governance or regulatory constraints</li>
+          </ul>
+
+          <p>
+            Both execution surfaces share pinned protocol semantics, canonical serialization rules, stable hash guarantees, and optional independent attestation. Certification is protocol-level, not surface-specific.
+          </p>
+
           <h2>The Canonical SDK</h2>
 
           <h3>@nexart/codemode-sdk v1.9.0</h3>
@@ -56,7 +104,7 @@ const Builders = () => {
             <li>Produces canonical PNG and MP4 outputs</li>
             <li>Deterministic execution with pinned semantics</li>
             <li>Used by nexart.xyz in production</li>
-            <li>Required for certification, minting, and long-term verification</li>
+            <li>Required for canonical rendering certification, minting, and long-term verification of generative outputs</li>
           </ul>
 
           <p>
@@ -194,7 +242,7 @@ const Builders = () => {
           <h2>Closing</h2>
 
           <p>
-            NexArt is designed to be easier to build with than to bypass. If you can define a generative system, you can
+            NexArt is designed to be easier to build with than to bypass. If you can define an execution system — generative, AI-driven, or hybrid — you can
             express it as a protocol object and certify it under pinned execution semantics.
           </p>
 
