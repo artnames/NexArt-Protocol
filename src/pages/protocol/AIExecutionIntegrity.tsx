@@ -137,7 +137,7 @@ console.log(stamp.code); // "OK"`}
             <p>
               Every time you call an AI model, the SDK captures what you sent, what you got back, and the exact
               parameters used. It computes SHA-256 hashes of everything and seals the record into a Certified Execution
-              Record (CER). Any post-hoc modification invalidates the certificate hash.
+              Record (CER). Any post-hoc modification to protected fields invalidates the certificate hash. AI Execution Integrity defines a standard way to capture and seal AI execution records (CER) so they can be verified independently over time.
             </p>
 
             <h3 className="mt-8">What this certifies</h3>
