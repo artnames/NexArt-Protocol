@@ -318,7 +318,7 @@ const Pricing = () => {
                     <p className="text-sm font-medium text-foreground">{plan.limit}</p>
                     {plan.showCertificationNote && (
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Includes certification on the canonical renderer.
+                        Includes certification via NexArt attestation node (CER stamping).
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground mt-1">{plan.keyLimit}</p>
