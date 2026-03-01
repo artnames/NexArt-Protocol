@@ -111,6 +111,7 @@ const App = () => (
               <Route path="/docs/certification/node-stamps" element={<NodeStampsKeys />} />
               <Route path="/verify" element={<Verify />} />
               <Route path="/reference/standards" element={<StandardsAlignment />} />
+              <Route path="/legal/cer-retention-policy" element={<CERRetentionPolicy />} />
 
               {/* Auth-gated routes: AuthProvider only mounts here */}
               <Route path="/auth" element={<AuthGatedRoutes />} />

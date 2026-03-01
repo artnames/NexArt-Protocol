@@ -111,6 +111,28 @@ const Footer = () => {
             </ul>
           </div>
 
+          {/* Legal */}
+          <div>
+            <h4 className="text-xs font-mono text-foreground mb-4 tracking-wide">Legal</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link to="/privacy" className="text-caption hover:text-foreground transition-colors">
+                  Privacy
+                </Link>
+              </li>
+              <li>
+                <Link to="/terms" className="text-caption hover:text-foreground transition-colors">
+                  Terms
+                </Link>
+              </li>
+              <li>
+                <Link to="/legal/cer-retention-policy" className="text-caption hover:text-foreground transition-colors">
+                  CER Retention Policy
+                </Link>
+              </li>
+            </ul>
+          </div>
+
           {/* Follow us */}
           <div className="md:text-right">
             <h4 className="text-xs font-mono text-foreground mb-4 tracking-wide">Follow us</h4>
