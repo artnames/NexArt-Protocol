@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
+import PageContent from "@/components/layout/PageContent";
 import SEOHead from "@/components/seo/SEOHead";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

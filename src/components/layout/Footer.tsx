@@ -151,11 +151,11 @@ const Footer = () => {
 
         {/* Bottom bar */}
         <p className="text-sm text-muted-foreground mb-6">
-          NexArt is a deterministic execution protocol that enables reproducible and verifiable AI systems.
+          NexArt is an open execution protocol for verifiable, integrity-bound systems — deterministic rendering and tamper-evident AI execution records.
         </p>
         <div className="pt-8 border-t border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs text-muted-foreground">
           <div className="font-mono">
-            <p>Code Mode Protocol v1.2.0 · SDK v1.9.0 — Locked & Stable</p>
+            <p>Protocol v1.2.0 · Code Mode SDK v1.9.0 · AI Execution SDK v0.6.0</p>
             <p className="text-muted-foreground/70 mt-1">Changes require a protocol version increment.</p>
           </div>
           <p>© {new Date().getFullYear()} NexArt </p>

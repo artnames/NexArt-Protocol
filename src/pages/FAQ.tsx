@@ -319,7 +319,7 @@ const FAQ = () => {
 
       <PageHeader
         title="Frequently Asked Questions"
-        subtitle="Common questions about NexArt, deterministic execution, and certified rendering."
+        subtitle="Common questions about NexArt, execution surfaces, and certified integrity."
       />
 
       <PageContent>

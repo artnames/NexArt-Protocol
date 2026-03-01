@@ -70,6 +70,12 @@ const Privacy = () => {
             We retain account and usage data for as long as your account is active, and for a reasonable period afterward for security, audit, and dispute resolution.
           </p>
 
+          <h2>Redaction and Verification</h2>
+
+          <p>
+            CER records support field-level redaction. Sensitive fields (such as inputs, outputs, or prompts) can be removed or set to null. Redaction produces a new, valid certificateHash for the redacted version of the record. The original hash is preserved in provenance metadata for audit traceability. Verification confirms record integrity — it does not re-run models or validate output correctness.
+          </p>
+
           <h2>Your rights</h2>
           
           <p>

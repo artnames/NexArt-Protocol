@@ -196,6 +196,67 @@ const Glossary = () => {
           <p className="text-body">Identical audio input and seed always produce identical visual output.</p>
         </section>
 
+        <section className="mb-16">
+          <h2 className="text-2xl font-serif text-foreground mb-4">CER / Certified Execution Record</h2>
+          <p className="text-body mb-4">
+            A structured, tamper-evident record that captures the inputs, parameters, outputs, and metadata of an
+            execution. CERs are sealed with a cryptographic hash (the certificateHash) that binds all protected fields.
+          </p>
+          <p className="text-body">
+            CERs are the fundamental unit of the AI Execution Integrity surface. They can be verified independently
+            and optionally attested by an attestation node. A CER does not guarantee output correctness — it guarantees
+            record integrity.
+          </p>
+        </section>
+
+        <section className="mb-16">
+          <h2 className="text-2xl font-serif text-foreground mb-4">certificateHash</h2>
+          <p className="text-body mb-4">
+            A SHA-256 hash computed over the protected fields of a CER (bundleType, version, createdAt, and snapshot).
+            The certificateHash is the primary integrity check: if any protected field is modified, the hash changes.
+          </p>
+          <p className="text-body">
+            Meta fields and attestation fields (receipt, signature, kid) are excluded from hash computation. This allows
+            attestation to be added without invalidating the record's integrity.
+          </p>
+        </section>
+
+        <section className="mb-16">
+          <h2 className="text-2xl font-serif text-foreground mb-4">Attestation Node</h2>
+          <p className="text-body mb-4">
+            An independent service that verifies the integrity of a submitted CER bundle and issues a signed receipt.
+            The attestation node provides a chain-of-custody signal — independently verifiable proof of integrity at the
+            time of attestation.
+          </p>
+          <p className="text-body">
+            The attestation node does not re-run models, validate provider execution, or guarantee output correctness.
+            It verifies that the bundle is internally consistent and signs the certificateHash.
+          </p>
+        </section>
+
+        <section className="mb-16">
+          <h2 className="text-2xl font-serif text-foreground mb-4">Signed Receipt</h2>
+          <p className="text-body mb-4">
+            An Ed25519-signed attestation issued by an attestation node. A signed receipt binds the certificateHash to
+            a timestamp and the node's public key, enabling offline verification without contacting the node.
+          </p>
+          <p className="text-body">
+            Signed receipts replace legacy attestation stamps which required contacting the node for verification.
+          </p>
+        </section>
+
+        <section className="mb-16">
+          <h2 className="text-2xl font-serif text-foreground mb-4">bundleType</h2>
+          <p className="text-body mb-4">
+            A string identifier that declares the format and semantics of a CER. The current AI execution bundle type
+            is <code className="text-caption">cer.ai.execution.v1</code>.
+          </p>
+          <p className="text-body">
+            The bundleType is a protected field included in hash computation. It allows verification tools to interpret
+            the record correctly and apply the appropriate validation rules.
+          </p>
+        </section>
+
         <section className="pt-8 border-t border-border">
           <p className="text-caption text-sm">
             Definitions may evolve as the protocol matures. Changes to terminology will be documented and versioned

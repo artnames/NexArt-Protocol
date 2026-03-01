@@ -207,7 +207,7 @@ const Protocol = () => {
                 <h3 className="text-base font-medium text-foreground">For Developers</h3>
                 <p className="text-caption">
                   You can build applications that create and certify NexArt systems. Compliance is achieved by
-                  integrating the SDK and Canonical Renderer.
+                  integrating the appropriate SDK — Code Mode SDK for deterministic rendering, AI Execution SDK for integrity-bound records.
                 </p>
               </div>
 
