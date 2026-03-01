@@ -204,7 +204,7 @@ const Pricing = () => {
     <PageLayout>
       <SEOHead 
         title="Pricing"
-        description="Deterministic execution is free. Certified determinism is what you pay for. NexArt certification-based pricing."
+        description="Execution is free. Independent certification is what you pay for. NexArt certification-based pricing."
       />
 
       <PageHeader
