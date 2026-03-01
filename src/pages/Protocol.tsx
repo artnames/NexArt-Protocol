@@ -20,9 +20,10 @@ const Protocol = () => {
       <PageContent>
         <div className="prose-protocol">
           <p>
-            NexArt is a deterministic execution protocol for AI and generative workloads. This page explains what the protocol
+            NexArt is an open execution protocol for deterministic and integrity-bound systems. This page explains what the protocol
             is, why it exists, and how it enables verifiable, permanent computation across autonomous systems, simulations,
-            compliance workflows, and research.
+            compliance workflows, AI governance, and research. The protocol defines two execution surfaces: Code Mode for deterministic
+            rendering, and AI Execution Integrity for tamper-evident AI execution records.
           </p>
 
           <section className="mt-12">
