@@ -36,7 +36,7 @@ const plans: PlanConfig[] = [
     monthlyPrice: null,
     limit: "100 certified runs / month",
     keyLimit: "Up to 2 active API keys",
-    features: ["Shared canonical node", "Hard cap", "No SLA"],
+    features: ["Shared attestation node", "Hard cap", "No SLA"],
     note: "Not intended for production.",
     cta: "Start Free",
     ctaAction: "dashboard",
@@ -50,7 +50,7 @@ const plans: PlanConfig[] = [
     monthlyPrice: "$600",
     limit: "5,000 certified runs / month",
     keyLimit: "Up to 5 active API keys",
-    features: ["Commercial CodeMode usage", "Priority access to canonical node", "Email support"],
+    features: ["Commercial CodeMode usage", "Priority access to attestation node", "Email support"],
     note: null,
     cta: "Subscribe",
     ctaAction: "checkout",
@@ -78,7 +78,7 @@ const plans: PlanConfig[] = [
     monthlyPrice: null,
     limit: "Custom limits (by contract)",
     keyLimit: "Contract-based terms",
-    features: ["Private or dedicated node option", "Audit retention", "Version guarantees", "SLAs"],
+    features: ["Private or dedicated attestation node option", "Audit retention", "Independent key governance & version guarantees", "SLAs"],
     note: null,
     cta: "Talk to Sales",
     ctaAction: "contact",
@@ -204,23 +204,22 @@ const Pricing = () => {
     <PageLayout>
       <SEOHead 
         title="Pricing"
-        description="Deterministic execution is free. Certified determinism is what you pay for. NexArt certification-based pricing."
+        description="Execution is free. Independent certification is what you pay for. NexArt certification-based pricing."
       />
 
       <PageHeader
         title="Pricing"
-        subtitle="Deterministic execution is free. Certified determinism is what you pay for."
+        subtitle="Execution is free. Independent certification is what you pay for."
       />
 
       <PageContent>
         {/* Hero Section */}
         <section className="mb-16">
           <p className="text-lg text-body max-w-3xl mb-4">
-            Run deterministic systems locally using the SDK and CLI at no cost.
+            Generate Certified Execution Records (CER) locally using the SDK and CLI at no cost.
           </p>
           <p className="text-lg text-body max-w-3xl mb-8">
-            When you need verifiable, auditable, reproducible guarantees, certification is provided via the canonical
-            renderer.
+            When you need independently verifiable, audit-ready guarantees, NexArt provides attestation via its canonical node.
           </p>
           <div className="flex gap-3 flex-wrap">
             <Button asChild size="lg">
@@ -236,17 +235,19 @@ const Pricing = () => {
         <section className="mb-16">
           <h2 className="text-2xl font-serif text-foreground mb-4">What you're paying for</h2>
           <p className="text-body mb-4">
-            We do not charge for execution. We charge for <strong>certification</strong>:
+            We do not charge for execution. We charge for <strong>independent certification</strong>.
           </p>
+          <p className="text-body mb-2">Certification includes:</p>
           <ul className="list-disc list-inside text-body space-y-1 mb-6">
-            <li>Canonical execution proof</li>
-            <li>Reproducibility guarantees</li>
-            <li>Audit-ready snapshots and hashes</li>
+            <li>Canonical execution proof (CER)</li>
+            <li>Verifiable certificate hash</li>
+            <li>Independent attestation signature (optional)</li>
+            <li>Audit-ready snapshots and integrity guarantees</li>
           </ul>
           <div className="bg-muted/50 border border-border rounded-md p-4">
             <p className="text-sm text-foreground">
-              <strong>A certified run</strong> is one canonical renderer execution that returns a deterministic PNG and
-              a verifiable snapshot (<code>.snapshot.json</code>).
+              <strong>A certified run</strong> is one Certified Execution Record (CER) processed by the NexArt
+              attestation node and returned with a verifiable proof.
             </p>
           </div>
           <p className="text-caption text-sm mt-4">
@@ -317,7 +318,7 @@ const Pricing = () => {
                     <p className="text-sm font-medium text-foreground">{plan.limit}</p>
                     {plan.showCertificationNote && (
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Includes certification on the canonical renderer.
+                        Includes certification via NexArt attestation node (CER stamping).
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground mt-1">{plan.keyLimit}</p>
@@ -360,7 +361,7 @@ const Pricing = () => {
         {/* Account-Level Enforcement */}
         <section className="mb-16">
           <h2 className="text-2xl font-serif text-foreground mb-4">Account-level enforcement</h2>
-          <p className="text-body mb-4">Quotas are enforced at the account level by the canonical renderer.</p>
+          <p className="text-body mb-4">Quotas are enforced at the account level by the NexArt attestation node.</p>
           <ul className="list-disc list-inside text-body space-y-1">
             <li>Limits are shared across all API keys in an account</li>
             <li>API keys do not increase usage limits</li>
@@ -383,8 +384,8 @@ const Pricing = () => {
             <li>SDK</li>
             <li>CLI</li>
             <li>Local execution</li>
-            <li>Deterministic computation itself</li>
-            <li>Recānon verification</li>
+            <li>Local CER generation</li>
+            <li>Independent verification</li>
           </ul>
         </section>
 
@@ -396,6 +397,9 @@ const Pricing = () => {
         </section>
 
         {/* Bottom CTA */}
+        <p className="text-xs text-caption mb-6">
+          Note: Certified Execution Records (CER) can be generated locally using the SDK at no cost. Independent third-party attestation is provided via NexArt nodes.
+        </p>
         <div className="pt-8 border-t border-border">
           <div className="flex gap-3 flex-wrap">
             <Button asChild>
