@@ -216,11 +216,10 @@ const Pricing = () => {
         {/* Hero Section */}
         <section className="mb-16">
           <p className="text-lg text-body max-w-3xl mb-4">
-            Run deterministic systems locally using the SDK and CLI at no cost.
+            Generate Certified Execution Records (CER) locally using the SDK and CLI at no cost.
           </p>
           <p className="text-lg text-body max-w-3xl mb-8">
-            When you need verifiable, auditable, reproducible guarantees, certification is provided via the canonical
-            renderer.
+            When you need independently verifiable, audit-ready guarantees, NexArt provides attestation via its canonical node.
           </p>
           <div className="flex gap-3 flex-wrap">
             <Button asChild size="lg">
