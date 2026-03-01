@@ -23,7 +23,7 @@ const Privacy = () => {
           </p>
 
           <p>
-            NexArt provides a developer dashboard and API access to certified deterministic rendering ("Certification Services").
+            NexArt provides a developer dashboard and API access to certified execution services — including deterministic rendering (Code Mode) and tamper-evident AI execution records (Certified Execution Records / CER) with optional independent attestation ("Certification Services").
           </p>
 
           <h2>What we collect</h2>
