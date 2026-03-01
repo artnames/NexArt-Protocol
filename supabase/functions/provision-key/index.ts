@@ -77,10 +77,10 @@ Deno.serve(async (req) => {
       });
     } catch (err) {
       const error = err as Error;
+      console.error('Health check DB error:', error.message);
       return new Response(JSON.stringify({ 
         status: 'unhealthy', 
         error: 'DB_CONNECTION',
-        message: error.message,
         timestamp: new Date().toISOString()
       }), {
         status: 500,
