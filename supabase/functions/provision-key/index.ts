@@ -77,10 +77,10 @@ Deno.serve(async (req) => {
       });
     } catch (err) {
       const error = err as Error;
+      console.error('Health check DB error:', error.message);
       return new Response(JSON.stringify({ 
         status: 'unhealthy', 
         error: 'DB_CONNECTION',
-        message: error.message,
         timestamp: new Date().toISOString()
       }), {
         status: 500,
@@ -110,10 +110,10 @@ Deno.serve(async (req) => {
 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
+      console.warn('Auth failed:', userError?.message);
       return new Response(JSON.stringify({ 
         error: 'AUTH', 
-        message: 'Invalid or expired token',
-        details: userError?.message 
+        message: 'Invalid or expired token'
       }), { 
         status: 401, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
