@@ -487,7 +487,7 @@ export default function Verify() {
             </CardContent>
           </Card>
         )}
-      </div>
+      </PageContent>
     </PageLayout>
   );
 }

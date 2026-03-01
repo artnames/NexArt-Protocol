@@ -128,11 +128,11 @@ const Protocol = () => {
           </section>
 
           <section className="mt-12">
-            <h2>The Canonical Renderer</h2>
+            <h2>The Canonical Renderer (Code Mode)</h2>
 
             <p>
-              The Canonical Renderer is the protocol’s authoritative reference implementation for certification-grade
-              execution. It is a Node.js-based runtime that produces cryptographically verified outputs for
+              The Canonical Renderer is the protocol's authoritative reference implementation for certification-grade
+              deterministic execution. It is a Node.js-based runtime that produces cryptographically verified outputs for
               certification, archival, and verification workflows.
             </p>
 
@@ -149,6 +149,50 @@ const Protocol = () => {
             <p>
               Any party can later re-execute the same system using a protocol-compliant renderer and compare hashes. If
               they match, the output is verified as authentic.
+            </p>
+          </section>
+
+          <section className="mt-12">
+            <h2>AI Execution Integrity Surface</h2>
+
+            <p>
+              The AI Execution Integrity surface provides tamper-evident execution records for AI and LLM systems.
+              Unlike Code Mode, this surface does not claim deterministic output — it provides <strong>integrity evidence</strong> that
+              an execution occurred with specific inputs, parameters, and outputs at a specific time.
+            </p>
+
+            <p>A Certified Execution Record (CER) captures:</p>
+
+            <ul>
+              <li>
+                <strong>Inputs, parameters, and outputs</strong> — cryptographically bound via a <code className="text-caption">certificateHash</code>
+              </li>
+              <li>
+                <strong>Bundle type</strong> — <code className="text-caption">cer.ai.execution.v1</code> identifies AI execution records
+              </li>
+              <li>
+                <strong>Optional node attestation</strong> — an independent attestation node can issue a signed receipt
+                providing third-party proof of integrity at the time of attestation
+              </li>
+              <li>
+                <strong>Independent verification</strong> — any party can recompute the <code className="text-caption">certificateHash</code> offline
+                to verify record integrity
+              </li>
+            </ul>
+
+            <div className="border border-border bg-muted/30 rounded-sm p-4 mt-4">
+              <p className="text-sm text-caption">
+                <strong>Integrity ≠ correctness.</strong> A verified CER confirms that the record has not been tampered with.
+                It does not guarantee that the model produced correct, truthful, or deterministic output. Integrity is about
+                the record; correctness is about the model.
+              </p>
+            </div>
+
+            <p className="text-caption text-sm mt-4">
+              For full specification details, see{" "}
+              <Link to="/protocol/ai-execution-integrity" className="text-body underline underline-offset-2 hover:text-foreground">
+                AI Execution Integrity
+              </Link>.
             </p>
           </section>
 
