@@ -9,7 +9,7 @@ const faqItems = [
   {
     question: "What is NexArt?",
     answer:
-      "NexArt is a protocol and canonical execution system for deterministic generative computation. It allows code, inputs, and runtime to be executed in a standardized environment so results are reproducible, verifiable, and replayable at any point in the future.",
+      "NexArt is an open execution protocol for deterministic and integrity-bound systems. It supports two surfaces: Code Mode for deterministic rendering (reproducible, replayable outputs) and AI Execution Integrity for tamper-evident AI execution records (CER). Both share pinned protocol semantics and stable hash guarantees.",
   },
   {
     question: "What problem does NexArt solve?",
