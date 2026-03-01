@@ -30,9 +30,9 @@ const Protocol = () => {
             <h2>What Is the NexArt Protocol</h2>
 
             <p>
-              The NexArt Protocol is a specification for creating, executing, and verifying deterministic generative
-              systems. It defines how code should be structured, what execution guarantees it provides, and how outputs
-              can be independently verified.
+              The NexArt Protocol is a specification for creating, executing, and verifying execution records across
+              deterministic and integrity-bound systems. It defines how execution should be structured, what guarantees
+              each surface provides, and how outputs and records can be independently verified.
             </p>
 
             <p>
