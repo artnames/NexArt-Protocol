@@ -31,7 +31,7 @@ const AIExecutionIntegrity = () => {
               Protocol: NexArt v1.2.0
             </span>
             <span className="inline-block text-xs font-mono px-2.5 py-1 border border-border rounded bg-muted/40 text-caption">
-              SDK: @nexart/ai-execution v0.5.0
+              SDK: @nexart/ai-execution v0.6.0
             </span>
           </div>
 
