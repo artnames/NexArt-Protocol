@@ -359,6 +359,10 @@ inputHash = "sha256:" + sha256(utf8Bytes(canonicalJson({ locale: "en-US", text: 
               </table>
             </div>
 
+            <p className="text-sm text-caption mt-4 mb-6">
+              Node attestation verifies the integrity of the submitted bundle. It does not re-run the model or validate provider execution.
+            </p>
+
             <p>
               Signed receipt verification fetches the node's public keys and checks the Ed25519 signature offline:
             </p>
