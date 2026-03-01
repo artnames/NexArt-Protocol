@@ -242,7 +242,7 @@ const Builders = () => {
           <h2>Closing</h2>
 
           <p>
-            NexArt is designed to be easier to build with than to bypass. If you can define a generative system, you can
+            NexArt is designed to be easier to build with than to bypass. If you can define an execution system — generative, AI-driven, or hybrid — you can
             express it as a protocol object and certify it under pinned execution semantics.
           </p>
 
