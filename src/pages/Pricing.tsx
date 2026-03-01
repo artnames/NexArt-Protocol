@@ -361,7 +361,7 @@ const Pricing = () => {
         {/* Account-Level Enforcement */}
         <section className="mb-16">
           <h2 className="text-2xl font-serif text-foreground mb-4">Account-level enforcement</h2>
-          <p className="text-body mb-4">Quotas are enforced at the account level by the canonical renderer.</p>
+          <p className="text-body mb-4">Quotas are enforced at the account level by the NexArt attestation node.</p>
           <ul className="list-disc list-inside text-body space-y-1">
             <li>Limits are shared across all API keys in an account</li>
             <li>API keys do not increase usage limits</li>
