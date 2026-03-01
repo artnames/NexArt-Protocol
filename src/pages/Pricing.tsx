@@ -235,17 +235,19 @@ const Pricing = () => {
         <section className="mb-16">
           <h2 className="text-2xl font-serif text-foreground mb-4">What you're paying for</h2>
           <p className="text-body mb-4">
-            We do not charge for execution. We charge for <strong>certification</strong>:
+            We do not charge for execution. We charge for <strong>independent certification</strong>.
           </p>
+          <p className="text-body mb-2">Certification includes:</p>
           <ul className="list-disc list-inside text-body space-y-1 mb-6">
-            <li>Canonical execution proof</li>
-            <li>Reproducibility guarantees</li>
-            <li>Audit-ready snapshots and hashes</li>
+            <li>Canonical execution proof (CER)</li>
+            <li>Verifiable certificate hash</li>
+            <li>Independent attestation signature (optional)</li>
+            <li>Audit-ready snapshots and integrity guarantees</li>
           </ul>
           <div className="bg-muted/50 border border-border rounded-md p-4">
             <p className="text-sm text-foreground">
-              <strong>A certified run</strong> is one canonical renderer execution that returns a deterministic PNG and
-              a verifiable snapshot (<code>.snapshot.json</code>).
+              <strong>A certified run</strong> is one Certified Execution Record (CER) processed by the NexArt
+              attestation node and returned with a verifiable proof.
             </p>
           </div>
           <p className="text-caption text-sm mt-4">
