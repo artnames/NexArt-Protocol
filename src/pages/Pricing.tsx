@@ -78,7 +78,7 @@ const plans: PlanConfig[] = [
     monthlyPrice: null,
     limit: "Custom limits (by contract)",
     keyLimit: "Contract-based terms",
-    features: ["Private or dedicated node option", "Audit retention", "Version guarantees", "SLAs"],
+    features: ["Private or dedicated attestation node option", "Audit retention", "Independent key governance & version guarantees", "SLAs"],
     note: null,
     cta: "Talk to Sales",
     ctaAction: "contact",
