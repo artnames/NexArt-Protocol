@@ -9,7 +9,7 @@ const faqItems = [
   {
     question: "What is NexArt?",
     answer:
-      "NexArt is a protocol and canonical execution system for deterministic generative computation. It allows code, inputs, and runtime to be executed in a standardized environment so results are reproducible, verifiable, and replayable at any point in the future.",
+      "NexArt is an open execution protocol for deterministic and integrity-bound systems. It supports two surfaces: Code Mode for deterministic rendering (reproducible, replayable outputs) and AI Execution Integrity for tamper-evident AI execution records (CER). Both share pinned protocol semantics and stable hash guarantees.",
   },
   {
     question: "What problem does NexArt solve?",
@@ -92,13 +92,10 @@ const faqItems = [
     question: 'What does "certified execution" mean?',
     answer: (
       <>
-        <p className="mb-3">A certified execution is a run performed by the Canonical Renderer that produces:</p>
-        <ul className="list-disc list-inside space-y-1 text-muted-foreground mb-3">
-          <li>A binary output (e.g. PNG)</li>
-          <li>A cryptographic output hash</li>
-          <li>A snapshot containing inputs, parameters, and protocol metadata</li>
-        </ul>
-        <p>Anyone can later re-execute the snapshot and verify the result matches exactly.</p>
+        <p className="mb-3">Certification depends on the execution surface:</p>
+        <p className="mb-2"><strong>Code Mode:</strong> A certified execution is a run performed by the Canonical Renderer that produces a binary output (PNG/MP4), a cryptographic output hash, and a snapshot. Anyone can re-execute and verify the result matches exactly.</p>
+        <p className="mb-3"><strong>AI Execution:</strong> A Certified Execution Record (CER) captures inputs, parameters, and outputs sealed with a certificateHash. Verification confirms record integrity — it does not guarantee output correctness or determinism.</p>
+        <p>Both surfaces share the same protocol version and hash guarantees.</p>
       </>
     ),
   },
@@ -159,12 +156,12 @@ const faqItems = [
     answer: (
       <>
         <p className="mb-3">
-          Pricing is based on certified executions (successful canonical renders). Quota is account-level and shared across API keys.
+          Execution is free for both surfaces. Pricing is based on certified executions (Code Mode canonical renders) and independent attestation/stamping (AI Execution CER). Quota is account-level and shared across API keys.
         </p>
         <ul className="list-disc list-inside space-y-1 text-muted-foreground mb-3">
-          <li>A single certified render is typically ~100–300ms</li>
-          <li>Certifying a procedural world seed or simulation step is usually fractions of a cent at Pro-level pricing</li>
-          <li>Verification and replay cost the same as a render (they re-execute the snapshot)</li>
+          <li>Code Mode: A single certified render is typically ~100–300ms</li>
+          <li>AI Execution: CER creation is free; optional node attestation with signed receipts is a paid operation</li>
+          <li>Code Mode verification and replay cost the same as a render (they re-execute the snapshot)</li>
         </ul>
         <p>
           See{" "}
@@ -322,7 +319,7 @@ const FAQ = () => {
 
       <PageHeader
         title="Frequently Asked Questions"
-        subtitle="Common questions about NexArt, deterministic execution, and certified rendering."
+        subtitle="Common questions about NexArt, execution surfaces, and certified integrity."
       />
 
       <PageContent>

@@ -8,30 +8,31 @@ const Protocol = () => {
   return (
     <PageLayout>
       <SEOHead
-        title="NexArt Protocol | Verifiable Execution and Certification Standard"
-        description="NexArt Protocol defines a canonical execution layer for deterministic workloads — AI agents, simulations, automation — with replayable verification and cryptographic proof of execution."
+        title="NexArt Protocol | Verifiable Execution and Integrity Standard"
+        description="NexArt Protocol defines execution surfaces for deterministic rendering and integrity-bound AI systems — with replayable verification and cryptographic proof of execution."
       />
 
       <PageHeader
         title="NexArt Protocol"
-        subtitle="A canonical execution and verification standard for deterministic systems."
+        subtitle="An open execution and verification standard for deterministic and integrity-bound systems."
       />
 
       <PageContent>
         <div className="prose-protocol">
           <p>
-            NexArt is a deterministic execution protocol for AI and generative workloads. This page explains what the protocol
+            NexArt is an open execution protocol for deterministic and integrity-bound systems. This page explains what the protocol
             is, why it exists, and how it enables verifiable, permanent computation across autonomous systems, simulations,
-            compliance workflows, and research.
+            compliance workflows, AI governance, and research. The protocol defines two execution surfaces: Code Mode for deterministic
+            rendering, and AI Execution Integrity for tamper-evident AI execution records.
           </p>
 
           <section className="mt-12">
             <h2>What Is the NexArt Protocol</h2>
 
             <p>
-              The NexArt Protocol is a specification for creating, executing, and verifying deterministic generative
-              systems. It defines how code should be structured, what execution guarantees it provides, and how outputs
-              can be independently verified.
+              The NexArt Protocol is a specification for creating, executing, and verifying execution records across
+              deterministic and integrity-bound systems. It defines how execution should be structured, what guarantees
+              each surface provides, and how outputs and records can be independently verified.
             </p>
 
             <p>
@@ -127,11 +128,11 @@ const Protocol = () => {
           </section>
 
           <section className="mt-12">
-            <h2>The Canonical Renderer</h2>
+            <h2>The Canonical Renderer (Code Mode)</h2>
 
             <p>
-              The Canonical Renderer is the protocol’s authoritative reference implementation for certification-grade
-              execution. It is a Node.js-based runtime that produces cryptographically verified outputs for
+              The Canonical Renderer is the protocol's authoritative reference implementation for certification-grade
+              deterministic execution. It is a Node.js-based runtime that produces cryptographically verified outputs for
               certification, archival, and verification workflows.
             </p>
 
@@ -152,6 +153,50 @@ const Protocol = () => {
           </section>
 
           <section className="mt-12">
+            <h2>AI Execution Integrity Surface</h2>
+
+            <p>
+              The AI Execution Integrity surface provides tamper-evident execution records for AI and LLM systems.
+              Unlike Code Mode, this surface does not claim deterministic output — it provides <strong>integrity evidence</strong> that
+              an execution occurred with specific inputs, parameters, and outputs at a specific time.
+            </p>
+
+            <p>A Certified Execution Record (CER) captures:</p>
+
+            <ul>
+              <li>
+                <strong>Inputs, parameters, and outputs</strong> — cryptographically bound via a <code className="text-caption">certificateHash</code>
+              </li>
+              <li>
+                <strong>Bundle type</strong> — <code className="text-caption">cer.ai.execution.v1</code> identifies AI execution records
+              </li>
+              <li>
+                <strong>Optional node attestation</strong> — an independent attestation node can issue a signed receipt
+                providing third-party proof of integrity at the time of attestation
+              </li>
+              <li>
+                <strong>Independent verification</strong> — any party can recompute the <code className="text-caption">certificateHash</code> offline
+                to verify record integrity
+              </li>
+            </ul>
+
+            <div className="border border-border bg-muted/30 rounded-sm p-4 mt-4">
+              <p className="text-sm text-caption">
+                <strong>Integrity ≠ correctness.</strong> A verified CER confirms that the record has not been tampered with.
+                It does not guarantee that the model produced correct, truthful, or deterministic output. Integrity is about
+                the record; correctness is about the model.
+              </p>
+            </div>
+
+            <p className="text-caption text-sm mt-4">
+              For full specification details, see{" "}
+              <Link to="/protocol/ai-execution-integrity" className="text-body underline underline-offset-2 hover:text-foreground">
+                AI Execution Integrity
+              </Link>.
+            </p>
+          </section>
+
+          <section className="mt-12">
             <h2>Protocol Architecture</h2>
 
             <h3 className="text-sm font-mono text-caption mt-6 mb-4 tracking-wide uppercase">Execution Trust Chain</h3>
@@ -168,11 +213,20 @@ const Protocol = () => {
               </div>
 
               <div className="border border-border p-6 rounded-sm">
-                <h3 className="text-base font-medium text-foreground mb-3">Canonical Renderer</h3>
-                <p className="text-caption text-sm mb-2">The reference runtime for certification and verification.</p>
+                <h3 className="text-base font-medium text-foreground mb-3">Canonical Renderer (Code Mode)</h3>
+                <p className="text-caption text-sm mb-2">The reference runtime for deterministic certification and verification.</p>
                 <p className="text-caption text-sm">
-                  Produces verified outputs with cryptographic proofs. Required for certification-grade runs, audits,
-                  and archival.
+                  Produces verified PNG/MP4 outputs with cryptographic proofs. Required for certification-grade runs, audits,
+                  and archival of deterministic generative systems.
+                </p>
+              </div>
+
+              <div className="border border-border p-6 rounded-sm">
+                <h3 className="text-base font-medium text-foreground mb-3">Attestation Node (AI Execution)</h3>
+                <p className="text-caption text-sm mb-2">Independent attestation for AI execution records.</p>
+                <p className="text-caption text-sm">
+                  Issues signed receipts for Certified Execution Records (CER). Provides chain-of-custody signals
+                  without re-running models or validating provider execution.
                 </p>
               </div>
 
@@ -197,7 +251,7 @@ const Protocol = () => {
                 <h3 className="text-base font-medium text-foreground">For Developers</h3>
                 <p className="text-caption">
                   You can build applications that create and certify NexArt systems. Compliance is achieved by
-                  integrating the SDK and Canonical Renderer.
+                  integrating the appropriate SDK — Code Mode SDK for deterministic rendering, AI Execution SDK for integrity-bound records.
                 </p>
               </div>
 

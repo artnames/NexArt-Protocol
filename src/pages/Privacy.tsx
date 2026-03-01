@@ -23,7 +23,7 @@ const Privacy = () => {
           </p>
 
           <p>
-            NexArt provides a developer dashboard and API access to certified deterministic rendering ("Certification Services").
+            NexArt provides a developer dashboard and API access to certified execution services — including deterministic rendering (Code Mode) and tamper-evident AI execution records (Certified Execution Records / CER) with optional independent attestation ("Certification Services").
           </p>
 
           <h2>What we collect</h2>
@@ -31,6 +31,7 @@ const Privacy = () => {
           <ul>
             <li><strong>Account data:</strong> email address and authentication identifiers (including Google OAuth, if used).</li>
             <li><strong>Usage data:</strong> API key usage metrics (counts, timestamps, success/error codes, and request duration).</li>
+            <li><strong>CER metadata:</strong> certificate hashes, bundle types, attestation timestamps, and redacted record summaries. Full CER content (inputs, outputs, prompts) is client-retained and not stored by NexArt unless explicitly submitted for attestation.</li>
             <li><strong>Technical data:</strong> IP address and basic request logs for security and abuse prevention.</li>
           </ul>
 
@@ -67,6 +68,12 @@ const Privacy = () => {
           
           <p>
             We retain account and usage data for as long as your account is active, and for a reasonable period afterward for security, audit, and dispute resolution.
+          </p>
+
+          <h2>Redaction and Verification</h2>
+
+          <p>
+            CER records support field-level redaction. Sensitive fields (such as inputs, outputs, or prompts) can be removed or set to null. Redaction produces a new, valid certificateHash for the redacted version of the record. The original hash is preserved in provenance metadata for audit traceability. Verification confirms record integrity — it does not re-run models or validate output correctness.
           </p>
 
           <h2>Your rights</h2>

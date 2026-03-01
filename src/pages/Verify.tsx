@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
+import PageContent from "@/components/layout/PageContent";
 import SEOHead from "@/components/seo/SEOHead";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -159,7 +160,7 @@ export default function Verify() {
         subtitle="Paste or upload a CER JSON file to verify its integrity. All verification runs locally in your browser, no data is sent to any server."
       />
 
-      <div className="max-w-5xl mx-auto px-6 py-12 sm:py-16 space-y-8">
+      <PageContent>
         {/* Input area */}
         <Card>
           <CardHeader>
@@ -486,7 +487,7 @@ export default function Verify() {
             </CardContent>
           </Card>
         )}
-      </div>
+      </PageContent>
     </PageLayout>
   );
 }
