@@ -19,7 +19,7 @@ const Builders = () => {
       <PageContent>
         <div className="prose-protocol">
           <p>
-            NexArt is an open protocol for deterministic generative systems. It separates system definition, execution
+            NexArt is an open execution protocol for deterministic and integrity-bound systems. It separates system definition, execution
             semantics, and outputs so results remain portable, verifiable, and stable across time and environments.
           </p>
 
