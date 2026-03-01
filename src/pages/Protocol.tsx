@@ -8,13 +8,13 @@ const Protocol = () => {
   return (
     <PageLayout>
       <SEOHead
-        title="NexArt Protocol | Verifiable Execution and Certification Standard"
-        description="NexArt Protocol defines a canonical execution layer for deterministic workloads — AI agents, simulations, automation — with replayable verification and cryptographic proof of execution."
+        title="NexArt Protocol | Verifiable Execution and Integrity Standard"
+        description="NexArt Protocol defines execution surfaces for deterministic rendering and integrity-bound AI systems — with replayable verification and cryptographic proof of execution."
       />
 
       <PageHeader
         title="NexArt Protocol"
-        subtitle="A canonical execution and verification standard for deterministic systems."
+        subtitle="An open execution and verification standard for deterministic and integrity-bound systems."
       />
 
       <PageContent>
