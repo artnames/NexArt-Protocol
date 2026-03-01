@@ -397,6 +397,9 @@ const Pricing = () => {
         </section>
 
         {/* Bottom CTA */}
+        <p className="text-xs text-caption mb-6">
+          Note: Certified Execution Records (CER) can be generated locally using the SDK at no cost. Independent third-party attestation is provided via NexArt nodes.
+        </p>
         <div className="pt-8 border-t border-border">
           <div className="flex gap-3 flex-wrap">
             <Button asChild>
