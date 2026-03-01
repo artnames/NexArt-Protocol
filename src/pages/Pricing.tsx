@@ -36,7 +36,7 @@ const plans: PlanConfig[] = [
     monthlyPrice: null,
     limit: "100 certified runs / month",
     keyLimit: "Up to 2 active API keys",
-    features: ["Shared canonical node", "Hard cap", "No SLA"],
+    features: ["Shared attestation node", "Hard cap", "No SLA"],
     note: "Not intended for production.",
     cta: "Start Free",
     ctaAction: "dashboard",
