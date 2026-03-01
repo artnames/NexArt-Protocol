@@ -31,7 +31,7 @@ const AIExecutionIntegrity = () => {
               Protocol: NexArt v1.2.0
             </span>
             <span className="inline-block text-xs font-mono px-2.5 py-1 border border-border rounded bg-muted/40 text-caption">
-              SDK: @nexart/ai-execution v0.5.0
+              SDK: @nexart/ai-execution v0.6.0
             </span>
           </div>
 
@@ -137,14 +137,14 @@ console.log(stamp.code); // "OK"`}
             <p>
               Every time you call an AI model, the SDK captures what you sent, what you got back, and the exact
               parameters used. It computes SHA-256 hashes of everything and seals the record into a Certified Execution
-              Record (CER). Any post-hoc modification invalidates the certificate hash.
+              Record (CER). Any post-hoc modification to protected fields invalidates the certificate hash. AI Execution Integrity defines a standard way to capture and seal AI execution records (CER) so they can be verified independently over time.
             </p>
 
             <h3 className="mt-8">What this certifies</h3>
             <ul>
               <li><strong>Integrity of the recorded execution</strong> — cryptographic binding between inputs, parameters, and outputs</li>
               <li><strong>Tamper evidence</strong> — any modification to the record is detectable</li>
-              <li><strong>Chain of custody</strong> — optional node attestation provides third-party proof</li>
+              <li><strong>Chain-of-custody signal</strong> — optional node attestation provides independently verifiable proof of integrity at time of attestation</li>
             </ul>
 
             <h3 className="mt-8">What this does not certify</h3>
@@ -253,8 +253,8 @@ console.log(stamp.code); // "OK"`}
               You may need to redact sensitive fields (PII, proprietary prompts) before storing or sharing a CER.
             </p>
             <ul>
-              <li><strong>Delete the key</strong> — safe. Hash will no longer match (expected for redacted records).</li>
-              <li><strong>Set to <code>null</code></strong> — safe. Hash will no longer match (expected).</li>
+              <li><strong>Delete the key</strong> — safe. If protected fields are modified, the certificateHash will change.</li>
+              <li><strong>Set to <code>null</code></strong> — safe. Modifying protected fields produces a new valid certificateHash for the updated record.</li>
               <li><strong>Never set to <code>undefined</code></strong> — <code>undefined</code> is not valid JSON and will break canonical serialization.</li>
             </ul>
             <p>
@@ -358,6 +358,10 @@ inputHash = "sha256:" + sha256(utf8Bytes(canonicalJson({ locale: "en-US", text: 
                 </tbody>
               </table>
             </div>
+
+            <p className="text-sm text-caption mt-4 mb-6">
+              Node attestation verifies the integrity of the submitted bundle. It does not re-run the model or validate provider execution.
+            </p>
 
             <p>
               Signed receipt verification fetches the node's public keys and checks the Ed25519 signature offline:
