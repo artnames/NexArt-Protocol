@@ -253,8 +253,8 @@ console.log(stamp.code); // "OK"`}
               You may need to redact sensitive fields (PII, proprietary prompts) before storing or sharing a CER.
             </p>
             <ul>
-              <li><strong>Delete the key</strong> — safe. Hash will no longer match (expected for redacted records).</li>
-              <li><strong>Set to <code>null</code></strong> — safe. Hash will no longer match (expected).</li>
+              <li><strong>Delete the key</strong> — safe. If protected fields are modified, the certificateHash will change.</li>
+              <li><strong>Set to <code>null</code></strong> — safe. Modifying protected fields produces a new valid certificateHash for the updated record.</li>
               <li><strong>Never set to <code>undefined</code></strong> — <code>undefined</code> is not valid JSON and will break canonical serialization.</li>
             </ul>
             <p>
