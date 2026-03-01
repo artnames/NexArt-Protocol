@@ -68,7 +68,7 @@ const plans = [
     description: "Infrastructure Dependency",
     limit: "Unlimited (by contract scope)",
     icon: Building,
-    features: ["Private or dedicated node option", "Audit retention", "Version guarantees", "SLAs"],
+    features: ["Private or dedicated attestation node option", "Audit retention", "Independent key governance & version guarantees", "SLAs"],
     note: null,
     cta: "Talk to Sales",
     ctaAction: "contact",
