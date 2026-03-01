@@ -10,10 +10,21 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Require admin secret — if not set or not matching, return 404
+  const adminSecret = Deno.env.get("NEXART_ADMIN_SECRET");
+  const providedSecret = req.headers.get("x-nexart-admin-secret");
+
+  if (!adminSecret || providedSecret !== adminSecret) {
+    return new Response(JSON.stringify({ ok: false, error: "Not available" }), {
+      status: 404,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
   const databaseUrl = Deno.env.get("DATABASE_URL");
-  
+
   if (!databaseUrl) {
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       status: 'error',
       error: 'CONFIG',
       message: 'DATABASE_URL environment variable is not set',
@@ -36,7 +47,7 @@ Deno.serve(async (req) => {
 
   try {
     console.log(`Attempting connection to ${dbHost}:${dbPort}`);
-    
+
     const sql = postgres(databaseUrl, {
       ssl: false,
       connection: {
@@ -44,10 +55,8 @@ Deno.serve(async (req) => {
       }
     });
 
-    // Simple connectivity test
     const result = await sql`SELECT 1 as ok, NOW() as server_time, version() as pg_version`;
-    
-    // Get table list
+
     const tables = await sql`
       SELECT table_name 
       FROM information_schema.tables 
@@ -55,7 +64,6 @@ Deno.serve(async (req) => {
       LIMIT 10
     `;
 
-    // Get api_keys schema
     const apiKeysSchema = await sql`
       SELECT column_name, data_type, is_nullable
       FROM information_schema.columns 
@@ -63,7 +71,6 @@ Deno.serve(async (req) => {
       ORDER BY ordinal_position
     `;
 
-    // Get usage_events schema
     const usageEventsSchema = await sql`
       SELECT column_name, data_type, is_nullable
       FROM information_schema.columns 
@@ -73,7 +80,7 @@ Deno.serve(async (req) => {
 
     await sql.end();
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       status: 'healthy',
       db: {
         host: dbHost,
@@ -96,7 +103,7 @@ Deno.serve(async (req) => {
     const error = err as Error;
     console.error('DB health check failed:', error.message);
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       status: 'unhealthy',
       error: 'DB_CONNECTION',
       message: error.message,

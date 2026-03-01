@@ -246,18 +246,21 @@ Deno.serve(async (req) => {
     console.error('Stack:', error.stack);
     
     let errorCode = 'INTERNAL';
+    let clientMessage = 'An unexpected error occurred. Please try again later.';
     if (error.message.includes('CONFIG')) {
       errorCode = 'CONFIG';
+      clientMessage = 'Service configuration error. Please contact support.';
     } else if (error.message.includes('SSL') || error.message.includes('TLS') || error.message.includes('certificate')) {
       errorCode = 'DB_SSL';
+      clientMessage = 'Database connection error. Please try again later.';
     } else if (error.message.includes('connect') || error.message.includes('ECONNREFUSED')) {
       errorCode = 'DB_CONNECTION';
+      clientMessage = 'Database connection error. Please try again later.';
     }
     
     return new Response(JSON.stringify({ 
       error: errorCode, 
-      message: error.message,
-      details: error.stack?.split('\n').slice(0, 5).join('\n')
+      message: clientMessage
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
