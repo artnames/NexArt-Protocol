@@ -31,6 +31,7 @@ const Privacy = () => {
           <ul>
             <li><strong>Account data:</strong> email address and authentication identifiers (including Google OAuth, if used).</li>
             <li><strong>Usage data:</strong> API key usage metrics (counts, timestamps, success/error codes, and request duration).</li>
+            <li><strong>CER metadata:</strong> certificate hashes, bundle types, attestation timestamps, and redacted record summaries. Full CER content (inputs, outputs, prompts) is client-retained and not stored by NexArt unless explicitly submitted for attestation.</li>
             <li><strong>Technical data:</strong> IP address and basic request logs for security and abuse prevention.</li>
           </ul>
 
