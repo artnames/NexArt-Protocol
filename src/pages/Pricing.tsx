@@ -50,7 +50,7 @@ const plans: PlanConfig[] = [
     monthlyPrice: "$600",
     limit: "5,000 certified runs / month",
     keyLimit: "Up to 5 active API keys",
-    features: ["Commercial CodeMode usage", "Priority access to canonical node", "Email support"],
+    features: ["Commercial CodeMode usage", "Priority access to attestation node", "Email support"],
     note: null,
     cta: "Subscribe",
     ctaAction: "checkout",
