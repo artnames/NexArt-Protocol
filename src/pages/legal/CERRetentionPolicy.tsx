@@ -35,6 +35,9 @@ const CERRetentionPolicy = () => {
             <li>Minimal operational metadata required for system integrity and billing</li>
           </ul>
           <p>
+            CER bundles are stored in secure cloud infrastructure operated by or on behalf of NexArt.
+          </p>
+          <p>
             No raw model prompts or outputs are retained unless explicitly included within a CER bundle by the caller.
           </p>
 
@@ -47,6 +50,9 @@ const CERRetentionPolicy = () => {
             <li>A user explicitly deletes their artifacts</li>
             <li>Retention is extended for fraud investigation, abuse prevention, or legal compliance</li>
           </ul>
+          <p>
+            NexArt does not guarantee indefinite hosting of CER bundles beyond the applicable retention period.
+          </p>
           <p>
             Exported CER JSON files remain independently verifiable offline indefinitely using the public SDK.
           </p>
@@ -88,6 +94,9 @@ const CERRetentionPolicy = () => {
 
           <p className="text-sm text-muted-foreground mt-12">
             <strong>Last Updated:</strong> 1 March 2026
+          </p>
+          <p className="text-xs text-muted-foreground mt-6 italic">
+            This policy describes NexArt's operational practices and does not constitute a contractual guarantee unless expressly incorporated into a written agreement.
           </p>
         </div>
       </PageContent>
