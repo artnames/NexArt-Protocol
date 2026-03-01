@@ -92,13 +92,10 @@ const faqItems = [
     question: 'What does "certified execution" mean?',
     answer: (
       <>
-        <p className="mb-3">A certified execution is a run performed by the Canonical Renderer that produces:</p>
-        <ul className="list-disc list-inside space-y-1 text-muted-foreground mb-3">
-          <li>A binary output (e.g. PNG)</li>
-          <li>A cryptographic output hash</li>
-          <li>A snapshot containing inputs, parameters, and protocol metadata</li>
-        </ul>
-        <p>Anyone can later re-execute the snapshot and verify the result matches exactly.</p>
+        <p className="mb-3">Certification depends on the execution surface:</p>
+        <p className="mb-2"><strong>Code Mode:</strong> A certified execution is a run performed by the Canonical Renderer that produces a binary output (PNG/MP4), a cryptographic output hash, and a snapshot. Anyone can re-execute and verify the result matches exactly.</p>
+        <p className="mb-3"><strong>AI Execution:</strong> A Certified Execution Record (CER) captures inputs, parameters, and outputs sealed with a certificateHash. Verification confirms record integrity — it does not guarantee output correctness or determinism.</p>
+        <p>Both surfaces share the same protocol version and hash guarantees.</p>
       </>
     ),
   },
