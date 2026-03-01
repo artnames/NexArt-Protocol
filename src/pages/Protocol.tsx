@@ -169,11 +169,20 @@ const Protocol = () => {
               </div>
 
               <div className="border border-border p-6 rounded-sm">
-                <h3 className="text-base font-medium text-foreground mb-3">Canonical Renderer</h3>
-                <p className="text-caption text-sm mb-2">The reference runtime for certification and verification.</p>
+                <h3 className="text-base font-medium text-foreground mb-3">Canonical Renderer (Code Mode)</h3>
+                <p className="text-caption text-sm mb-2">The reference runtime for deterministic certification and verification.</p>
                 <p className="text-caption text-sm">
-                  Produces verified outputs with cryptographic proofs. Required for certification-grade runs, audits,
-                  and archival.
+                  Produces verified PNG/MP4 outputs with cryptographic proofs. Required for certification-grade runs, audits,
+                  and archival of deterministic generative systems.
+                </p>
+              </div>
+
+              <div className="border border-border p-6 rounded-sm">
+                <h3 className="text-base font-medium text-foreground mb-3">Attestation Node (AI Execution)</h3>
+                <p className="text-caption text-sm mb-2">Independent attestation for AI execution records.</p>
+                <p className="text-caption text-sm">
+                  Issues signed receipts for Certified Execution Records (CER). Provides chain-of-custody signals
+                  without re-running models or validating provider execution.
                 </p>
               </div>
 
