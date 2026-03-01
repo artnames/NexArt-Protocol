@@ -95,6 +95,9 @@ const CERRetentionPolicy = () => {
           <p className="text-sm text-muted-foreground mt-12">
             <strong>Last Updated:</strong> 1 March 2026
           </p>
+          <p className="text-xs text-muted-foreground mt-6 italic">
+            This policy describes NexArt's operational practices and does not constitute a contractual guarantee unless expressly incorporated into a written agreement.
+          </p>
         </div>
       </PageContent>
     </PageLayout>
