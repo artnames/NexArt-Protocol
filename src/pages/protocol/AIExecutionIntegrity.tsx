@@ -144,7 +144,7 @@ console.log(stamp.code); // "OK"`}
             <ul>
               <li><strong>Integrity of the recorded execution</strong> — cryptographic binding between inputs, parameters, and outputs</li>
               <li><strong>Tamper evidence</strong> — any modification to the record is detectable</li>
-              <li><strong>Chain of custody</strong> — optional node attestation provides third-party proof</li>
+              <li><strong>Chain-of-custody signal</strong> — optional node attestation provides independently verifiable proof of integrity at time of attestation</li>
             </ul>
 
             <h3 className="mt-8">What this does not certify</h3>
