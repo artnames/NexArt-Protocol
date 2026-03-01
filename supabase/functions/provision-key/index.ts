@@ -110,10 +110,10 @@ Deno.serve(async (req) => {
 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
+      console.warn('Auth failed:', userError?.message);
       return new Response(JSON.stringify({ 
         error: 'AUTH', 
-        message: 'Invalid or expired token',
-        details: userError?.message 
+        message: 'Invalid or expired token'
       }), { 
         status: 401, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
