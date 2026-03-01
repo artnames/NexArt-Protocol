@@ -384,8 +384,8 @@ const Pricing = () => {
             <li>SDK</li>
             <li>CLI</li>
             <li>Local execution</li>
-            <li>Deterministic computation itself</li>
-            <li>Recānon verification</li>
+            <li>Local CER generation</li>
+            <li>Independent verification</li>
           </ul>
         </section>
 
