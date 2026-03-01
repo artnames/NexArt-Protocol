@@ -26,7 +26,7 @@ const plans = [
     description: "Evaluation & CI",
     limit: "100 certified runs / month",
     icon: Zap,
-    features: ["Shared canonical node", "Hard cap", "No SLA"],
+    features: ["Shared attestation node", "Hard cap", "No SLA"],
     note: "Not intended for production.",
     cta: "Current Plan",
     ctaAction: "none",
