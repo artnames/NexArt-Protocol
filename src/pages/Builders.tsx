@@ -104,7 +104,7 @@ const Builders = () => {
             <li>Produces canonical PNG and MP4 outputs</li>
             <li>Deterministic execution with pinned semantics</li>
             <li>Used by nexart.xyz in production</li>
-            <li>Required for certification, minting, and long-term verification</li>
+            <li>Required for canonical rendering certification, minting, and long-term verification of generative outputs</li>
           </ul>
 
           <p>
