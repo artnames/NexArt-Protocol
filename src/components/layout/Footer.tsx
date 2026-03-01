@@ -4,7 +4,7 @@ const Footer = () => {
   return (
     <footer className="border-t border-border mt-24">
       <div className="max-w-5xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-[1fr_1fr_2fr_auto] gap-x-6 gap-y-8 mb-10">
+        <div className="grid grid-cols-2 md:grid-cols-[1fr_1fr_2fr_auto_auto] gap-x-6 gap-y-8 mb-10">
           {/* Protocol */}
           <div>
             <h4 className="text-xs font-mono text-foreground mb-4 tracking-wide">Protocol</h4>
