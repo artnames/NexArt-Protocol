@@ -35,6 +35,9 @@ const CERRetentionPolicy = () => {
             <li>Minimal operational metadata required for system integrity and billing</li>
           </ul>
           <p>
+            CER bundles are stored in secure cloud infrastructure operated by or on behalf of NexArt.
+          </p>
+          <p>
             No raw model prompts or outputs are retained unless explicitly included within a CER bundle by the caller.
           </p>
 
