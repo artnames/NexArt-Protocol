@@ -32,6 +32,11 @@ const StandardsAlignment = () => {
             </p>
           </div>
 
+          {/* AIEF alignment callout */}
+          <p className="text-sm text-body">
+            Designed to align with AIEF v0.2.x control objectives (Levels 1–4) for verifiable AI execution records. NexArt is one implementation; AIEF is vendor-neutral and open for public comment. Supports Level 4-style outcomes: multi-step chain integrity, tool/dependency evidence, and independent verification.
+          </p>
+
           {/* On this page */}
           <nav>
             <p className="text-xs font-mono text-caption uppercase tracking-wider mb-2">On this page</p>
@@ -39,6 +44,7 @@ const StandardsAlignment = () => {
               {[
                 ["#what-nexart-provides", "What NexArt provides"],
                 ["#control-outcomes", "Control outcomes"],
+                ["#verification-claims", "What you can claim"],
                 ["#soc2", "SOC 2 mapping"],
                 ["#nist", "NIST mapping"],
                 ["#iso42001", "ISO/IEC 42001 mapping"],
@@ -58,12 +64,17 @@ const StandardsAlignment = () => {
             <ul className="space-y-3 text-sm text-body list-disc pl-5">
               <li><strong className="text-foreground">Certified Execution Record (CER)</strong> — a single JSON record that binds inputs, parameters, and outputs together.</li>
               <li><strong className="text-foreground">Certificate hash</strong> — a tamper-evident seal over the record contents.</li>
-              <li><strong className="text-foreground">Node stamp (signed receipt)</strong> — optional Ed25519 signature over a receipt that can be verified independently using the node's published public keys.</li>
-              <li><strong className="text-foreground">Deterministic re-execution (Code Mode)</strong> — for deterministic workloads, you can re-run the snapshot and reproduce the same output.</li>
+              <li><strong className="text-foreground">Node stamp (signed receipt)</strong> — optional Ed25519 signature over a receipt. Verify offline using the node's published public keys. Receipt includes: receipt, signature, attestorKeyId.</li>
+              <li>
+                <strong className="text-foreground">Deterministic replay (deterministic workloads only)</strong> — for deterministic workloads (e.g., Code Mode), rerunning the snapshot reproduces the same output.
+                <p className="text-xs text-muted-foreground mt-1">Note: For probabilistic models, NexArt verifies the recorded artifact; it does not attempt to reproduce tokens.</p>
+              </li>
               <li><strong className="text-foreground">Verification reason codes</strong> — PASS / FAIL plus machine-readable reason codes explaining what didn't match.</li>
               <li><strong className="text-foreground">Redacted exports + provenance</strong> — you can remove sensitive fields and still produce a verifiable artifact, while preserving the original historic hash as reference.</li>
-              <li><strong className="text-foreground">Legacy stamps</strong> — older records may show a legacy stamp (attestation ID without signed receipt). These still verify for integrity but aren't offline signature-verifiable.</li>
             </ul>
+            <p className="text-xs text-muted-foreground mt-4 italic">
+              Legacy note: older records may show a legacy attestation (integrity-verifiable but not offline signature-verifiable).
+            </p>
           </section>
 
           {/* B — Control outcomes */}
@@ -83,7 +94,7 @@ const StandardsAlignment = () => {
                   {[
                     ["Tamper-evident decision trail", "Certificate hash over canonical record", "CER JSON + verify PASS/FAIL"],
                     ["Proof that logs weren't edited post-hoc", "Hash mismatch detection + reason codes", "Verification report + reason codes"],
-                    ["Third-party integrity stamp", "Signed receipt (Ed25519) + public key discovery", "Signed receipt (receipt + signatureB64Url + attestorKeyId) + node keys document (/.well-known/nexart-node.json)"],
+                    ["Third-party integrity stamp", "Signed receipt (Ed25519) + public key discovery", "Signed receipt (receipt + signature + attestorKeyId) + node keys document"],
                     ["Reproducible execution (where deterministic)", "Deterministic snapshots + replay", "Code Mode CER + replay output"],
                     ["Traceability of automated decisions", "Workflow/run IDs + step chaining (agent workflows)", "RunBuilder chain + final hash"],
                     ["Privacy-preserving audit sharing", "Redacted export + provenance", "Redacted CER + meta.provenance"],
@@ -111,6 +122,21 @@ const StandardsAlignment = () => {
                 <li><strong className="text-foreground">Verify</strong> — at audit time, re-verify the certificate hash and stamp independently using public keys or the browser verifier.</li>
               </ol>
             </div>
+          </section>
+
+          {/* Verification claims */}
+          <section id="verification-claims">
+            <h2 className="text-xl font-serif text-foreground mb-4">What you can claim when verification PASSes</h2>
+            <ul className="space-y-2 text-sm text-body list-disc pl-5">
+              <li>Protected fields in the record have not been modified since issuance under the declared scheme.</li>
+              <li>If a signed receipt is present, the signature verifies against the node's published public key.</li>
+            </ul>
+
+            <h3 className="text-lg font-serif text-foreground mt-6 mb-3">What you cannot claim</h3>
+            <ul className="space-y-2 text-sm text-body list-disc pl-5">
+              <li>That the decision was correct, fair, or unbiased.</li>
+              <li>That the model would output the same tokens if re-run today.</li>
+            </ul>
           </section>
 
           {/* C1 — SOC 2 */}
