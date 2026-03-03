@@ -98,7 +98,7 @@ const StandardsAlignment = () => {
                 </TableHeader>
                 <TableBody>
                   {[
-                    ["Tamper-evident decision trail", "Certificate hash over canonical record", "CER JSON + verify PASS/FAIL"],
+                    ["Tamper-evident decision trail", "Certificate hash over stable, deterministic record representation", "CER JSON + verify PASS/FAIL"],
                     ["Proof that logs weren't edited post-hoc", "Hash mismatch detection + reason codes", "Verification report + reason codes"],
                     ["Third-party integrity stamp", "Signed receipt (Ed25519) + public key discovery", "Signed receipt (receipt + signature + attestorKeyId) + node keys document"],
                     ["Reproducible execution (where deterministic)", "Deterministic snapshots + replay", "Code Mode CER + replay output"],
