@@ -34,7 +34,13 @@ const StandardsAlignment = () => {
 
           {/* AIEF alignment callout */}
           <p className="text-sm text-body">
-            Designed to align with AIEF v0.2.x control objectives (Levels 1–4) for verifiable AI execution records. NexArt is one implementation; AIEF is vendor-neutral and open for public comment. Supports Level 4-style outcomes: multi-step chain integrity, tool/dependency evidence, and independent verification.
+            Designed to align with AIEF v0.2.x control objectives (Levels 1–4) for verifiable AI execution records. NexArt is one implementation; AIEF is vendor-neutral and open for public comment.
+          </p>
+          <p className="text-sm text-body">
+            Supports Level 4-style outcomes: multi-step chain integrity, tool/dependency evidence, and independent verification.
+          </p>
+          <p className="text-sm text-body">
+            As AI systems move into regulated and high-stakes workflows, integrity of execution records becomes a prerequisite for defensibility, not just observability.
           </p>
 
           {/* On this page */}
