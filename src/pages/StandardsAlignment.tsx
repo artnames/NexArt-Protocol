@@ -291,6 +291,7 @@ const StandardsAlignment = () => {
                 <li>Bias / fairness evaluation and monitoring</li>
                 <li>Human oversight and operational controls</li>
                 <li>Vendor due diligence and contractual compliance</li>
+                <li>Decision correctness or domain-specific compliance approval</li>
               </ul>
             </div>
           </section>
