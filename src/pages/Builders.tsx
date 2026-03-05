@@ -67,9 +67,9 @@ const Builders = () => {
           <p>
             <strong>Role:</strong> Tamper-evident execution records (CER) for AI and LLM systems
             <br />
-            <strong>Environment:</strong> Node.js (server-side)
-            <br />
-            <strong>Protocol:</strong> v1.2.0
+              <strong>Environment:</strong> Node.js + Browser
+              <br />
+              <strong>Protocol:</strong> v1.2.0
           </p>
           <ul>
             <li>Produces Certified Execution Records (CER)</li>
