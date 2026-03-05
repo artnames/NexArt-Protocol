@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { normalizeForAttestation } from "../_shared/normalize-for-attestation.ts";
+import { computeCertificateHash } from "../_shared/cer-hash.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
