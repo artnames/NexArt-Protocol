@@ -186,6 +186,12 @@ async function autoStamp(
     return { autoStampStatus: 'already_signed', autoStampError: null, autoStampedAt: null, attestation: null, newCertificateHash: null };
   }
 
+  // 1b) Rate limit guard
+  if (isRateLimited(ownerId)) {
+    console.warn(`Auto-stamp rate limited for user ${ownerId}`);
+    return { autoStampStatus: 'skipped_rate_limited', autoStampError: `Rate limited: max ${AUTO_STAMP_RATE_MAX} auto-stamps per minute`, autoStampedAt: now, attestation: null, newCertificateHash: null };
+  }
+
   // Classify first to determine surface before checking flag
   const classification = classifyCERBundle(redactedBundle, bundleType, certificateHash, null);
 

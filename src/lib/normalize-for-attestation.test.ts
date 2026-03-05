@@ -342,9 +342,25 @@ describe("auto-stamp invariants (source-level)", () => {
   });
 
   it("never retries node calls inside ingest (no retry loop)", () => {
-    // No retry/backoff loop constructs — the comment "never retry" is intentional documentation
     expect(source).not.toContain("retryCount");
     expect(source).not.toContain("backoff");
     expect(source).not.toContain("maxRetries");
+  });
+
+  // ── Rate limiter tests ──
+
+  it("has an in-memory rate limiter with skipped_rate_limited status", () => {
+    expect(source).toContain("isRateLimited");
+    expect(source).toContain("skipped_rate_limited");
+    expect(source).toContain("AUTO_STAMP_RATE_MAX");
+    expect(source).toContain("AUTO_STAMP_RATE_WINDOW_MS");
+  });
+
+  it("rate limiter runs before feature flag and node calls", () => {
+    // isRateLimited must appear before isAutoStampEnabled in the autoStamp function body
+    const rateLimitedIdx = source.indexOf("isRateLimited(ownerId)");
+    const featureFlagIdx = source.indexOf("isAutoStampEnabled(classification.surface)");
+    expect(rateLimitedIdx).toBeGreaterThan(0);
+    expect(featureFlagIdx).toBeGreaterThan(rateLimitedIdx);
   });
 });
