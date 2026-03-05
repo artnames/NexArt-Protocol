@@ -176,8 +176,7 @@ async function autoStamp(
   if (!nodeUrl.startsWith('http://') && !nodeUrl.startsWith('https://')) nodeUrl = `https://${nodeUrl}`;
   nodeUrl = nodeUrl.replace(/\/+$/, '');
 
-  // Classify using the ORIGINAL (pre-redaction) bundle for AI, redacted for stored
-  const classification = classifyCERBundle(redactedBundle, bundleType, certificateHash, null);
+  // Decision tree uses classification from above
 
   // 2) AI Execution
   if (classification.surface === 'ai') {
