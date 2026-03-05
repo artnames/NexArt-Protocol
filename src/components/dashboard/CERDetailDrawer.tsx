@@ -99,7 +99,7 @@ function StampStatusBadge({ status }: { status: StampStatus }) {
       return (
         <Badge className="font-mono text-xs bg-muted text-muted-foreground border-border gap-1">
           <Clock className="h-3 w-3" />
-          Hash-only timestamp
+          Hash-only timestamp (signed)
         </Badge>
       );
     case "legacy_record_not_verifiable":
@@ -721,6 +721,14 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
               <div className="flex items-center gap-1.5 py-1">
                 <ShieldCheck className="h-3 w-3 text-green-600" />
                 <span className="text-xs text-green-600 font-mono">Signed receipt — offline verifiable</span>
+              </div>
+            )}
+            {stampStatus === "hash_only_timestamp" && (
+              <div className="space-y-1 py-1">
+                <div className="flex items-center gap-1.5">
+                  <Clock className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground font-mono">Does NOT attest snapshot contents.</span>
+                </div>
               </div>
             )}
             {stampStatus === "signed_redacted_reseal" && (
