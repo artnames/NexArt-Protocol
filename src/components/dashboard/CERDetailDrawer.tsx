@@ -321,6 +321,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
     newCertificateHash?: string;
     originalCertificateHash?: string;
   } | null>(null);
+  const [hashOnlyUnsupported, setHashOnlyUnsupported] = useState(false);
 
   const n = event?.normalized;
   const hasBundle = n?.rawBundleJson !== null && n?.rawBundleJson !== undefined;
@@ -361,6 +362,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
   useEffect(() => {
     setActionResult(null);
     setActionInProgress(null);
+    setHashOnlyUnsupported(false);
   }, [event?.id]);
 
   if (!event || !n) return null;
@@ -509,11 +511,12 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
         const errData = data as Record<string, unknown> | null;
         const errError = errData?.error as string | undefined;
 
-        if (errError === 'NODE_HASH_ONLY_UNSUPPORTED') {
+        if (errError === 'NODE_HASH_ONLY_UNSUPPORTED' || errError === 'NODE_HASH_ONLY_UNSUPPORTED_FOR_BUNDLETYPE') {
+          setHashOnlyUnsupported(true);
           toast({
             variant: "destructive",
-            title: "Hash-only timestamp not yet supported",
-            description: (errData?.message as string) || "Node does not support hash-only mode yet.",
+            title: "Hash-only timestamp not supported",
+            description: (errData?.message as string) || "Hash-only timestamp is not supported for this record type.",
           });
           return;
         }
@@ -554,7 +557,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
   // Determine which actions are available
   const canFullReattest = !isActioning && (stampStatus === "not_attested" || stampStatus === "legacy_record_not_verifiable") && !bundleIsRedacted && !isLegacyCode;
   const canReseal = !isActioning && (stampStatus === "not_attested" || stampStatus === "legacy_record_not_verifiable") && bundleIsRedacted && n.surface === "ai";
-  const canHashOnly = !isActioning && (stampStatus === "not_attested" || stampStatus === "legacy_record_not_verifiable" || stampStatus === "hash_only_timestamp");
+  const canHashOnly = !isActioning && !hashOnlyUnsupported && (stampStatus === "not_attested" || stampStatus === "legacy_record_not_verifiable" || stampStatus === "hash_only_timestamp");
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -780,6 +783,11 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
                       Does NOT attest snapshot contents. Provides a signed timestamp of the certificateHash only.
                     </p>
                   </div>
+                )}
+                {hashOnlyUnsupported && (
+                  <p className="text-[9px] font-mono text-muted-foreground/60 px-1">
+                    Hash-only timestamp not supported for this record type yet.
+                  </p>
                 )}
               </div>
             )}
