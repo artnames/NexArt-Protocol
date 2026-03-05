@@ -1,6 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { normalizeForAttestation } from "../_shared/normalize-for-attestation.ts";
-import { computeCertificateHash } from "../_shared/cer-hash.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -97,12 +96,10 @@ Deno.serve(async (req) => {
       usageEventId,
     }));
 
-    // ── Determine endpoint ──
-    const snap = (envelopedBundle.snapshot ?? {}) as Record<string, unknown>;
-    const isRedacted = isCodeMode
-      ? true // Code Mode stored bundles always go to /api/stamp
-      : (snap.input == null || snap.output == null || snap.prompt == null);
-    const endpoint = isRedacted ? '/api/stamp' : '/api/attest';
+    // ── Determine endpoint: always /api/stamp for full re-attest ──
+    // We use /api/stamp because re-attest is a hash-observation flow.
+    // /api/attest would re-verify snapshot contents and fail on redacted bundles.
+    const endpoint = '/api/stamp';
 
     // ── Build payload: clone and strip existing attestation (node generates it) ──
     const payloadObj: Record<string, unknown> = JSON.parse(JSON.stringify(envelopedBundle));
@@ -127,38 +124,14 @@ Deno.serve(async (req) => {
       }, 422);
     }
 
-    // ── For redacted AI bundles, recompute certificateHash to match redacted content ──
-    // The stored bundle may have had input/output/prompt stripped during ingestion,
-    // but certificateHash still refers to the original unredacted content.
-    // The node's /api/stamp endpoint recomputes the hash and compares — so we must
-    // send a consistent hash matching the actual payload.
-    if (isRedacted && !isCodeMode && payloadObj.snapshot != null) {
-      const originalHash = payloadObj.certificateHash as string;
-      const recomputedHash = await computeCertificateHash(payloadObj);
-      if (originalHash !== recomputedHash) {
-        console.info(`Redacted AI bundle: certificateHash updated from ${originalHash} to ${recomputedHash} (content was redacted during ingestion)`);
-        payloadObj.certificateHash = recomputedHash;
-        // Preserve original hash in meta.provenance for audit trail
-        if (!payloadObj.meta || typeof payloadObj.meta !== 'object') {
-          payloadObj.meta = {};
-        }
-        const meta = payloadObj.meta as Record<string, unknown>;
-        if (!meta.provenance || typeof meta.provenance !== 'object') {
-          meta.provenance = {};
-        }
-        const provenance = meta.provenance as Record<string, unknown>;
-        if (!provenance.originalCertificateHash) {
-          provenance.originalCertificateHash = originalHash;
-          provenance.kind = provenance.kind ?? 'redacted_export';
-          provenance.redactedAt = provenance.redactedAt ?? new Date().toISOString();
-        }
-      }
-    }
+    // ── CRITICAL: Never recompute certificateHash. Send the original as-is. ──
+    // If the node rejects with certificateHash mismatch, it means the bundle
+    // is redacted/incomplete. The user should use the stamp-hash flow instead.
 
     const payloadJson = JSON.stringify(payloadObj);
     const payloadByteSize = new TextEncoder().encode(payloadJson).byteLength;
 
-    console.info(`Re-attesting bundle ${usageEventId} via ${nodeUrl}${endpoint} (isRedacted=${isRedacted}, legacyWrapped=${legacyWrapped})`);
+    console.info(`Re-attesting bundle ${usageEventId} via ${nodeUrl}${endpoint} (legacyWrapped=${legacyWrapped})`);
     console.info(`bundleType=${payloadObj.bundleType} certificateHash=${payloadObj.certificateHash}`);
     console.info(`payloadByteSize=${payloadByteSize}`);
 
@@ -182,8 +155,23 @@ Deno.serve(async (req) => {
 
       const upstreamMessage = (errJson?.message || errJson?.error || errBody || 'Unknown') as string;
       const requestId = (errJson?.requestId || nodeResp.headers.get('x-request-id') || null) as string | null;
+      const isMismatch = upstreamMessage.toLowerCase().includes('certificatehash mismatch') ||
+                          upstreamMessage.toLowerCase().includes('hash mismatch');
 
       console.error(`Node ${endpoint} failed: HTTP ${nodeResp.status}`, errBody.slice(0, 2000));
+
+      // If certificateHash mismatch, return a clear 422 suggesting hash-only stamp
+      if (isMismatch) {
+        return jsonResp({
+          ok: false,
+          error: 'CANNOT_REATTEST',
+          reason: 'CERTIFICATE_HASH_MISMATCH',
+          hint: 'Artifact appears redacted/incomplete or does not match its certificateHash. Use signed hash-only stamp instead.',
+          submittedCertificateHash,
+          upstreamStatus: nodeResp.status,
+          requestId,
+        }, 422);
+      }
 
       const clientStatus = nodeResp.status >= 400 && nodeResp.status < 500 ? nodeResp.status : 502;
 
@@ -210,7 +198,7 @@ Deno.serve(async (req) => {
     const src = { ...result, ...(nested ?? {}) };
 
     const signedAttestation: Record<string, unknown> = {
-      mode: isRedacted ? 'stamp' : 'attest',
+      mode: 'stamp',
       attestationId: src.attestationId ?? (row.attestation_json as Record<string, unknown>)?.attestationId ?? null,
       hash: src.hash ?? src.certificateHash ?? row.certificate_hash,
       nodeRuntimeHash: src.nodeRuntimeHash ?? null,

@@ -55,13 +55,23 @@ describe("normalizeForAttestation", () => {
   });
 
   // ── Does not mutate input ──
-  it("does not mutate the input record", () => {
-    const record = Object.freeze({
+  it("does not mutate the input record (deepFreeze)", () => {
+    function deepFreeze<T extends Record<string, unknown>>(obj: T): T {
+      Object.freeze(obj);
+      for (const val of Object.values(obj)) {
+        if (val && typeof val === 'object' && !Object.isFrozen(val)) {
+          deepFreeze(val as Record<string, unknown>);
+        }
+      }
+      return obj;
+    }
+
+    const record = deepFreeze({
       seed: 42,
       timestamp: "2025-01-15T10:30:00Z",
       bundleType: "cer.codemode.render.v1",
       certificateHash: "sha256:frozen",
-      nested: Object.freeze({ a: 1 }),
+      nested: { a: 1, b: { c: 2 } },
     });
     const before = JSON.stringify(record);
     // Should not throw on frozen object
@@ -116,6 +126,19 @@ describe("normalizeForAttestation", () => {
     expect(result.bundle.bundleType).toBe("cer.codemode.render.v1");
   });
 
+  it("prefers record.bundleType over dbBundleType", () => {
+    const record = {
+      seed: 1,
+      timestamp: "2025-01-01T00:00:00Z",
+      certificateHash: "sha256:x",
+      bundleType: "cer.codemode.render.v1",
+    };
+    const result = normalizeForAttestation(record, "codemode", null, "cer.other.v1");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.bundle.bundleType).toBe("cer.codemode.render.v1");
+  });
+
   // ── createdAt derivation order ──
   it("prefers createdAt over timestamp", () => {
     const record = {
@@ -128,6 +151,18 @@ describe("normalizeForAttestation", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.bundle.createdAt).toBe("2025-01-01T00:00:00Z");
+  });
+
+  it("falls back to timestamp when createdAt missing", () => {
+    const record = {
+      seed: 1,
+      timestamp: "2025-02-01T00:00:00Z",
+      certificateHash: "sha256:x",
+    };
+    const result = normalizeForAttestation(record, "codemode");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.bundle.createdAt).toBe("2025-02-01T00:00:00Z");
   });
 
   it("falls back to issuedAt when createdAt and timestamp are missing", () => {
@@ -180,8 +215,8 @@ describe("normalizeForAttestation", () => {
     expect(result.certificateHash).toBe("sha256:from_db");
   });
 
-  // ── No hash imports ──
-  it("source code contains no hashing imports or functions", () => {
+  // ── No hash imports in normalizer source ──
+  it("normalizer source code contains no hashing imports or functions", () => {
     const source = fs.readFileSync(
       path.resolve(__dirname, "normalize-for-attestation.ts"),
       "utf-8",
@@ -190,5 +225,32 @@ describe("normalizeForAttestation", () => {
     expect(source).not.toContain("canonicalize");
     expect(source).not.toContain("crypto.subtle");
     expect(source).not.toContain("computeCertificateHash");
+  });
+
+  // ── No hash imports in re-attest edge function source ──
+  it("re-attest edge function does not import computeCertificateHash", () => {
+    const source = fs.readFileSync(
+      path.resolve(__dirname, "../../supabase/functions/re-attest/index.ts"),
+      "utf-8",
+    );
+    expect(source).not.toContain("computeCertificateHash");
+    expect(source).not.toContain("cer-hash");
+  });
+
+  // ── Redacted AI record: full re-attest should be blocked (CANNOT_REATTEST) ──
+  // This is tested at the edge function level; normalizer passes enveloped AI records through.
+  it("passes enveloped AI record through unchanged (normalizer is surface-agnostic for enveloped)", () => {
+    const record = {
+      bundleType: "cer.ai.execution.v1",
+      version: "0.7.0",
+      createdAt: "2025-01-01T00:00:00Z",
+      certificateHash: "sha256:ai123",
+      snapshot: { input: null, output: null, prompt: null, model: "gpt-4" },
+    };
+    const result = normalizeForAttestation(record, "ai");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.legacyWrapped).toBe(false);
+    expect(result.bundle).toBe(record);
   });
 });
