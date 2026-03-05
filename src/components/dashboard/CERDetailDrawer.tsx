@@ -373,9 +373,9 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
           {reAttestResult?.legacyWrapped && (
             <Alert className="border-yellow-600/30 bg-yellow-600/5">
               <Info className="h-4 w-4 text-yellow-600" />
-              <AlertTitle className="font-mono text-xs text-yellow-600">Legacy Format Wrapped</AlertTitle>
+              <AlertTitle className="font-mono text-xs text-yellow-600">Legacy record wrapped for attestation</AlertTitle>
               <AlertDescription className="text-xs text-muted-foreground leading-relaxed">
-                Legacy format wrapped for transport. Hash preserved. No reseal performed.
+                We preserved the original certificate hash and timestamp. No reseal was performed. The stamp verifies the submitted hash (not a regenerated seal).
               </AlertDescription>
             </Alert>
           )}

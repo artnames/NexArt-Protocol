@@ -66,12 +66,12 @@ Deno.serve(async (req) => {
     const storedBundle = row.cer_bundle_redacted as Record<string, unknown>;
     const bundleType = (storedBundle.bundleType ?? row.bundle_type) as string;
     const isCodeMode = bundleType === 'cer.codemode.render.v1';
-    const surface = isCodeMode ? 'codemode' : 'ai';
+    const surface: 'codemode' | 'ai' = isCodeMode ? 'codemode' : 'ai';
 
-    // ── Normalize via transport wrapper (NO hashing) ──
+    // ── Normalize via transport wrapper (NO hashing, NO mutation) ──
     const normalizeResult = normalizeForAttestation(
       storedBundle,
-      surface as 'codemode' | 'ai',
+      surface,
       row.certificate_hash as string | null,
       row.bundle_type as string | null,
     );
@@ -82,16 +82,17 @@ Deno.serve(async (req) => {
         ok: false,
         error: normalizeResult.error,
         message: normalizeResult.message,
-      }, 422);
+      }, 400);
     }
 
-    const { bundle: envelopedBundle, legacyWrapped, certificateHash } = normalizeResult;
+    const { bundle: envelopedBundle, legacyWrapped, wrapReason, certificateHash: submittedCertificateHash } = normalizeResult;
 
     console.info(JSON.stringify({
       action: 'reattest_normalize',
       legacyWrapped,
+      wrapReason: wrapReason ?? null,
       surface,
-      certificateHash,
+      certificateHash: submittedCertificateHash,
       usageEventId,
     }));
 
@@ -102,28 +103,12 @@ Deno.serve(async (req) => {
       : (snap.input == null || snap.output == null || snap.prompt == null);
     const endpoint = isRedacted ? '/api/stamp' : '/api/attest';
 
-    // ── Build payload: remove existing attestation (node generates it) ──
+    // ── Build payload: clone and strip existing attestation (node generates it) ──
     const payloadObj: Record<string, unknown> = JSON.parse(JSON.stringify(envelopedBundle));
     delete payloadObj.attestation;
     if (payloadObj.meta && typeof payloadObj.meta === 'object') {
       const meta = { ...(payloadObj.meta as Record<string, unknown>) };
       delete meta.attestation;
-      payloadObj.meta = meta;
-    }
-
-    // For non-legacy-wrapped redacted AI bundles, we still set provenance
-    // but we do NOT recompute hashes — we send the existing certificateHash
-    if (isRedacted && !legacyWrapped) {
-      const meta = (payloadObj.meta && typeof payloadObj.meta === 'object')
-        ? { ...(payloadObj.meta as Record<string, unknown>) }
-        : {};
-      if (!meta.provenance) {
-        meta.provenance = {
-          originalCertificateHash: payloadObj.certificateHash ?? null,
-          kind: 'redacted_export',
-          redactedAt: new Date().toISOString(),
-        };
-      }
       payloadObj.meta = meta;
     }
 
@@ -141,12 +126,11 @@ Deno.serve(async (req) => {
       }, 422);
     }
 
-    const payload = JSON.parse(JSON.stringify(payloadObj));
-    const payloadJson = JSON.stringify(payload);
+    const payloadJson = JSON.stringify(payloadObj);
     const payloadByteSize = new TextEncoder().encode(payloadJson).byteLength;
 
     console.info(`Re-attesting bundle ${usageEventId} via ${nodeUrl}${endpoint} (isRedacted=${isRedacted}, legacyWrapped=${legacyWrapped})`);
-    console.info(`bundleType=${payload.bundleType} certificateHash=${payload.certificateHash}`);
+    console.info(`bundleType=${payloadObj.bundleType} certificateHash=${payloadObj.certificateHash}`);
     console.info(`payloadByteSize=${payloadByteSize}`);
 
     // ── Call node ──
@@ -210,35 +194,10 @@ Deno.serve(async (req) => {
       checks: src.checks ?? null,
     };
 
-    // ── Persist: attestation_json + updated bundle with meta.attestation ──
-    const updatedBundle = JSON.parse(JSON.stringify(payload)) as Record<string, unknown>;
-    const meta = (updatedBundle.meta && typeof updatedBundle.meta === 'object')
-      ? { ...(updatedBundle.meta as Record<string, unknown>) }
-      : {};
-
-    meta.attestation = {
-      mode: signedAttestation.mode,
-      checks: signedAttestation.checks ?? null,
-      receipt: signedAttestation.receipt ?? null,
-      signatureB64Url: signedAttestation.signatureB64Url ?? null,
-      attestorKeyId: signedAttestation.attestorKeyId ?? null,
-      nodeUrl: signedAttestation.nodeUrl ?? null,
-      attestedAt: signedAttestation.attestedAt ?? null,
-      protocolVersion: signedAttestation.protocolVersion ?? null,
-      nodeRuntimeHash: signedAttestation.nodeRuntimeHash ?? null,
-      attestationId: signedAttestation.attestationId ?? null,
-      hash: signedAttestation.hash ?? null,
-    };
-    updatedBundle.meta = meta;
-
-    const updateFields: Record<string, unknown> = {
-      attestation_json: signedAttestation,
-      cer_bundle_redacted: updatedBundle,
-    };
-
+    // ── Persist attestation_json only (never persist the normalized envelope back to DB) ──
     const { error: updateErr } = await supabaseAdmin
       .from('cer_bundles')
-      .update(updateFields)
+      .update({ attestation_json: signedAttestation })
       .eq('usage_event_id', usageEventId)
       .eq('user_id', user.id);
 
@@ -256,6 +215,8 @@ Deno.serve(async (req) => {
       stamp: hasSigned ? 'signed' : 'legacy',
       endpoint,
       legacyWrapped,
+      wrapReason: wrapReason ?? null,
+      submittedCertificateHash,
       nodeResponseKeys: Object.keys(result),
     }, 200);
   } catch (err) {
