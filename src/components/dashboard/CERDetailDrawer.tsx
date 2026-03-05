@@ -22,6 +22,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Copy, Download, ChevronDown, RotateCcw, Image as ImageIcon,
   ShieldCheck, ShieldAlert, ShieldQuestion, Stamp, Info, Ban, Hash,
+  RefreshCw, Clock,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,7 +42,12 @@ function copyToClipboard(text: string, label: string, toast: ReturnType<typeof u
 
 // ── Stamp status derivation ─────────────────────────────────────────
 
-type StampStatus = "not_stamped" | "legacy" | "signed_full" | "signed_hash_only";
+type StampStatus =
+  | "not_attested"
+  | "legacy_record_not_verifiable"
+  | "signed_full"
+  | "signed_redacted_reseal"
+  | "hash_only_timestamp";
 
 function deriveStampStatus(n: NormalizedCER): StampStatus {
   const meta = n.rawBundleJson?.meta as Record<string, unknown> | undefined;
@@ -52,59 +58,94 @@ function deriveStampStatus(n: NormalizedCER): StampStatus {
   const mode = att?.mode as string | undefined;
 
   if (hasReceipt) {
-    return mode === 'hash-only' ? 'signed_hash_only' : 'signed_full';
+    if (mode === 'hash-only') return 'hash_only_timestamp';
+    if (mode === 'redacted_reseal') return 'signed_redacted_reseal';
+    return 'signed_full';
   }
-  if (hasLegacy) return "legacy";
-  return "not_stamped";
+  if (hasLegacy) return "legacy_record_not_verifiable";
+  return "not_attested";
+}
+
+// ── Detect if this is a legacy Code Mode record (not a full CER) ──
+function isLegacyCodeModeRecord(n: NormalizedCER): boolean {
+  if (n.surface !== "code") return false;
+  // Legacy if missing core CER fields
+  return !n.inputHash && !n.outputHash && !n.protocolVersion && !n.sdkVersion;
 }
 
 function StampStatusBadge({ status }: { status: StampStatus }) {
-  if (status === "signed_full") {
-    return (
-      <Badge className="font-mono text-xs bg-green-600/15 text-green-600 border-green-600/30 gap-1">
-        <Stamp className="h-3 w-3" />
-        Stamped (signed — full)
-      </Badge>
-    );
+  switch (status) {
+    case "signed_full":
+      return (
+        <Badge className="font-mono text-xs bg-green-600/15 text-green-600 border-green-600/30 gap-1">
+          <Stamp className="h-3 w-3" />
+          Stamped (signed — full)
+        </Badge>
+      );
+    case "signed_redacted_reseal":
+      return (
+        <Badge className="font-mono text-xs bg-blue-600/15 text-blue-600 border-blue-600/30 gap-1">
+          <RefreshCw className="h-3 w-3" />
+          Stamped (signed — redacted reseal)
+        </Badge>
+      );
+    case "hash_only_timestamp":
+      return (
+        <Badge className="font-mono text-xs bg-muted text-muted-foreground border-border gap-1">
+          <Clock className="h-3 w-3" />
+          Hash-only timestamp
+        </Badge>
+      );
+    case "legacy_record_not_verifiable":
+      return (
+        <Badge className="font-mono text-xs bg-yellow-600/15 text-yellow-600 border-yellow-600/30 gap-1">
+          <ShieldQuestion className="h-3 w-3" />
+          Legacy (not offline verifiable)
+        </Badge>
+      );
+    default:
+      return (
+        <Badge className="font-mono text-xs bg-muted text-muted-foreground border-border gap-1">
+          <ShieldQuestion className="h-3 w-3" />
+          Not attested
+        </Badge>
+      );
   }
-  if (status === "signed_hash_only") {
-    return (
-      <Badge className="font-mono text-xs bg-green-600/15 text-green-600 border-green-600/30 gap-1">
-        <Hash className="h-3 w-3" />
-        Stamped (signed — hash-only)
-      </Badge>
-    );
-  }
-  if (status === "legacy") {
-    return (
-      <Badge className="font-mono text-xs bg-yellow-600/15 text-yellow-600 border-yellow-600/30 gap-1">
-        <Stamp className="h-3 w-3" />
-        Stamped (legacy — not offline verifiable)
-      </Badge>
-    );
-  }
-  return (
-    <Badge className="font-mono text-xs bg-muted text-muted-foreground border-border gap-1">
-      <ShieldQuestion className="h-3 w-3" />
-      Not stamped
-    </Badge>
-  );
 }
 
 const stampExplanations: Record<StampStatus, string> = {
-  not_stamped: "This record has no attestation from the node.",
-  legacy: "Has attestationId/nodeRuntimeHash but no cryptographic signature. Cannot be verified offline.",
-  signed_full: "Has a signed receipt from /api/attest or /api/stamp with full bundle verification. Verifiable offline.",
-  signed_hash_only: "Has a signed receipt for the certificateHash only (no snapshot re-verification). Verifiable offline for hash integrity.",
+  not_attested: "This record has no attestation from the node.",
+  legacy_record_not_verifiable: "Has attestationId/nodeRuntimeHash but no cryptographic signature. Cannot be verified offline.",
+  signed_full: "Has a signed receipt from the node with full bundle verification. Verifiable offline.",
+  signed_redacted_reseal: "Redacted snapshot was resealed with a new certificateHash and attested. Original hash preserved in provenance.",
+  hash_only_timestamp: "Node signed the certificateHash as a timestamp observation. Does NOT attest snapshot contents.",
 };
 
 // ── Integrity label ─────────────────────────────────────────────────
 
-function IntegrityBadge({ status, reason, isRedacted }: {
+function IntegrityBadge({ status, reason, isRedacted, isLegacyCode }: {
   status: NormalizedCER["verificationStatus"];
   reason: string | null;
   isRedacted: boolean;
+  isLegacyCode: boolean;
 }) {
+  if (isLegacyCode) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge className="font-mono text-xs bg-muted text-muted-foreground border-border gap-1">
+              <Info className="h-3 w-3" />
+              Legacy record (not verifiable)
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-xs max-w-xs">Legacy record (not a full CER). Integrity cannot be verified from available data.</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
   if (status === "pass") {
     const label = isRedacted ? "Integrity: Verified (Redacted Export)" : "Integrity: Verified";
     return (
@@ -166,8 +207,8 @@ function MismatchDiagnostics({ n, reason }: { n: NormalizedCER; reason: string |
   if (!n.outputHash) missingFields.push('outputHash');
 
   let code = 'UNKNOWN';
-  if (reason?.includes('hash') || reason?.includes('Hash')) code = 'CERTIFICATE_HASH_MISMATCH';
-  else if (reason?.includes('schema') || reason?.includes('Schema')) code = 'SCHEMA_ERROR';
+  if (reason?.toLowerCase().includes('hash')) code = 'CERTIFICATE_HASH_MISMATCH';
+  else if (reason?.toLowerCase().includes('schema')) code = 'SCHEMA_ERROR';
   else if (missingFields.length > 0) code = 'INCOMPLETE_RECORD';
 
   const format = isEnveloped ? 'enveloped (CER)' : isLegacyFlat ? 'legacy flat' : 'unknown';
@@ -266,27 +307,41 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
     status: "unavailable",
     reason: null,
   });
-  const [reAttesting, setReAttesting] = useState(false);
-  const [stampingHash, setStampingHash] = useState(false);
-  const [reAttestResult, setReAttestResult] = useState<{
+  const [actionInProgress, setActionInProgress] = useState<null | 'reattest' | 'reseal' | 'hashonly'>(null);
+  const [actionResult, setActionResult] = useState<{
     stamp: StampStatus;
     legacyWrapped?: boolean;
     wrapReason?: string;
+    newCertificateHash?: string;
+    originalCertificateHash?: string;
   } | null>(null);
 
   const n = event?.normalized;
   const hasBundle = n?.rawBundleJson !== null && n?.rawBundleJson !== undefined;
   const isRedacted = n?.isRedactedExport ?? false;
-  const isMismatch = liveVerification.status === "fail";
+  const isLegacyCode = n ? isLegacyCodeModeRecord(n) : false;
+  const isMismatch = liveVerification.status === "fail" && !isLegacyCode;
+
+  // Detect redacted bundle (input/output/prompt stripped)
+  const bundleIsRedacted = useMemo(() => {
+    const snap = (n?.rawBundleJson as Record<string, unknown>)?.snapshot as Record<string, unknown> | undefined;
+    if (!snap) return false;
+    return snap.input == null || snap.output == null || snap.prompt == null;
+  }, [n]);
 
   const stampStatus = useMemo(() => {
-    if (reAttestResult) return reAttestResult.stamp;
-    return n ? deriveStampStatus(n) : "not_stamped";
-  }, [n, reAttestResult]);
+    if (actionResult) return actionResult.stamp;
+    return n ? deriveStampStatus(n) : "not_attested";
+  }, [n, actionResult]);
 
   // Run live verification when drawer opens with a bundle
   useEffect(() => {
     if (!open || !event || !n?.rawBundleJson || !n?.certificateHash) {
+      setLiveVerification({ status: "unavailable", reason: null });
+      return;
+    }
+    // Skip verification for legacy Code Mode records
+    if (isLegacyCodeModeRecord(n)) {
       setLiveVerification({ status: "unavailable", reason: null });
       return;
     }
@@ -298,9 +353,8 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
 
   // Reset state when drawer changes
   useEffect(() => {
-    setReAttestResult(null);
-    setReAttesting(false);
-    setStampingHash(false);
+    setActionResult(null);
+    setActionInProgress(null);
   }, [event?.id]);
 
   if (!event || !n) return null;
@@ -333,9 +387,10 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
     });
   }
 
+  // ── Flow A: Re-attest (full) ──
   async function handleReAttest() {
-    setReAttesting(true);
-    setReAttestResult(null);
+    setActionInProgress('reattest');
+    setActionResult(null);
     try {
       const { data, error } = await supabase.functions.invoke("re-attest", {
         body: { usageEventId: Number(event.id) },
@@ -345,83 +400,100 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
         const errData = data as Record<string, unknown> | null;
         const errError = errData?.error as string | undefined;
 
-        // If CANNOT_REATTEST, suggest hash-only stamp
-        if (errError === 'CANNOT_REATTEST') {
+        if (errError === 'LOCAL_VERIFY_FAILED') {
           toast({
             variant: "destructive",
             title: "Full re-attestation not possible",
-            description: (errData?.hint as string) || "Bundle appears redacted/incomplete. Use hash-only stamp instead.",
+            description: (errData?.message as string) || "Local verification failed. Use reseal for redacted bundles.",
           });
           return;
         }
 
-        const httpStatus = errData?.httpStatus ?? "";
-        const requestId = errData?.requestId ?? "";
-        const errMsg = errData?.message ?? error.message ?? "Unknown error";
-        const parts = [
-          httpStatus ? `HTTP ${httpStatus}` : "",
-          String(errMsg).slice(0, 300),
-          requestId ? `(requestId: ${requestId})` : "",
-        ].filter(Boolean).join(" — ");
-
         toast({
           variant: "destructive",
           title: "Re-attestation Failed",
-          description: parts || "Could not reach the attestation node.",
+          description: String(errData?.message ?? error.message ?? "Unknown error").slice(0, 300),
         });
         return;
       }
 
       if (data?.error) {
-        if (data.error === 'CANNOT_REATTEST') {
-          toast({
-            variant: "destructive",
-            title: "Full re-attestation not possible",
-            description: (data.hint as string) || "Bundle appears redacted/incomplete. Use hash-only stamp instead.",
-          });
-          return;
-        }
-        const parts = [
-          data.httpStatus ? `HTTP ${data.httpStatus}` : "",
-          String(data.message || "Re-attestation failed").slice(0, 300),
-          data.requestId ? `(requestId: ${data.requestId})` : "",
-        ].filter(Boolean).join(" — ");
         toast({
           variant: "destructive",
           title: "Re-attestation Failed",
-          description: parts,
+          description: String(data.message || "Failed").slice(0, 300),
         });
         return;
       }
 
-      const newStamp: StampStatus = data.stamp === "signed" ? "signed_full" : "legacy";
-      setReAttestResult({
+      const newStamp: StampStatus = data.stamp === "signed" ? "signed_full" : "legacy_record_not_verifiable";
+      setActionResult({
         stamp: newStamp,
         legacyWrapped: !!data.legacyWrapped,
         wrapReason: data.wrapReason ?? undefined,
       });
-
       toast({
         title: newStamp === "signed_full" ? "Signed Receipt Obtained" : "Re-attestation Complete",
         description: newStamp === "signed_full"
-          ? "Stamp: Verified offline. Signed receipt stored."
+          ? "Full stamp obtained. Signed receipt stored and offline verifiable."
           : "Legacy attestation updated. No signed receipt returned by node.",
       });
     } catch (err) {
-      const e = err as Error;
-      toast({
-        variant: "destructive",
-        title: "Re-attestation Failed",
-        description: e.message || "Could not reach the attestation node.",
-      });
+      toast({ variant: "destructive", title: "Re-attestation Failed", description: (err as Error).message });
     } finally {
-      setReAttesting(false);
+      setActionInProgress(null);
     }
   }
 
+  // ── Flow B: Reseal redacted + attest ──
+  async function handleResealAttest() {
+    setActionInProgress('reseal');
+    setActionResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("reseal-attest", {
+        body: { usageEventId: Number(event.id) },
+      });
+
+      if (error) {
+        const errData = data as Record<string, unknown> | null;
+        toast({
+          variant: "destructive",
+          title: "Reseal Failed",
+          description: String(errData?.message ?? error.message ?? "Unknown error").slice(0, 300),
+        });
+        return;
+      }
+
+      if (data?.error) {
+        toast({
+          variant: "destructive",
+          title: "Reseal Failed",
+          description: String(data.message || "Reseal failed").slice(0, 300),
+        });
+        return;
+      }
+
+      const newStamp: StampStatus = data.stamp === "signed_redacted_reseal" ? "signed_redacted_reseal" : "legacy_record_not_verifiable";
+      setActionResult({
+        stamp: newStamp,
+        newCertificateHash: data.newCertificateHash,
+        originalCertificateHash: data.originalCertificateHash,
+      });
+      toast({
+        title: "Redacted Reseal Complete",
+        description: `New certificateHash computed over redacted payload and attested. Original hash preserved in provenance.`,
+      });
+    } catch (err) {
+      toast({ variant: "destructive", title: "Reseal Failed", description: (err as Error).message });
+    } finally {
+      setActionInProgress(null);
+    }
+  }
+
+  // ── Flow C: Hash-only timestamp ──
   async function handleStampHash() {
-    setStampingHash(true);
-    setReAttestResult(null);
+    setActionInProgress('hashonly');
+    setActionResult(null);
     try {
       const { data, error } = await supabase.functions.invoke("stamp-hash", {
         body: { usageEventId: Number(event.id) },
@@ -434,16 +506,16 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
         if (errError === 'NODE_HASH_ONLY_UNSUPPORTED') {
           toast({
             variant: "destructive",
-            title: "Hash-only stamp not yet supported",
-            description: (errData?.message as string) || "Node does not support hash-only stamp mode yet.",
+            title: "Hash-only timestamp not yet supported",
+            description: (errData?.message as string) || "Node does not support hash-only mode yet.",
           });
           return;
         }
 
         toast({
           variant: "destructive",
-          title: "Stamp Failed",
-          description: (errData?.message ?? error.message ?? "Unknown error") as string,
+          title: "Timestamp Failed",
+          description: String(errData?.message ?? error.message ?? "Unknown error").slice(0, 300),
         });
         return;
       }
@@ -451,36 +523,32 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
       if (data?.error) {
         toast({
           variant: "destructive",
-          title: "Stamp Failed",
-          description: (data.message || "Hash-only stamp failed") as string,
+          title: "Timestamp Failed",
+          description: String(data.message || "Failed").slice(0, 300),
         });
         return;
       }
 
-      const newStamp: StampStatus = data.stamp === "signed_hash_only" ? "signed_hash_only" : "legacy";
-      setReAttestResult({ stamp: newStamp });
-
+      setActionResult({ stamp: "hash_only_timestamp" });
       toast({
-        title: newStamp === "signed_hash_only" ? "Hash-Only Signed Stamp Obtained" : "Stamp Complete",
-        description: newStamp === "signed_hash_only"
-          ? "The certificateHash was signed by the node. This does not verify snapshot contents."
-          : "Legacy attestation updated.",
+        title: "Hash-Only Timestamp Recorded",
+        description: "The node signed the certificateHash as a timestamp. This does NOT attest snapshot contents.",
       });
     } catch (err) {
-      const e = err as Error;
-      toast({
-        variant: "destructive",
-        title: "Stamp Failed",
-        description: e.message || "Could not reach the attestation node.",
-      });
+      toast({ variant: "destructive", title: "Timestamp Failed", description: (err as Error).message });
     } finally {
-      setStampingHash(false);
+      setActionInProgress(null);
     }
   }
 
-  // Download disabled when MISMATCH
+  // Download disabled when MISMATCH (but not for legacy code mode)
   const downloadDisabled = !hasBundle || isMismatch;
-  const isActioning = reAttesting || stampingHash;
+  const isActioning = actionInProgress !== null;
+
+  // Determine which actions are available
+  const canFullReattest = !isActioning && (stampStatus === "not_attested" || stampStatus === "legacy_record_not_verifiable") && !bundleIsRedacted;
+  const canReseal = !isActioning && (stampStatus === "not_attested" || stampStatus === "legacy_record_not_verifiable") && bundleIsRedacted && n.surface === "ai";
+  const canHashOnly = !isActioning && (stampStatus === "not_attested" || stampStatus === "legacy_record_not_verifiable" || stampStatus === "hash_only_timestamp");
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -491,17 +559,29 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
             <StatusBadge completeness={n.completeness} statusCode={n.upstreamStatus ?? 0} />
             {hasBundle && (
               <IntegrityBadge
-                status={liveVerification.status}
+                status={isLegacyCode ? "unavailable" : liveVerification.status}
                 reason={liveVerification.reason}
                 isRedacted={isRedacted}
+                isLegacyCode={isLegacyCode}
               />
             )}
           </div>
         </SheetHeader>
 
         <div className="space-y-6 pb-8">
-          {/* A) Redacted Export Banner */}
-          {isRedacted && hasBundle && (
+          {/* Legacy Code Mode banner */}
+          {isLegacyCode && hasBundle && (
+            <Alert className="border-border bg-muted/30">
+              <Info className="h-4 w-4" />
+              <AlertTitle className="font-mono text-xs">Legacy Record</AlertTitle>
+              <AlertDescription className="text-xs text-muted-foreground leading-relaxed">
+                Legacy record (not a full CER). Integrity cannot be verified from available data. You can use hash-only timestamp if a certificateHash exists.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Redacted Export Banner */}
+          {isRedacted && hasBundle && !isLegacyCode && (
             <Alert className="border-border bg-muted/30">
               <Info className="h-4 w-4" />
               <AlertTitle className="font-mono text-xs">Redacted Export (Verifiable)</AlertTitle>
@@ -512,7 +592,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
           )}
 
           {/* Legacy transport wrap banner */}
-          {reAttestResult?.legacyWrapped && (
+          {actionResult?.legacyWrapped && (
             <Alert className="border-yellow-600/30 bg-yellow-600/5">
               <Info className="h-4 w-4 text-yellow-600" />
               <AlertTitle className="font-mono text-xs text-yellow-600">Legacy record wrapped for attestation</AlertTitle>
@@ -522,7 +602,24 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
             </Alert>
           )}
 
-          {/* Mismatch guardrail banner + diagnostics */}
+          {/* Reseal result banner */}
+          {actionResult?.stamp === "signed_redacted_reseal" && (
+            <Alert className="border-blue-600/30 bg-blue-600/5">
+              <RefreshCw className="h-4 w-4 text-blue-600" />
+              <AlertTitle className="font-mono text-xs text-blue-600">Redacted Reseal Complete</AlertTitle>
+              <AlertDescription className="text-xs text-muted-foreground leading-relaxed space-y-1">
+                <p>A new certificateHash was computed over the redacted snapshot and attested by the node.</p>
+                {actionResult.newCertificateHash && (
+                  <p className="font-mono text-[10px] break-all">New: {actionResult.newCertificateHash}</p>
+                )}
+                {actionResult.originalCertificateHash && (
+                  <p className="font-mono text-[10px] break-all">Original (reference): {actionResult.originalCertificateHash}</p>
+                )}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Mismatch guardrail banner + diagnostics (NOT for legacy code mode) */}
           {isMismatch && hasBundle && (
             <>
               <Alert className="border-destructive/50 bg-destructive/5">
@@ -551,6 +648,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
                 <p>originalCertificateHash={n.originalCertificateHash}</p>
               )}
               {n.isRedactedExport && <p>export=redacted (hash recomputed over redacted payload)</p>}
+              {isLegacyCode && <p>legacyCodeMode=true (missing CER fields)</p>}
               {n.artifactPath && <p>artifactPath={n.artifactPath}</p>}
             </CollapsibleContent>
           </Collapsible>
@@ -560,7 +658,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
             {n.endpointNote}
           </p>
 
-          {/* A) Dual hash display */}
+          {/* Dual hash display */}
           {hasBundle && (
             <Section title="Certificate Hashes">
               <HashRow
@@ -601,7 +699,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
             <InfoRow label="Duration" value={n.durationMs != null ? `${n.durationMs}ms` : null} />
           </Section>
 
-          {/* B) Stamp Status */}
+          {/* Stamp Status */}
           <Section title="Stamp Status">
             <div className="flex items-center justify-between py-1.5">
               <span className="text-xs text-muted-foreground">Status</span>
@@ -610,47 +708,69 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
             <p className="text-[10px] text-muted-foreground font-mono py-1">
               {stampExplanations[stampStatus]}
             </p>
-            {(stampStatus === "signed_full") && (
+            {stampStatus === "signed_full" && (
               <div className="flex items-center gap-1.5 py-1">
                 <ShieldCheck className="h-3 w-3 text-green-600" />
                 <span className="text-xs text-green-600 font-mono">Full receipt — offline verifiable</span>
               </div>
             )}
-            {(stampStatus === "signed_hash_only") && (
+            {stampStatus === "signed_redacted_reseal" && (
               <div className="flex items-center gap-1.5 py-1">
-                <Hash className="h-3 w-3 text-green-600" />
-                <span className="text-xs text-green-600 font-mono">Hash-only receipt — offline verifiable for hash</span>
+                <RefreshCw className="h-3 w-3 text-blue-600" />
+                <span className="text-xs text-blue-600 font-mono">Redacted reseal — new hash attested, original preserved</span>
               </div>
             )}
 
-            {/* Two action buttons */}
-            {(stampStatus === "legacy" || stampStatus === "not_stamped") && !isActioning && (
-              <div className="flex flex-col gap-2 mt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="font-mono text-xs w-full"
-                  onClick={handleReAttest}
-                >
-                  <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
-                  Re-attest (full)
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="font-mono text-xs w-full"
-                  onClick={handleStampHash}
-                >
-                  <Hash className="h-3.5 w-3.5 mr-1.5" />
-                  Generate signed stamp (hash-only)
-                </Button>
+            {/* Three action buttons */}
+            {!isActioning && (canFullReattest || canReseal || canHashOnly) && (
+              <div className="flex flex-col gap-2 mt-3">
+                {canFullReattest && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="font-mono text-xs w-full"
+                    onClick={handleReAttest}
+                  >
+                    <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+                    Re-attest (full)
+                  </Button>
+                )}
+                {canReseal && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="font-mono text-xs w-full border-blue-600/30 text-blue-600 hover:bg-blue-600/5"
+                    onClick={handleResealAttest}
+                  >
+                    <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                    Reseal redacted + attest
+                  </Button>
+                )}
+                {canHashOnly && (
+                  <div className="space-y-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="font-mono text-xs w-full text-muted-foreground"
+                      onClick={handleStampHash}
+                    >
+                      <Clock className="h-3.5 w-3.5 mr-1.5" />
+                      Hash-only timestamp
+                    </Button>
+                    <p className="text-[9px] font-mono text-muted-foreground/60 px-1">
+                      Does NOT attest snapshot contents. Provides a signed timestamp of the certificateHash only.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
             {isActioning && (
               <div className="flex items-center gap-2 py-2">
                 <RotateCcw className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
                 <span className="text-xs font-mono text-muted-foreground">
-                  {reAttesting ? "Re-attesting…" : "Stamping hash…"}
+                  {actionInProgress === 'reattest' ? "Re-attesting…" :
+                   actionInProgress === 'reseal' ? "Resealing + attesting…" :
+                   "Stamping hash…"}
                 </span>
               </div>
             )}
@@ -764,16 +884,18 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
               <Copy className="h-3.5 w-3.5 mr-1.5" />
               Copy Hash
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleReVerify}
-              disabled={liveVerification.status === "pending" || !hasBundle}
-              className="font-mono text-xs"
-            >
-              <RotateCcw className={`h-3.5 w-3.5 mr-1.5 ${liveVerification.status === "pending" ? "animate-spin" : ""}`} />
-              {liveVerification.status === "pending" ? "Verifying…" : "Re-Verify"}
-            </Button>
+            {!isLegacyCode && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleReVerify}
+                disabled={liveVerification.status === "pending" || !hasBundle}
+                className="font-mono text-xs"
+              >
+                <RotateCcw className={`h-3.5 w-3.5 mr-1.5 ${liveVerification.status === "pending" ? "animate-spin" : ""}`} />
+                {liveVerification.status === "pending" ? "Verifying…" : "Re-Verify"}
+              </Button>
+            )}
           </div>
         </div>
       </SheetContent>

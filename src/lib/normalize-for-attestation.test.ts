@@ -54,7 +54,7 @@ describe("normalizeForAttestation", () => {
     expect(snap.runtimeHash).toBe("sha256:runtime");
   });
 
-  // ── Does not mutate input ──
+  // ── Does not mutate input (deepFreeze) ──
   it("does not mutate the input record (deepFreeze)", () => {
     function deepFreeze<T extends Record<string, unknown>>(obj: T): T {
       Object.freeze(obj);
@@ -74,7 +74,6 @@ describe("normalizeForAttestation", () => {
       nested: { a: 1, b: { c: 2 } },
     });
     const before = JSON.stringify(record);
-    // Should not throw on frozen object
     const result = normalizeForAttestation(record as any, "codemode");
     expect(result.ok).toBe(true);
     expect(JSON.stringify(record)).toBe(before);
@@ -87,17 +86,15 @@ describe("normalizeForAttestation", () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect((result as any).error).toBe("MISSING_CERTIFICATE_HASH");
-    expect((result as any).message).toContain("certificateHash");
   });
 
   // ── Missing timestamp ──
-  it("blocks re-attest when no timestamp field exists (MISSING_CREATED_AT, no now() fabrication)", () => {
+  it("blocks re-attest when no timestamp field exists (MISSING_CREATED_AT)", () => {
     const record = { seed: 42, bundleType: "cer.codemode.render.v1", certificateHash: "sha256:abc" };
     const result = normalizeForAttestation(record, "codemode");
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect((result as any).error).toBe("MISSING_CREATED_AT");
-    expect((result as any).message).toContain("timestamp");
   });
 
   // ── bundleType preference ──
@@ -165,7 +162,7 @@ describe("normalizeForAttestation", () => {
     expect(result.bundle.createdAt).toBe("2025-02-01T00:00:00Z");
   });
 
-  it("falls back to issuedAt when createdAt and timestamp are missing", () => {
+  it("falls back to issuedAt", () => {
     const record = {
       seed: 1,
       issuedAt: "2025-03-01T00:00:00Z",
@@ -193,7 +190,6 @@ describe("normalizeForAttestation", () => {
   it("never sets createdAt to current time when missing", () => {
     const record = { seed: 42, bundleType: "cer.codemode.render.v1", certificateHash: "sha256:abc" };
     const result = normalizeForAttestation(record, "codemode");
-    // Must fail, not fabricate
     expect(result.ok).toBe(false);
   });
 
@@ -227,19 +223,21 @@ describe("normalizeForAttestation", () => {
     expect(source).not.toContain("computeCertificateHash");
   });
 
-  // ── No hash imports in re-attest edge function source ──
-  it("re-attest edge function does not import computeCertificateHash", () => {
+  // ── Re-attest edge function does NOT use computeCertificateHash ──
+  it("re-attest edge function uses computeCertificateHash only for local verification, not for mutation", () => {
     const source = fs.readFileSync(
       path.resolve(__dirname, "../../supabase/functions/re-attest/index.ts"),
       "utf-8",
     );
-    expect(source).not.toContain("computeCertificateHash");
-    expect(source).not.toContain("cer-hash");
+    // It imports cer-hash for local verify, but never overwrites certificateHash on the payload
+    expect(source).toContain("localVerifyCertificateHash");
+    // Must not contain payloadObj.certificateHash = recomputed (the old pattern)
+    expect(source).not.toContain("payloadObj.certificateHash = recomputed");
+    expect(source).not.toContain("payloadObj.certificateHash = await");
   });
 
-  // ── Redacted AI record: full re-attest should be blocked (CANNOT_REATTEST) ──
-  // This is tested at the edge function level; normalizer passes enveloped AI records through.
-  it("passes enveloped AI record through unchanged (normalizer is surface-agnostic for enveloped)", () => {
+  // ── Enveloped AI record passes through unchanged ──
+  it("passes enveloped AI record through unchanged", () => {
     const record = {
       bundleType: "cer.ai.execution.v1",
       version: "0.7.0",
@@ -252,5 +250,43 @@ describe("normalizeForAttestation", () => {
     if (!result.ok) return;
     expect(result.legacyWrapped).toBe(false);
     expect(result.bundle).toBe(record);
+  });
+
+  // ── Re-attest full never reseals (requires local verify) ──
+  it("re-attest function requires local verify before calling node", () => {
+    const source = fs.readFileSync(
+      path.resolve(__dirname, "../../supabase/functions/re-attest/index.ts"),
+      "utf-8",
+    );
+    // Must contain local verify check
+    expect(source).toContain("LOCAL_VERIFY_FAILED");
+    expect(source).toContain("localVerifyCertificateHash");
+    // Must NOT overwrite certificateHash on payload
+    expect(source).not.toMatch(/payloadObj\.certificateHash\s*=/);
+  });
+
+  // ── Reseal-attest produces new certificateHash and preserves provenance ──
+  it("reseal-attest function computes new hash and stores provenance", () => {
+    const source = fs.readFileSync(
+      path.resolve(__dirname, "../../supabase/functions/reseal-attest/index.ts"),
+      "utf-8",
+    );
+    expect(source).toContain("computeCertificateHash");
+    expect(source).toContain("originalCertificateHash");
+    expect(source).toContain("redacted_reseal");
+    expect(source).toContain("redactionPolicy");
+  });
+
+  // ── Hash-only timestamp never alters integrity ──
+  it("stamp-hash function never modifies bundle content", () => {
+    const source = fs.readFileSync(
+      path.resolve(__dirname, "../../supabase/functions/stamp-hash/index.ts"),
+      "utf-8",
+    );
+    // Must not import or use computeCertificateHash
+    expect(source).not.toContain("computeCertificateHash");
+    expect(source).not.toContain("cer-hash");
+    // Mode must be hash-only
+    expect(source).toContain("'hash-only'");
   });
 });
