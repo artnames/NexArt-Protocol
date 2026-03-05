@@ -100,6 +100,26 @@ async function localVerifyCertificateHash(bundle: Record<string, unknown>): Prom
   }
 }
 
+// ── Auto-stamp feature flags ─────────────────────────────────────────
+
+const AUTO_STAMP_TIMEOUT_MS = 3000;
+
+function isAutoStampEnabled(surface: 'ai' | 'codemode'): boolean {
+  // Master kill switch (default: disabled)
+  const master = Deno.env.get('AUTO_STAMP_ENABLED');
+  if (!master || master.toLowerCase() !== 'true') return false;
+  // Per-surface overrides (default: follow master)
+  if (surface === 'ai') {
+    const aiFlag = Deno.env.get('AUTO_STAMP_AI_ENABLED');
+    if (aiFlag && aiFlag.toLowerCase() === 'false') return false;
+  }
+  if (surface === 'codemode') {
+    const cmFlag = Deno.env.get('AUTO_STAMP_CODEMODE_ENABLED');
+    if (cmFlag && cmFlag.toLowerCase() === 'false') return false;
+  }
+  return true;
+}
+
 // ── Auto-stamp types ─────────────────────────────────────────────────
 
 type AutoStampStatus =
@@ -109,6 +129,7 @@ type AutoStampStatus =
   | 'skipped_legacy_code'
   | 'skipped_unverifiable_ai'
   | 'skipped_unknown'
+  | 'skipped_disabled'
   | 'failed';
 
 interface AutoStampResult {
@@ -138,6 +159,14 @@ async function autoStamp(
     return { autoStampStatus: 'already_signed', autoStampError: null, autoStampedAt: null, attestation: null, newCertificateHash: null };
   }
 
+  // Classify first to determine surface before checking flag
+  const classification = classifyCERBundle(redactedBundle, bundleType, certificateHash, null);
+
+  // 2) Check feature flag
+  if (!isAutoStampEnabled(classification.surface)) {
+    return { autoStampStatus: 'skipped_disabled', autoStampError: null, autoStampedAt: now, attestation: null, newCertificateHash: null };
+  }
+
   const nodeApiKey = Deno.env.get('NEXART_NODE_API_KEY');
   if (!nodeApiKey) {
     return { autoStampStatus: 'failed', autoStampError: 'NEXART_NODE_API_KEY not configured', autoStampedAt: now, attestation: null, newCertificateHash: null };
@@ -147,8 +176,7 @@ async function autoStamp(
   if (!nodeUrl.startsWith('http://') && !nodeUrl.startsWith('https://')) nodeUrl = `https://${nodeUrl}`;
   nodeUrl = nodeUrl.replace(/\/+$/, '');
 
-  // Classify using the ORIGINAL (pre-redaction) bundle for AI, redacted for stored
-  const classification = classifyCERBundle(redactedBundle, bundleType, certificateHash, null);
+  // Decision tree uses classification from above
 
   // 2) AI Execution
   if (classification.surface === 'ai') {
@@ -216,6 +244,10 @@ async function callNodeAttest(
       payloadObj.meta = meta;
     }
 
+    // Use AbortController for strict timeout — never retry inside ingest
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), AUTO_STAMP_TIMEOUT_MS);
+
     const nodeResp = await fetch(`${nodeUrl}/api/stamp`, {
       method: 'POST',
       headers: {
@@ -223,7 +255,9 @@ async function callNodeAttest(
         'Authorization': `Bearer ${nodeApiKey}`,
       },
       body: JSON.stringify(payloadObj),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     if (!nodeResp.ok) {
       const errText = await nodeResp.text();
@@ -269,8 +303,27 @@ async function callNodeAttest(
     return { autoStampStatus: stampStatus, autoStampError: null, autoStampedAt: now, attestation: signedAttestation, newCertificateHash: null };
   } catch (err) {
     const e = err as Error;
-    console.error('Auto-stamp node call error:', e.message);
-    return { autoStampStatus: 'failed', autoStampError: e.message.slice(0, 200), autoStampedAt: now, attestation: null, newCertificateHash: null };
+    const isTimeout = e.name === 'AbortError' || e.message?.includes('aborted');
+    const reason = isTimeout ? 'timeout' : 'node_error';
+    console.error(`Auto-stamp ${reason}:`, e.message);
+
+    // Persist failure attestation so UI can show it
+    const failAttestation: Record<string, unknown> = {
+      autoStamped: true,
+      status: 'failed',
+      reason,
+      error: e.message.slice(0, 200),
+      failedAt: now,
+    };
+    try {
+      await supabaseAdmin
+        .from('cer_bundles')
+        .update({ attestation_json: failAttestation })
+        .eq('usage_event_id', eventIdNum)
+        .eq('user_id', ownerId);
+    } catch { /* best-effort */ }
+
+    return { autoStampStatus: 'failed', autoStampError: `${reason}: ${e.message.slice(0, 150)}`, autoStampedAt: now, attestation: failAttestation, newCertificateHash: null };
   }
 }
 
