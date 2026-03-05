@@ -198,6 +198,44 @@ const Builders = () => {
             to canonical, server-side execution.
           </p>
 
+          <h2>Surfaces</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full table-fixed border-separate border-spacing-y-3">
+              <colgroup>
+                <col className="w-[18%]" />
+                <col className="w-[22%]" />
+                <col className="w-[22%]" />
+                <col className="w-[16%]" />
+                <col className="w-[22%]" />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th className="text-left pb-3 pr-4 text-sm font-semibold text-foreground/80">Surface</th>
+                  <th className="text-left pb-3 pr-4 text-sm font-semibold text-foreground/80">Purpose</th>
+                  <th className="text-left pb-3 pr-4 text-sm font-semibold text-foreground/80">SDK</th>
+                  <th className="text-left pb-3 pr-4 text-sm font-semibold text-foreground/80">Runs On</th>
+                  <th className="text-left pb-3 text-sm font-semibold text-foreground/80">What Is Verified</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-muted/20 ring-1 ring-border/60 rounded-md">
+                  <td className="py-4 px-4 align-top font-medium text-foreground rounded-l-md">Code Mode</td>
+                  <td className="py-4 px-4 align-top border-l border-border/70 text-foreground/90">Deterministic rendering</td>
+                  <td className="py-4 px-4 align-top border-l border-border/70 text-foreground/90 font-mono text-xs">@nexart/codemode-sdk</td>
+                  <td className="py-4 px-4 align-top border-l border-border/70 text-foreground/90">Server</td>
+                  <td className="py-4 px-4 align-top border-l border-border/70 text-foreground/90 rounded-r-md">Output determinism + canonical rendering</td>
+                </tr>
+                <tr className="bg-muted/20 ring-1 ring-border/60 rounded-md">
+                  <td className="py-4 px-4 align-top font-medium text-foreground rounded-l-md">AI Execution</td>
+                  <td className="py-4 px-4 align-top border-l border-border/70 text-foreground/90">Integrity receipts</td>
+                  <td className="py-4 px-4 align-top border-l border-border/70 text-foreground/90 font-mono text-xs">@nexart/ai-execution</td>
+                  <td className="py-4 px-4 align-top border-l border-border/70 text-foreground/90">Server / Browser</td>
+                  <td className="py-4 px-4 align-top border-l border-border/70 text-foreground/90 rounded-r-md">Record integrity + optional signed attestation</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
           <h2>First app built on the protocol</h2>
 
           <p>

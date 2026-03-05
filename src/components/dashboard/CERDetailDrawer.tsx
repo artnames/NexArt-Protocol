@@ -364,7 +364,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
               <Info className="h-4 w-4" />
               <AlertTitle className="font-mono text-xs">Redacted Export (Verifiable)</AlertTitle>
               <AlertDescription className="text-xs text-muted-foreground leading-relaxed">
-                This download is redacted to protect sensitive fields. It is still independently verifiable. The original (unredacted) record hash is shown for reference.
+                This export verifies integrity of the redacted record only. Original hash cannot be verified from this export. The original (unredacted) certificate hash is shown below for reference.
               </AlertDescription>
             </Alert>
           )}

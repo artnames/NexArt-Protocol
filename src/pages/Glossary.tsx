@@ -257,6 +257,31 @@ const Glossary = () => {
           </p>
         </section>
 
+        <section className="mb-16">
+          <h2 className="text-2xl font-serif text-foreground mb-4">Declaration</h2>
+          <p className="text-body mb-4">
+            Advisory metadata attached to a CER that describes the protected field set and stability scheme. Declarations
+            are informational — they are excluded from the certificateHash and do not affect verification.
+          </p>
+          <p className="text-body">
+            Declarations allow integrators to communicate intent (e.g., which fields are considered protected) without
+            altering the cryptographic seal.
+          </p>
+        </section>
+
+        <section className="mb-16">
+          <h2 className="text-2xl font-serif text-foreground mb-4">toolCalls</h2>
+          <p className="text-body mb-4">
+            Optional evidence records within a CER snapshot that capture external tool invocations made during an AI
+            execution (e.g., function calls, API lookups, retrieval results). When present, toolCalls are included in
+            the snapshot and therefore covered by the certificateHash.
+          </p>
+          <p className="text-body">
+            toolCalls provide auditability for agentic workflows where the model invokes external capabilities as part
+            of its execution.
+          </p>
+        </section>
+
         <section className="pt-8 border-t border-border">
           <p className="text-caption text-sm">
             Definitions may evolve as the protocol matures. Changes to terminology will be documented and versioned

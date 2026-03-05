@@ -22,9 +22,30 @@ const Protocol = () => {
           <p>
             NexArt is an open execution protocol for deterministic and integrity-bound systems. This page explains what the protocol
             is, why it exists, and how it enables verifiable, permanent computation across autonomous systems, simulations,
-            compliance workflows, AI governance, and research. The protocol defines two execution surfaces: Code Mode for deterministic
-            rendering, and AI Execution Integrity for tamper-evident AI execution records.
+            compliance workflows, AI governance, and research.
           </p>
+
+          <section className="mt-10 mb-4">
+            <h2>Two Execution Surfaces</h2>
+            <p>The protocol defines two execution surfaces under the same versioned specification:</p>
+            <div className="space-y-4 mt-4">
+              <div className="border border-border p-5 rounded-sm">
+                <h3 className="text-base font-medium text-foreground mb-2">1. Code Mode — Deterministic Rendering</h3>
+                <p className="text-caption text-sm mb-0">
+                  Canonical outputs (PNG / MP4) produced under pinned execution semantics. The same system, same seed, same renderer
+                  always produces the same output. Used for certification, archival, and on-chain minting.
+                </p>
+              </div>
+              <div className="border border-border p-5 rounded-sm">
+                <h3 className="text-base font-medium text-foreground mb-2">2. AI Execution — Integrity Receipts</h3>
+                <p className="text-caption text-sm mb-0">
+                  Tamper-evident CER bundles for AI / LLM calls. Records inputs, parameters, and outputs with a cryptographic seal.
+                  Optional node attestation provides a signed receipt for independent, third-party proof of integrity. This surface does
+                  not claim deterministic output — it provides <strong>integrity evidence</strong>, not replay guarantees.
+                </p>
+              </div>
+            </div>
+          </section>
 
           <section className="mt-12">
             <h2>What Is the NexArt Protocol</h2>

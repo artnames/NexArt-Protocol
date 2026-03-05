@@ -359,9 +359,18 @@ inputHash = "sha256:" + sha256(utf8Bytes(canonicalJson({ locale: "en-US", text: 
               </table>
             </div>
 
-            <p className="text-sm text-caption mt-4 mb-6">
-              Node attestation verifies the integrity of the submitted bundle. It does not re-run the model or validate provider execution.
+            <p className="text-sm text-caption mt-4 mb-4">
+              Attestation does not re-run the model; it stamps the integrity of the submitted record.
             </p>
+
+            <div className="bg-muted/50 border border-border rounded-md p-4 mb-6">
+              <p className="text-xs font-mono uppercase tracking-wide text-caption mb-2">Attestation States — Quick Reference</p>
+              <ul className="text-sm text-body space-y-1.5 list-none pl-0 mb-0">
+                <li><strong>Not attested</strong> — <code>verify(bundle)</code> proves integrity of the record locally.</li>
+                <li><strong>Stamped (legacy)</strong> — has <code>attestationId</code> / <code>nodeRuntimeHash</code>; no signature to verify offline.</li>
+                <li><strong>Stamped (signed)</strong> — has Ed25519 signed receipt; verifiable offline via <code>verifyBundleAttestation()</code>.</li>
+              </ul>
+            </div>
 
             <p>
               Signed receipt verification fetches the node's public keys and checks the Ed25519 signature offline:
