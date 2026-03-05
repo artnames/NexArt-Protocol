@@ -711,7 +711,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
             {stampStatus === "signed_full" && (
               <div className="flex items-center gap-1.5 py-1">
                 <ShieldCheck className="h-3 w-3 text-green-600" />
-                <span className="text-xs text-green-600 font-mono">Full receipt — offline verifiable</span>
+                <span className="text-xs text-green-600 font-mono">Signed receipt — offline verifiable</span>
               </div>
             )}
             {stampStatus === "signed_redacted_reseal" && (
