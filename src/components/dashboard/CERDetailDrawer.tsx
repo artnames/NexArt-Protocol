@@ -369,6 +369,16 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
             </Alert>
           )}
 
+          {/* Legacy transport wrap banner */}
+          {reAttestResult?.legacyWrapped && (
+            <Alert className="border-yellow-600/30 bg-yellow-600/5">
+              <Info className="h-4 w-4 text-yellow-600" />
+              <AlertTitle className="font-mono text-xs text-yellow-600">Legacy Format Wrapped</AlertTitle>
+              <AlertDescription className="text-xs text-muted-foreground leading-relaxed">
+                Legacy format wrapped for transport. Hash preserved. No reseal performed.
+              </AlertDescription>
+            </Alert>
+
           {/* A) Mismatch guardrail banner */}
           {isMismatch && hasBundle && (
             <Alert className="border-destructive/50 bg-destructive/5">
