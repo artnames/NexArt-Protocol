@@ -378,7 +378,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
                 Legacy format wrapped for transport. Hash preserved. No reseal performed.
               </AlertDescription>
             </Alert>
-
+          )}
           {/* A) Mismatch guardrail banner */}
           {isMismatch && hasBundle && (
             <Alert className="border-destructive/50 bg-destructive/5">
