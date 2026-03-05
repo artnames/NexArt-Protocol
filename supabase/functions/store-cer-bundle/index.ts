@@ -245,6 +245,10 @@ async function callNodeAttest(
       payloadObj.meta = meta;
     }
 
+    // Use AbortController for strict timeout — never retry inside ingest
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), AUTO_STAMP_TIMEOUT_MS);
+
     const nodeResp = await fetch(`${nodeUrl}/api/stamp`, {
       method: 'POST',
       headers: {
@@ -252,7 +256,9 @@ async function callNodeAttest(
         'Authorization': `Bearer ${nodeApiKey}`,
       },
       body: JSON.stringify(payloadObj),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     if (!nodeResp.ok) {
       const errText = await nodeResp.text();
