@@ -100,6 +100,26 @@ async function localVerifyCertificateHash(bundle: Record<string, unknown>): Prom
   }
 }
 
+// ── Auto-stamp feature flags ─────────────────────────────────────────
+
+const AUTO_STAMP_TIMEOUT_MS = 3000;
+
+function isAutoStampEnabled(surface: 'ai' | 'codemode'): boolean {
+  // Master kill switch (default: disabled)
+  const master = Deno.env.get('AUTO_STAMP_ENABLED');
+  if (!master || master.toLowerCase() !== 'true') return false;
+  // Per-surface overrides (default: follow master)
+  if (surface === 'ai') {
+    const aiFlag = Deno.env.get('AUTO_STAMP_AI_ENABLED');
+    if (aiFlag && aiFlag.toLowerCase() === 'false') return false;
+  }
+  if (surface === 'codemode') {
+    const cmFlag = Deno.env.get('AUTO_STAMP_CODEMODE_ENABLED');
+    if (cmFlag && cmFlag.toLowerCase() === 'false') return false;
+  }
+  return true;
+}
+
 // ── Auto-stamp types ─────────────────────────────────────────────────
 
 type AutoStampStatus =
@@ -109,6 +129,7 @@ type AutoStampStatus =
   | 'skipped_legacy_code'
   | 'skipped_unverifiable_ai'
   | 'skipped_unknown'
+  | 'skipped_disabled'
   | 'failed';
 
 interface AutoStampResult {
@@ -136,6 +157,14 @@ async function autoStamp(
   // 1) Already signed? Skip.
   if (hasSignedReceipt(existingAttestation)) {
     return { autoStampStatus: 'already_signed', autoStampError: null, autoStampedAt: null, attestation: null, newCertificateHash: null };
+  }
+
+  // Classify first to determine surface before checking flag
+  const classification = classifyCERBundle(redactedBundle, bundleType, certificateHash, null);
+
+  // 2) Check feature flag
+  if (!isAutoStampEnabled(classification.surface)) {
+    return { autoStampStatus: 'skipped_disabled', autoStampError: null, autoStampedAt: now, attestation: null, newCertificateHash: null };
   }
 
   const nodeApiKey = Deno.env.get('NEXART_NODE_API_KEY');
