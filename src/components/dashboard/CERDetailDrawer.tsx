@@ -61,7 +61,7 @@ function StampStatusBadge({ status, offlineVerifiable }: { status: StampStatus; 
     return (
       <Badge className="font-mono text-xs bg-green-600/15 text-green-600 border-green-600/30 gap-1">
         <Stamp className="h-3 w-3" />
-        {offlineVerifiable ? "Stamped (signed, offline-verifiable)" : "Stamped (signed)"}
+        Stamped (signed — offline verifiable)
       </Badge>
     );
   }
