@@ -100,6 +100,32 @@ async function localVerifyCertificateHash(bundle: Record<string, unknown>): Prom
   }
 }
 
+// ── Auto-stamp rate limiter ──────────────────────────────────────────
+
+const AUTO_STAMP_RATE_WINDOW_MS = 60_000; // 1 minute
+const AUTO_STAMP_RATE_MAX = 10; // max auto-stamps per API-key-owner per window
+
+// In-memory sliding window: Map<userId, timestamp[]>
+const autoStampRateMap = new Map<string, number[]>();
+
+function isRateLimited(userId: string): boolean {
+  const now = Date.now();
+  const cutoff = now - AUTO_STAMP_RATE_WINDOW_MS;
+  let timestamps = autoStampRateMap.get(userId);
+  if (!timestamps) {
+    timestamps = [];
+    autoStampRateMap.set(userId, timestamps);
+  }
+  // Prune old entries
+  const filtered = timestamps.filter(t => t > cutoff);
+  autoStampRateMap.set(userId, filtered);
+  if (filtered.length >= AUTO_STAMP_RATE_MAX) {
+    return true;
+  }
+  filtered.push(now);
+  return false;
+}
+
 // ── Auto-stamp feature flags ─────────────────────────────────────────
 
 const AUTO_STAMP_TIMEOUT_MS = 3000;
@@ -130,6 +156,7 @@ type AutoStampStatus =
   | 'skipped_unverifiable_ai'
   | 'skipped_unknown'
   | 'skipped_disabled'
+  | 'skipped_rate_limited'
   | 'failed';
 
 interface AutoStampResult {
@@ -157,6 +184,12 @@ async function autoStamp(
   // 1) Already signed? Skip.
   if (hasSignedReceipt(existingAttestation)) {
     return { autoStampStatus: 'already_signed', autoStampError: null, autoStampedAt: null, attestation: null, newCertificateHash: null };
+  }
+
+  // 1b) Rate limit guard
+  if (isRateLimited(ownerId)) {
+    console.warn(`Auto-stamp rate limited for user ${ownerId}`);
+    return { autoStampStatus: 'skipped_rate_limited', autoStampError: `Rate limited: max ${AUTO_STAMP_RATE_MAX} auto-stamps per minute`, autoStampedAt: now, attestation: null, newCertificateHash: null };
   }
 
   // Classify first to determine surface before checking flag
