@@ -726,8 +726,13 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
                 <span className="text-xs text-blue-600 font-mono">Redacted reseal — new hash attested, original preserved</span>
               </div>
             )}
+            {n && isAutoStamped(n) && (
+              <div className="flex items-center gap-1.5 py-1">
+                <Stamp className="h-3 w-3 text-muted-foreground" />
+                <span className="text-[10px] text-muted-foreground font-mono">Auto-stamped during ingestion</span>
+              </div>
+            )}
 
-            {/* Three action buttons */}
             {!isActioning && (canFullReattest || canReseal || canHashOnly) && (
               <div className="flex flex-col gap-2 mt-3">
                 {canFullReattest && (
