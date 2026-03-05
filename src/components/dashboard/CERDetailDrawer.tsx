@@ -435,7 +435,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
       toast({
         title: newStamp === "signed_full" ? "Signed Receipt Obtained" : "Re-attestation Complete",
         description: newStamp === "signed_full"
-          ? "Full stamp obtained. Signed receipt stored and offline verifiable."
+          ? "Signed receipt obtained and stored. Offline-verifiable. Stamping does not re-run execution."
           : "Legacy attestation updated. No signed receipt returned by node.",
       });
     } catch (err) {
