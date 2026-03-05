@@ -362,6 +362,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
   useEffect(() => {
     setActionResult(null);
     setActionInProgress(null);
+    setHashOnlyUnsupported(false);
   }, [event?.id]);
 
   if (!event || !n) return null;
