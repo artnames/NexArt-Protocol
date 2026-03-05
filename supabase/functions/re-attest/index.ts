@@ -107,16 +107,46 @@ Deno.serve(async (req) => {
     }
 
     const storedBundle = row.cer_bundle_redacted as Record<string, unknown>;
+    const bundleType = (storedBundle.bundleType ?? row.bundle_type) as string;
+
+    // ── Normalize Code Mode flat bundles into CER envelope ──
+    // Code Mode bundles are stored flat: { seed, canvas, codeHash, varsHash, timestamp, ... }
+    // The node expects CER envelope: { version, createdAt, snapshot, bundleType, certificateHash }
+    const isCodeMode = bundleType === 'cer.codemode.render.v1';
+    const needsEnvelopeWrap = isCodeMode && !storedBundle.snapshot && !storedBundle.createdAt;
+
+    let envelopedBundle: Record<string, unknown>;
+    if (needsEnvelopeWrap) {
+      const {
+        bundleType: _bt, certificateHash: _ch, meta: storedMeta,
+        protocolVersion, sdkVersion, timestamp,
+        ...snapshotFields
+      } = storedBundle;
+
+      envelopedBundle = {
+        bundleType,
+        version: protocolVersion ?? '1.2.0',
+        createdAt: timestamp ?? new Date().toISOString(),
+        certificateHash: storedBundle.certificateHash ?? row.certificate_hash,
+        snapshot: snapshotFields,
+        meta: storedMeta ?? {},
+      };
+      console.info(`Wrapped flat Code Mode bundle into CER envelope for event ${usageEventId}`);
+    } else {
+      envelopedBundle = JSON.parse(JSON.stringify(storedBundle));
+    }
 
     // Determine if bundle is redacted
-    const snap = (storedBundle?.snapshot ?? {}) as Record<string, unknown>;
-    const isRedacted = snap.input == null || snap.output == null || snap.prompt == null;
+    const snap = (envelopedBundle.snapshot ?? {}) as Record<string, unknown>;
+    const isRedacted = isCodeMode
+      ? true // Code Mode stored bundles are always treated as redacted
+      : (snap.input == null || snap.output == null || snap.prompt == null);
 
     // Choose endpoint based on redaction status
     const endpoint = isRedacted ? '/api/stamp' : '/api/attest';
 
     // Build payload: full envelope minus existing attestation (node generates that)
-    const payloadObj: Record<string, unknown> = JSON.parse(JSON.stringify(storedBundle));
+    const payloadObj: Record<string, unknown> = JSON.parse(JSON.stringify(envelopedBundle));
     delete payloadObj.attestation;
     if (payloadObj.meta && typeof payloadObj.meta === 'object') {
       const meta = { ...(payloadObj.meta as Record<string, unknown>) };
@@ -131,7 +161,6 @@ Deno.serve(async (req) => {
       const redactedCertificateHash = await computeCertificateHash(payloadObj);
       payloadObj.certificateHash = redactedCertificateHash;
 
-      // Set provenance metadata
       const meta = (payloadObj.meta && typeof payloadObj.meta === 'object')
         ? { ...(payloadObj.meta as Record<string, unknown>) }
         : {};
