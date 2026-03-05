@@ -511,11 +511,12 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
         const errData = data as Record<string, unknown> | null;
         const errError = errData?.error as string | undefined;
 
-        if (errError === 'NODE_HASH_ONLY_UNSUPPORTED') {
+        if (errError === 'NODE_HASH_ONLY_UNSUPPORTED' || errError === 'NODE_HASH_ONLY_UNSUPPORTED_FOR_BUNDLETYPE') {
+          setHashOnlyUnsupported(true);
           toast({
             variant: "destructive",
-            title: "Hash-only timestamp not yet supported",
-            description: (errData?.message as string) || "Node does not support hash-only mode yet.",
+            title: "Hash-only timestamp not supported",
+            description: (errData?.message as string) || "Hash-only timestamp is not supported for this record type.",
           });
           return;
         }
