@@ -49,12 +49,12 @@ type StampStatus =
   | "signed_redacted_reseal"
   | "hash_only_timestamp";
 
-function deriveStampStatus(n: NormalizedCER): StampStatus {
+function deriveStampStatus(n: NormalizedCER, event: CertifiedUsageEvent | null): StampStatus {
   const meta = n.rawBundleJson?.meta as Record<string, unknown> | undefined;
   const att = (meta?.attestation ?? null) as Record<string, unknown> | null;
 
-  // Also check top-level attestation_json (stored separately from bundle)
-  const attJson = n.attestationJson as Record<string, unknown> | null | undefined;
+  // Also check attestation_json from the DB row (stored separately from bundle)
+  const attJson = (event?.cer_bundle as Record<string, unknown> | null)?.attestation_json as Record<string, unknown> | null ?? null;
   const effectiveAtt = att ?? attJson ?? null;
 
   const hasReceipt = !!effectiveAtt?.receipt || !!effectiveAtt?.signatureB64Url;
@@ -70,10 +70,12 @@ function deriveStampStatus(n: NormalizedCER): StampStatus {
   return "not_attested";
 }
 
-function isAutoStamped(n: NormalizedCER): boolean {
+function isAutoStamped(n: NormalizedCER, event: CertifiedUsageEvent | null): boolean {
   const meta = n.rawBundleJson?.meta as Record<string, unknown> | undefined;
   const att = (meta?.attestation ?? null) as Record<string, unknown> | null;
-  return att?.autoStamped === true;
+  const attJson = (event?.cer_bundle as Record<string, unknown> | null)?.attestation_json as Record<string, unknown> | null ?? null;
+  const effectiveAtt = att ?? attJson ?? null;
+  return effectiveAtt?.autoStamped === true;
 }
 
 // ── Detect if this is a legacy Code Mode record (not a full CER) ──
