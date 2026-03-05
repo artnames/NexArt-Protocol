@@ -53,9 +53,13 @@ function deriveStampStatus(n: NormalizedCER): StampStatus {
   const meta = n.rawBundleJson?.meta as Record<string, unknown> | undefined;
   const att = (meta?.attestation ?? null) as Record<string, unknown> | null;
 
-  const hasReceipt = !!att?.receipt || !!att?.signatureB64Url;
-  const hasLegacy = !!(n.attestationId || n.nodeRuntimeHash || att?.attestationId || att?.nodeRuntimeHash);
-  const mode = att?.mode as string | undefined;
+  // Also check top-level attestation_json (stored separately from bundle)
+  const attJson = n.attestationJson as Record<string, unknown> | null | undefined;
+  const effectiveAtt = att ?? attJson ?? null;
+
+  const hasReceipt = !!effectiveAtt?.receipt || !!effectiveAtt?.signatureB64Url;
+  const hasLegacy = !!(n.attestationId || n.nodeRuntimeHash || effectiveAtt?.attestationId || effectiveAtt?.nodeRuntimeHash);
+  const mode = effectiveAtt?.mode as string | undefined;
 
   if (hasReceipt) {
     if (mode === 'hash-only') return 'hash_only_timestamp';
