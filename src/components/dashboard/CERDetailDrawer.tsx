@@ -66,6 +66,12 @@ function deriveStampStatus(n: NormalizedCER): StampStatus {
   return "not_attested";
 }
 
+function isAutoStamped(n: NormalizedCER): boolean {
+  const meta = n.rawBundleJson?.meta as Record<string, unknown> | undefined;
+  const att = (meta?.attestation ?? null) as Record<string, unknown> | null;
+  return att?.autoStamped === true;
+}
+
 // ── Detect if this is a legacy Code Mode record (not a full CER) ──
 function isLegacyCodeModeRecord(n: NormalizedCER): boolean {
   if (n.surface !== "code") return false;
