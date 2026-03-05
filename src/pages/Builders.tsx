@@ -79,9 +79,9 @@ const Builders = () => {
           </ul>
           <p><strong>Use this when:</strong></p>
           <ul>
-            <li>You need integrity guarantees over AI decisions</li>
-            <li>You require audit-ready execution records</li>
-            <li>You are implementing AI systems under governance or regulatory constraints</li>
+            <li>You need audit-ready integrity receipts for AI / LLM decisions</li>
+            <li>You need third-party attestation proofs (optional)</li>
+            <li>You are building verification / audit tooling</li>
           </ul>
 
           <p>
