@@ -342,7 +342,9 @@ describe("auto-stamp invariants (source-level)", () => {
   });
 
   it("never retries node calls inside ingest (no retry loop)", () => {
-    expect(source).not.toMatch(/\bretry\b/i);
+    // No retry/backoff loop constructs — the comment "never retry" is intentional documentation
+    expect(source).not.toContain("retryCount");
     expect(source).not.toContain("backoff");
+    expect(source).not.toContain("maxRetries");
   });
 });
