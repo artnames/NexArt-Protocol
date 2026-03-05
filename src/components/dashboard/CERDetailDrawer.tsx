@@ -723,6 +723,14 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
                 <span className="text-xs text-green-600 font-mono">Signed receipt — offline verifiable</span>
               </div>
             )}
+            {stampStatus === "hash_only_timestamp" && (
+              <div className="space-y-1 py-1">
+                <div className="flex items-center gap-1.5">
+                  <Clock className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground font-mono">Does NOT attest snapshot contents.</span>
+                </div>
+              </div>
+            )}
             {stampStatus === "signed_redacted_reseal" && (
               <div className="space-y-1 py-1">
                 <div className="flex items-center gap-1.5">
