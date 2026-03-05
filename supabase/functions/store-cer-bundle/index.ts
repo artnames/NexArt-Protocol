@@ -156,6 +156,7 @@ type AutoStampStatus =
   | 'skipped_unverifiable_ai'
   | 'skipped_unknown'
   | 'skipped_disabled'
+  | 'skipped_rate_limited'
   | 'failed';
 
 interface AutoStampResult {
