@@ -63,7 +63,7 @@ const Builders = () => {
           </ul>
 
           <h3>AI Execution — Tamper-Evident Records</h3>
-          <p className="text-xs font-mono text-caption">@nexart/ai-execution v0.6.0</p>
+          <p className="text-xs font-mono text-caption">@nexart/ai-execution v0.7.0</p>
           <p>
             <strong>Role:</strong> Tamper-evident execution records (CER) for AI and LLM systems
             <br />
