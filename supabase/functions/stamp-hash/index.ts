@@ -79,12 +79,16 @@ Deno.serve(async (req) => {
     // ── Build hash-only stamp payload ──
     // This sends ONLY the certificateHash + metadata to the node's /api/stamp.
     // No snapshot, no content. The node signs the hash as an observation.
-    const stampPayload = {
+    const protocolVersion = (storedBundle.version ?? (storedBundle.snapshot as Record<string, unknown> | undefined)?.protocolVersion ?? null) as string | null;
+    const stampPayload: Record<string, unknown> = {
       certificateHash,
       bundleType,
       surface,
       mode: 'hash-only',
     };
+    if (protocolVersion) {
+      stampPayload.protocolVersion = protocolVersion;
+    }
 
     console.info(JSON.stringify({
       action: 'stamp_hash',
