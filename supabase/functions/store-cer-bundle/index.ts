@@ -304,8 +304,27 @@ async function callNodeAttest(
     return { autoStampStatus: stampStatus, autoStampError: null, autoStampedAt: now, attestation: signedAttestation, newCertificateHash: null };
   } catch (err) {
     const e = err as Error;
-    console.error('Auto-stamp node call error:', e.message);
-    return { autoStampStatus: 'failed', autoStampError: e.message.slice(0, 200), autoStampedAt: now, attestation: null, newCertificateHash: null };
+    const isTimeout = e.name === 'AbortError' || e.message?.includes('aborted');
+    const reason = isTimeout ? 'timeout' : 'node_error';
+    console.error(`Auto-stamp ${reason}:`, e.message);
+
+    // Persist failure attestation so UI can show it
+    const failAttestation: Record<string, unknown> = {
+      autoStamped: true,
+      status: 'failed',
+      reason,
+      error: e.message.slice(0, 200),
+      failedAt: now,
+    };
+    try {
+      await supabaseAdmin
+        .from('cer_bundles')
+        .update({ attestation_json: failAttestation })
+        .eq('usage_event_id', eventIdNum)
+        .eq('user_id', ownerId);
+    } catch { /* best-effort */ }
+
+    return { autoStampStatus: 'failed', autoStampError: `${reason}: ${e.message.slice(0, 150)}`, autoStampedAt: now, attestation: failAttestation, newCertificateHash: null };
   }
 }
 

@@ -721,9 +721,17 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
               </div>
             )}
             {stampStatus === "signed_redacted_reseal" && (
-              <div className="flex items-center gap-1.5 py-1">
-                <RefreshCw className="h-3 w-3 text-blue-600" />
-                <span className="text-xs text-blue-600 font-mono">Redacted reseal — new hash attested, original preserved</span>
+              <div className="space-y-1 py-1">
+                <div className="flex items-center gap-1.5">
+                  <RefreshCw className="h-3 w-3 text-blue-600" />
+                  <span className="text-xs text-blue-600 font-mono">Redacted reseal — only the redacted derivative is signed</span>
+                </div>
+                {n.originalCertificateHash && (
+                  <div className="text-[10px] font-mono text-muted-foreground space-y-0.5 pl-4">
+                    <p>Original certificateHash (reference only, not signed): <span className="text-foreground break-all">{n.originalCertificateHash}</span></p>
+                    <p>Redacted certificateHash (signed, verifiable): <span className="text-foreground break-all">{n.certificateHash}</span></p>
+                  </div>
+                )}
               </div>
             )}
             {n && isAutoStamped(n) && (
