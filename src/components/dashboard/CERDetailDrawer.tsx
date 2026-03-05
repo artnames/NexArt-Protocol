@@ -546,7 +546,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
   const isActioning = actionInProgress !== null;
 
   // Determine which actions are available
-  const canFullReattest = !isActioning && (stampStatus === "not_attested" || stampStatus === "legacy_record_not_verifiable") && !bundleIsRedacted;
+  const canFullReattest = !isActioning && (stampStatus === "not_attested" || stampStatus === "legacy_record_not_verifiable") && !bundleIsRedacted && !isLegacyCode;
   const canReseal = !isActioning && (stampStatus === "not_attested" || stampStatus === "legacy_record_not_verifiable") && bundleIsRedacted && n.surface === "ai";
   const canHashOnly = !isActioning && (stampStatus === "not_attested" || stampStatus === "legacy_record_not_verifiable" || stampStatus === "hash_only_timestamp");
 
