@@ -317,7 +317,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
       }
 
       const newStamp: StampStatus = data.stamp === "signed" ? "signed" : "legacy";
-      setReAttestResult({ stamp: newStamp, offlineOk: newStamp === "signed", legacyWrapped: !!data.legacyWrapped });
+      setReAttestResult({ stamp: newStamp, offlineOk: newStamp === "signed", legacyWrapped: !!data.legacyWrapped, wrapReason: data.wrapReason ?? undefined });
 
       toast({
         title: newStamp === "signed" ? "Signed Receipt Obtained" : "Re-attestation Complete",
