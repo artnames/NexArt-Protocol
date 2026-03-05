@@ -357,10 +357,57 @@ describe("auto-stamp invariants (source-level)", () => {
   });
 
   it("rate limiter runs before feature flag and node calls", () => {
-    // isRateLimited must appear before isAutoStampEnabled in the autoStamp function body
     const rateLimitedIdx = source.indexOf("isRateLimited(ownerId)");
     const featureFlagIdx = source.indexOf("isAutoStampEnabled(classification.surface)");
     expect(rateLimitedIdx).toBeGreaterThan(0);
     expect(featureFlagIdx).toBeGreaterThan(rateLimitedIdx);
+  });
+});
+
+// ── stamp-hash source invariants ──────────────────────────────────
+
+describe("stamp-hash invariants (source-level)", () => {
+  const source = fs.readFileSync(
+    path.resolve(__dirname, "../../supabase/functions/stamp-hash/index.ts"),
+    "utf-8",
+  );
+
+  it("includes bundleType in the stamp payload", () => {
+    expect(source).toContain("bundleType,");
+    expect(source).toContain("bundleType");
+  });
+
+  it("includes protocolVersion in stamp payload when available", () => {
+    expect(source).toContain("protocolVersion");
+    expect(source).toContain("stampPayload.protocolVersion");
+  });
+
+  it("returns NODE_HASH_ONLY_UNSUPPORTED_FOR_BUNDLETYPE for bundleType-specific errors", () => {
+    expect(source).toContain("NODE_HASH_ONLY_UNSUPPORTED_FOR_BUNDLETYPE");
+  });
+
+  it("still returns NODE_HASH_ONLY_UNSUPPORTED for generic 400/422", () => {
+    expect(source).toContain("NODE_HASH_ONLY_UNSUPPORTED");
+  });
+
+  it("never modifies bundle content (no computeCertificateHash)", () => {
+    expect(source).not.toContain("computeCertificateHash");
+    expect(source).not.toContain("cer-hash");
+  });
+});
+
+// ── classifier: legacy codemode must not be MISMATCH ──────────────
+
+describe("classifier: legacy codemode stays LEGACY not MISMATCH", () => {
+  it("legacy codemode without envelope is LEGACY_INCOMPLETE_RECORD regardless of localVerify", () => {
+    const bundle = {
+      bundleType: "cer.codemode.render.v1",
+      seed: 42,
+      // no snapshot, no inputHash, etc
+    };
+    // Even with localVerifyOk = false, should NOT be MISMATCH
+    const result = classifyCERBundle(bundle, "cer.codemode.render.v1", "sha256:x", false);
+    expect(result.category).toBe("LEGACY_INCOMPLETE_RECORD");
+    expect(result.category).not.toBe("FULL_CER_MISMATCH");
   });
 });
