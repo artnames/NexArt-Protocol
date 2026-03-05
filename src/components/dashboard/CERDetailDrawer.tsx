@@ -116,7 +116,7 @@ function StampStatusBadge({ status }: { status: StampStatus }) {
 const stampExplanations: Record<StampStatus, string> = {
   not_attested: "This record has no attestation from the node.",
   legacy_record_not_verifiable: "Has attestationId/nodeRuntimeHash but no cryptographic signature. Cannot be verified offline.",
-  signed_full: "Has a signed receipt from the node with full bundle verification. Verifiable offline.",
+  signed_full: "Signed receipt from the node (offline-verifiable). Stamping does not re-run execution; it signs integrity evidence.",
   signed_redacted_reseal: "Redacted snapshot was resealed with a new certificateHash and attested. Original hash preserved in provenance.",
   hash_only_timestamp: "Node signed the certificateHash as a timestamp observation. Does NOT attest snapshot contents.",
 };
@@ -435,7 +435,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
       toast({
         title: newStamp === "signed_full" ? "Signed Receipt Obtained" : "Re-attestation Complete",
         description: newStamp === "signed_full"
-          ? "Full stamp obtained. Signed receipt stored and offline verifiable."
+          ? "Signed receipt obtained and stored. Offline-verifiable. Stamping does not re-run execution."
           : "Legacy attestation updated. No signed receipt returned by node.",
       });
     } catch (err) {
@@ -546,7 +546,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
   const isActioning = actionInProgress !== null;
 
   // Determine which actions are available
-  const canFullReattest = !isActioning && (stampStatus === "not_attested" || stampStatus === "legacy_record_not_verifiable") && !bundleIsRedacted;
+  const canFullReattest = !isActioning && (stampStatus === "not_attested" || stampStatus === "legacy_record_not_verifiable") && !bundleIsRedacted && !isLegacyCode;
   const canReseal = !isActioning && (stampStatus === "not_attested" || stampStatus === "legacy_record_not_verifiable") && bundleIsRedacted && n.surface === "ai";
   const canHashOnly = !isActioning && (stampStatus === "not_attested" || stampStatus === "legacy_record_not_verifiable" || stampStatus === "hash_only_timestamp");
 
@@ -711,7 +711,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
             {stampStatus === "signed_full" && (
               <div className="flex items-center gap-1.5 py-1">
                 <ShieldCheck className="h-3 w-3 text-green-600" />
-                <span className="text-xs text-green-600 font-mono">Full receipt — offline verifiable</span>
+                <span className="text-xs text-green-600 font-mono">Signed receipt — offline verifiable</span>
               </div>
             )}
             {stampStatus === "signed_redacted_reseal" && (
