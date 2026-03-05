@@ -1,5 +1,4 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-import { normalizeForAttestation } from "../_shared/normalize-for-attestation.ts";
 import { computeCertificateHash } from "../_shared/cer-hash.ts";
 
 const corsHeaders = {
@@ -12,34 +11,6 @@ function jsonResp(body: Record<string, unknown>, status: number) {
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
-}
-
-// ── Local certificate hash verification (same logic as browser verifyLocal.ts) ──
-async function localVerifyCertificateHash(bundle: Record<string, unknown>): Promise<{ ok: boolean; reason: string; computedHash: string | null; recordedHash: string | null }> {
-  const recordedHash = bundle.certificateHash as string | undefined;
-  if (!recordedHash) {
-    return { ok: false, reason: 'MISSING_CERTIFICATE_HASH', computedHash: null, recordedHash: null };
-  }
-  if (!recordedHash.startsWith('sha256:')) {
-    return { ok: false, reason: 'INVALID_SHA256_FORMAT', computedHash: null, recordedHash: recordedHash };
-  }
-  if (!bundle.snapshot || typeof bundle.snapshot !== 'object') {
-    return { ok: false, reason: 'MISSING_SNAPSHOT', computedHash: null, recordedHash };
-  }
-  try {
-    const computedHash = await computeCertificateHash({
-      bundleType: bundle.bundleType,
-      version: bundle.version,
-      createdAt: bundle.createdAt,
-      snapshot: bundle.snapshot,
-    });
-    if (computedHash !== recordedHash) {
-      return { ok: false, reason: 'CERTIFICATE_HASH_MISMATCH', computedHash, recordedHash };
-    }
-    return { ok: true, reason: 'OK', computedHash, recordedHash };
-  } catch (err) {
-    return { ok: false, reason: 'CANONICALIZATION_ERROR', computedHash: null, recordedHash };
-  }
 }
 
 Deno.serve(async (req) => {
@@ -94,77 +65,82 @@ Deno.serve(async (req) => {
 
     const storedBundle = row.cer_bundle_redacted as Record<string, unknown>;
     const bundleType = (storedBundle.bundleType ?? row.bundle_type) as string;
-    const isCodeMode = bundleType === 'cer.codemode.render.v1';
-    const surface: 'codemode' | 'ai' = isCodeMode ? 'codemode' : 'ai';
+    const originalCertificateHash = (storedBundle.certificateHash ?? row.certificate_hash) as string | null;
 
-    // ── Normalize via transport wrapper (NO hashing, NO mutation) ──
-    const normalizeResult = normalizeForAttestation(
-      storedBundle,
-      surface,
-      row.certificate_hash as string | null,
-      row.bundle_type as string | null,
+    if (!bundleType) {
+      return jsonResp({ ok: false, error: 'MISSING_BUNDLE_TYPE', message: 'Cannot reseal: no bundleType on record.' }, 400);
+    }
+
+    // ── Detect redaction ──
+    const snap = storedBundle.snapshot as Record<string, unknown> | undefined;
+    const isCodeMode = bundleType === 'cer.codemode.render.v1';
+
+    // For AI bundles, check if snapshot fields are missing (redacted during ingestion)
+    const isRedacted = !isCodeMode && snap != null && (
+      !('input' in snap) || snap.input == null ||
+      !('output' in snap) || snap.output == null ||
+      !('prompt' in snap) || snap.prompt == null
     );
 
-    if (!normalizeResult.ok) {
-      console.error(`Normalization failed for event ${usageEventId}: ${normalizeResult.error} — ${normalizeResult.message}`);
+    if (!isRedacted && !isCodeMode) {
+      // Not redacted — user should use full re-attest instead
       return jsonResp({
         ok: false,
-        error: normalizeResult.error,
-        message: normalizeResult.message,
+        error: 'NOT_REDACTED',
+        message: 'This bundle does not appear to be redacted. Use full re-attest instead.',
       }, 400);
     }
 
-    const { bundle: envelopedBundle, legacyWrapped, wrapReason, certificateHash: submittedCertificateHash } = normalizeResult;
+    if (isCodeMode) {
+      // Code Mode bundles don't get reseal — they use full re-attest or hash-only
+      return jsonResp({
+        ok: false,
+        error: 'NOT_APPLICABLE',
+        message: 'Reseal is for redacted AI bundles. Use full re-attest or hash-only timestamp for Code Mode records.',
+      }, 400);
+    }
+
+    // ── Build NEW sealed bundle over the redacted snapshot ──
+    const version = (storedBundle.version as string) ?? '0.1';
+    const createdAt = (storedBundle.createdAt as string) ?? new Date().toISOString();
+
+    const resealedBundle: Record<string, unknown> = {
+      bundleType,
+      version,
+      createdAt,
+      snapshot: JSON.parse(JSON.stringify(snap)),
+    };
+
+    // Compute NEW certificateHash over the redacted payload
+    const newCertificateHash = await computeCertificateHash(resealedBundle);
+    resealedBundle.certificateHash = newCertificateHash;
+
+    // Add provenance metadata
+    resealedBundle.meta = {
+      provenance: {
+        kind: 'redacted_reseal',
+        originalCertificateHash: originalCertificateHash ?? null,
+        redactedAt: new Date().toISOString(),
+        redactionPolicy: 'Snapshot fields (input, output, prompt) removed during ingestion for privacy. New certificateHash computed over redacted payload.',
+      },
+    };
 
     console.info(JSON.stringify({
-      action: 'reattest_normalize',
-      legacyWrapped,
-      wrapReason: wrapReason ?? null,
-      surface,
-      certificateHash: submittedCertificateHash,
+      action: 'reseal_redacted',
+      originalCertificateHash,
+      newCertificateHash,
+      bundleType,
       usageEventId,
     }));
 
-    // ── LOCAL VERIFICATION: re-attest (full) requires local verify to pass ──
-    const localVerify = await localVerifyCertificateHash(envelopedBundle);
-    if (!localVerify.ok) {
-      console.error(`Local verification failed for event ${usageEventId}: ${localVerify.reason}`);
-      return jsonResp({
-        ok: false,
-        error: 'LOCAL_VERIFY_FAILED',
-        reason: localVerify.reason,
-        message: `Local certificate hash verification failed: ${localVerify.reason}. Full re-attestation requires an intact bundle. Use "Reseal redacted + attest" for redacted bundles or "Hash-only timestamp" for a lightweight timestamp.`,
-        computedHash: localVerify.computedHash,
-        recordedHash: localVerify.recordedHash,
-      }, 422);
-    }
-
-    // ── Build payload: clone and strip existing attestation (node generates it) ──
-    const payloadObj: Record<string, unknown> = JSON.parse(JSON.stringify(envelopedBundle));
+    // ── Strip attestation from payload before sending to node ──
+    const payloadObj = JSON.parse(JSON.stringify(resealedBundle));
     delete payloadObj.attestation;
-    if (payloadObj.meta && typeof payloadObj.meta === 'object') {
-      const meta = { ...(payloadObj.meta as Record<string, unknown>) };
-      delete meta.attestation;
-      payloadObj.meta = meta;
-    }
-
-    // ── Validate required top-level fields ──
-    const requiredFields = ['version', 'createdAt', 'snapshot'] as const;
-    const missingFields = requiredFields.filter(f => payloadObj[f] == null);
-    if (missingFields.length > 0) {
-      return jsonResp({
-        ok: false,
-        error: 'INVALID_BUNDLE',
-        message: `Bundle missing required fields: ${missingFields.join(', ')}.`,
-        missingFields,
-      }, 422);
-    }
 
     const payloadJson = JSON.stringify(payloadObj);
-    const payloadByteSize = new TextEncoder().encode(payloadJson).byteLength;
 
-    console.info(`Re-attesting bundle ${usageEventId} via ${nodeUrl}/api/stamp (legacyWrapped=${legacyWrapped})`);
-    console.info(`bundleType=${payloadObj.bundleType} certificateHash=${payloadObj.certificateHash} payloadByteSize=${payloadByteSize}`);
+    console.info(`Reseal+attest bundle ${usageEventId} via ${nodeUrl}/api/stamp`);
+    console.info(`newCertificateHash=${newCertificateHash} originalCertificateHash=${originalCertificateHash}`);
 
     // ── Call node /api/stamp ──
     const nodeResp = await fetch(`${nodeUrl}/api/stamp`, {
@@ -187,7 +163,7 @@ Deno.serve(async (req) => {
       const upstreamMessage = (errJson?.message || errJson?.error || errBody || 'Unknown') as string;
       const requestId = (errJson?.requestId || nodeResp.headers.get('x-request-id') || null) as string | null;
 
-      console.error(`Node /api/stamp failed: HTTP ${nodeResp.status}`, errBody.slice(0, 2000));
+      console.error(`Node /api/stamp failed for reseal: HTTP ${nodeResp.status}`, errBody.slice(0, 2000));
 
       const clientStatus = nodeResp.status >= 400 && nodeResp.status < 500 ? nodeResp.status : 502;
 
@@ -209,9 +185,10 @@ Deno.serve(async (req) => {
     const src = { ...result, ...(nested ?? {}) };
 
     const signedAttestation: Record<string, unknown> = {
-      mode: 'full',
-      attestationId: src.attestationId ?? (row.attestation_json as Record<string, unknown>)?.attestationId ?? null,
-      hash: src.hash ?? src.certificateHash ?? row.certificate_hash,
+      mode: 'redacted_reseal',
+      attestationId: src.attestationId ?? null,
+      hash: newCertificateHash,
+      originalCertificateHash: originalCertificateHash ?? null,
       nodeRuntimeHash: src.nodeRuntimeHash ?? null,
       receipt: src.receipt ?? null,
       signatureB64Url: src.signatureB64Url ?? src.signature ?? null,
@@ -222,10 +199,13 @@ Deno.serve(async (req) => {
       checks: src.checks ?? null,
     };
 
-    // ── Persist attestation_json only (never persist the normalized envelope back to DB) ──
+    // ── Persist attestation_json AND update certificate_hash to the new one ──
     const { error: updateErr } = await supabaseAdmin
       .from('cer_bundles')
-      .update({ attestation_json: signedAttestation })
+      .update({
+        attestation_json: signedAttestation,
+        certificate_hash: newCertificateHash,
+      })
       .eq('usage_event_id', usageEventId)
       .eq('user_id', user.id);
 
@@ -239,16 +219,14 @@ Deno.serve(async (req) => {
     return jsonResp({
       ok: true,
       attestation: signedAttestation,
-      stamp: hasSigned ? 'signed' : 'legacy',
-      endpoint: '/api/stamp',
-      legacyWrapped,
-      wrapReason: wrapReason ?? null,
-      submittedCertificateHash,
-      nodeResponseKeys: Object.keys(result),
+      stamp: hasSigned ? 'signed_redacted_reseal' : 'legacy',
+      newCertificateHash,
+      originalCertificateHash,
+      mode: 'redacted_reseal',
     }, 200);
   } catch (err) {
     const e = err as Error;
-    console.error('re-attest error:', e.message);
+    console.error('reseal-attest error:', e.message);
     return jsonResp({ ok: false, error: 'INTERNAL', message: e.message }, 500);
   }
 });

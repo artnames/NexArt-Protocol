@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.stamp-hash]
 verify_jwt = false
+
+[functions.reseal-attest]
+verify_jwt = false
