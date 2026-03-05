@@ -285,10 +285,8 @@ describe("auto-stamp invariants (source-level)", () => {
   });
 
   it("never fails the ingest on auto-stamp failure (best-effort)", () => {
-    // The auto-stamp runs in a try/catch that doesn't affect the upsert response
     expect(source).toContain("auto_stamp_complete");
     expect(source).toContain("autoStampStatus: 'failed'");
-    // The main response always returns upserted: true after successful upsert
     expect(source).toContain("upserted: true, artifactPath");
   });
 
@@ -301,12 +299,53 @@ describe("auto-stamp invariants (source-level)", () => {
   });
 
   it("uses computeCertificateHash only in reseal path, not for full re-attest", () => {
-    // resealAndAttest calls computeCertificateHash for new hash
     expect(source).toContain("computeCertificateHash");
-    // callNodeAttest (full) never computes a new hash — it sends the existing one
-    // Verify that full mode doesn't recompute
-    const fullModeBlock = source.split("callNodeAttest")[1]; // after first callNodeAttest definition
-    // The function signature uses certificateHash parameter, never recomputes
     expect(source).toContain("payloadObj.certificateHash ?? certificateHash");
+  });
+
+  // ── Feature flag tests ──
+
+  it("checks AUTO_STAMP_ENABLED feature flag before making node calls", () => {
+    expect(source).toContain("AUTO_STAMP_ENABLED");
+    expect(source).toContain("isAutoStampEnabled");
+    expect(source).toContain("skipped_disabled");
+  });
+
+  it("supports per-surface flags AUTO_STAMP_AI_ENABLED and AUTO_STAMP_CODEMODE_ENABLED", () => {
+    expect(source).toContain("AUTO_STAMP_AI_ENABLED");
+    expect(source).toContain("AUTO_STAMP_CODEMODE_ENABLED");
+  });
+
+  it("defaults feature flag to disabled (false)", () => {
+    // The code checks if master !== 'true' → return false
+    expect(source).toContain("!== 'true'");
+    expect(source).toContain("return false");
+  });
+
+  // ── Timeout tests ──
+
+  it("uses AbortController with strict timeout for node calls", () => {
+    expect(source).toContain("AbortController");
+    expect(source).toContain("AUTO_STAMP_TIMEOUT_MS");
+    expect(source).toContain("controller.abort()");
+    expect(source).toContain("signal: controller.signal");
+  });
+
+  it("handles timeout as a specific failure reason", () => {
+    expect(source).toContain("AbortError");
+    expect(source).toContain("reason: 'timeout'");
+    expect(source).toContain("reason: 'node_error'");
+  });
+
+  it("persists failure attestation on timeout so UI can display it", () => {
+    expect(source).toContain("status: 'failed'");
+    expect(source).toContain("failedAt:");
+  });
+
+  it("never retries node calls inside ingest (no retry loop)", () => {
+    // Should not contain retry/backoff patterns
+    expect(source).not.toContain("retry");
+    expect(source).not.toContain("backoff");
+    expect(source).not.toContain("attempt");
   });
 });
