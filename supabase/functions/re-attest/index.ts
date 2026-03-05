@@ -145,6 +145,20 @@ Deno.serve(async (req) => {
       console.info(`Redacted certificateHash recomputed: ${redactedCertificateHash} (original: ${originalCertificateHash})`);
     }
 
+    // Validate required top-level fields before sending to node
+    const requiredFields = ['version', 'createdAt', 'snapshot'] as const;
+    const missingFields = requiredFields.filter(f => payloadObj[f] == null);
+    if (missingFields.length > 0) {
+      console.error(`Bundle ${usageEventId} missing required fields: ${missingFields.join(', ')}. Keys present: ${JSON.stringify(Object.keys(payloadObj))}`);
+      return jsonResp({
+        ok: false,
+        error: 'INVALID_BUNDLE',
+        message: `Stored bundle is missing required fields for re-attestation: ${missingFields.join(', ')}. This record may have been stored in an older format that cannot be re-attested.`,
+        missingFields,
+        presentKeys: Object.keys(payloadObj),
+      }, 422);
+    }
+
     // Ensure JSON-safe
     const payload = JSON.parse(JSON.stringify(payloadObj));
     const payloadJson = JSON.stringify(payload);
