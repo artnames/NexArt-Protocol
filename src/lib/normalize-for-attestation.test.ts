@@ -54,8 +54,8 @@ describe("normalizeForAttestation", () => {
     const result = normalizeForAttestation(record, "codemode", null, null);
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error).toBe("UNSUPPORTED_LEGACY_FORMAT");
-    expect(result.message).toContain("certificateHash");
+    expect((result as any).error).toBe("UNSUPPORTED_LEGACY_FORMAT");
+    expect((result as any).message).toContain("certificateHash");
   });
 
   it("blocks re-attest when no timestamp field exists (no now() fabrication)", () => {
@@ -63,8 +63,8 @@ describe("normalizeForAttestation", () => {
     const result = normalizeForAttestation(record, "codemode");
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error).toBe("UNSUPPORTED_LEGACY_FORMAT");
-    expect(result.message).toContain("timestamp");
+    expect((result as any).error).toBe("UNSUPPORTED_LEGACY_FORMAT");
+    expect((result as any).message).toContain("timestamp");
   });
 
   it("rejects non-enveloped AI record", () => {
@@ -72,7 +72,7 @@ describe("normalizeForAttestation", () => {
     const result = normalizeForAttestation(record, "ai");
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error).toBe("UNSUPPORTED_LEGACY_FORMAT");
+    expect((result as any).error).toBe("UNSUPPORTED_LEGACY_FORMAT");
   });
 
   it("falls back to DB certificateHash", () => {
