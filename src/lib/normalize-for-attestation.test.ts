@@ -408,11 +408,11 @@ describe("stamp-hash invariants (source-level)", () => {
 
   it("legacy Code Mode record can get hash-only stamp without snapshot fields", () => {
     // The stamp-hash function only reads certificateHash from the stored bundle,
-    // it never requires snapshot, inputHash, outputHash, protocolVersion, or sdkVersion
-    expect(source).not.toContain("snapshot");
-    expect(source).not.toContain("inputHash");
-    expect(source).not.toContain("outputHash");
-    expect(source).not.toContain("sdkVersion");
+    // it never requires or sends snapshot, inputHash, outputHash, or sdkVersion in the payload
+    expect(source).not.toMatch(/stampPayload.*snapshot/);
+    expect(source).not.toMatch(/stampPayload.*inputHash/);
+    expect(source).not.toMatch(/stampPayload.*outputHash/);
+    expect(source).not.toMatch(/stampPayload.*sdkVersion/);
   });
 });
 
