@@ -206,7 +206,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
     reason: null,
   });
   const [reAttesting, setReAttesting] = useState(false);
-  const [reAttestResult, setReAttestResult] = useState<{ stamp: StampStatus; offlineOk?: boolean } | null>(null);
+  const [reAttestResult, setReAttestResult] = useState<{ stamp: StampStatus; offlineOk?: boolean; legacyWrapped?: boolean } | null>(null);
 
   const n = event?.normalized;
   const hasBundle = n?.rawBundleJson !== null && n?.rawBundleJson !== undefined;
