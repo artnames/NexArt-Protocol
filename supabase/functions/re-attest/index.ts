@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { normalizeForAttestation } from "../_shared/normalize-for-attestation.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,50 +11,6 @@ function jsonResp(body: Record<string, unknown>, status: number) {
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
-}
-
-// --- Canonical JSON + SHA-256 (same rules as @nexart/ai-execution & Recânon) ---
-function canonicalize(value: unknown): string {
-  if (value === null) return "null";
-  if (typeof value === "boolean") return value ? "true" : "false";
-  if (typeof value === "number") {
-    if (!Number.isFinite(value)) throw new Error(`Non-finite number: ${value}`);
-    return JSON.stringify(value);
-  }
-  if (typeof value === "string") return JSON.stringify(value);
-  if (Array.isArray(value)) return "[" + value.map(canonicalize).join(",") + "]";
-  if (typeof value === "object") {
-    const obj = value as Record<string, unknown>;
-    const entries = Object.keys(obj)
-      .sort()
-      .map((key) => {
-        const val = obj[key];
-        if (val === undefined) return null;
-        return JSON.stringify(key) + ":" + canonicalize(val);
-      })
-      .filter((e) => e !== null);
-    return "{" + entries.join(",") + "}";
-  }
-  throw new Error(`Unsupported type for canonical JSON: ${typeof value}`);
-}
-
-async function sha256Hex(data: string): Promise<string> {
-  const bytes = new TextEncoder().encode(data);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", bytes);
-  return Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-async function computeCertificateHash(bundle: Record<string, unknown>): Promise<string> {
-  const hashInput = {
-    bundleType: bundle.bundleType,
-    createdAt: bundle.createdAt,
-    snapshot: bundle.snapshot,
-    version: bundle.version,
-  };
-  const canonical = canonicalize(hashInput);
-  return `sha256:${await sha256Hex(canonical)}`;
 }
 
 Deno.serve(async (req) => {
@@ -94,7 +51,7 @@ Deno.serve(async (req) => {
     }
     nodeUrl = nodeUrl.replace(/\/+$/, '');
 
-    // Fetch the existing bundle owned by this user
+    // ── Fetch the existing bundle owned by this user ──
     const { data: row, error: fetchErr } = await supabaseAdmin
       .from('cer_bundles')
       .select('*')
@@ -108,44 +65,44 @@ Deno.serve(async (req) => {
 
     const storedBundle = row.cer_bundle_redacted as Record<string, unknown>;
     const bundleType = (storedBundle.bundleType ?? row.bundle_type) as string;
-
-    // ── Normalize Code Mode flat bundles into CER envelope ──
-    // Code Mode bundles are stored flat: { seed, canvas, codeHash, varsHash, timestamp, ... }
-    // The node expects CER envelope: { version, createdAt, snapshot, bundleType, certificateHash }
     const isCodeMode = bundleType === 'cer.codemode.render.v1';
-    const needsEnvelopeWrap = isCodeMode && !storedBundle.snapshot && !storedBundle.createdAt;
+    const surface = isCodeMode ? 'codemode' : 'ai';
 
-    let envelopedBundle: Record<string, unknown>;
-    if (needsEnvelopeWrap) {
-      const {
-        bundleType: _bt, certificateHash: _ch, meta: storedMeta,
-        protocolVersion, sdkVersion, timestamp,
-        ...snapshotFields
-      } = storedBundle;
+    // ── Normalize via transport wrapper (NO hashing) ──
+    const normalizeResult = normalizeForAttestation(
+      storedBundle,
+      surface as 'codemode' | 'ai',
+      row.certificate_hash as string | null,
+      row.bundle_type as string | null,
+    );
 
-      envelopedBundle = {
-        bundleType,
-        version: protocolVersion ?? '1.2.0',
-        createdAt: timestamp ?? new Date().toISOString(),
-        certificateHash: storedBundle.certificateHash ?? row.certificate_hash,
-        snapshot: snapshotFields,
-        meta: storedMeta ?? {},
-      };
-      console.info(`Wrapped flat Code Mode bundle into CER envelope for event ${usageEventId}`);
-    } else {
-      envelopedBundle = JSON.parse(JSON.stringify(storedBundle));
+    if (!normalizeResult.ok) {
+      console.error(`Normalization failed for event ${usageEventId}: ${normalizeResult.error} — ${normalizeResult.message}`);
+      return jsonResp({
+        ok: false,
+        error: normalizeResult.error,
+        message: normalizeResult.message,
+      }, 422);
     }
 
-    // Determine if bundle is redacted
+    const { bundle: envelopedBundle, legacyWrapped, certificateHash } = normalizeResult;
+
+    console.info(JSON.stringify({
+      action: 'reattest_normalize',
+      legacyWrapped,
+      surface,
+      certificateHash,
+      usageEventId,
+    }));
+
+    // ── Determine endpoint ──
     const snap = (envelopedBundle.snapshot ?? {}) as Record<string, unknown>;
     const isRedacted = isCodeMode
-      ? true // Code Mode stored bundles are always treated as redacted
+      ? true // Code Mode stored bundles always go to /api/stamp
       : (snap.input == null || snap.output == null || snap.prompt == null);
-
-    // Choose endpoint based on redaction status
     const endpoint = isRedacted ? '/api/stamp' : '/api/attest';
 
-    // Build payload: full envelope minus existing attestation (node generates that)
+    // ── Build payload: remove existing attestation (node generates it) ──
     const payloadObj: Record<string, unknown> = JSON.parse(JSON.stringify(envelopedBundle));
     delete payloadObj.attestation;
     if (payloadObj.meta && typeof payloadObj.meta === 'object') {
@@ -154,49 +111,45 @@ Deno.serve(async (req) => {
       payloadObj.meta = meta;
     }
 
-    // For redacted bundles: recompute certificateHash over the redacted snapshot
-    // and preserve the original hash in provenance
-    if (isRedacted) {
-      const originalCertificateHash = payloadObj.certificateHash as string | null;
-      const redactedCertificateHash = await computeCertificateHash(payloadObj);
-      payloadObj.certificateHash = redactedCertificateHash;
-
+    // For non-legacy-wrapped redacted AI bundles, we still set provenance
+    // but we do NOT recompute hashes — we send the existing certificateHash
+    if (isRedacted && !legacyWrapped) {
       const meta = (payloadObj.meta && typeof payloadObj.meta === 'object')
         ? { ...(payloadObj.meta as Record<string, unknown>) }
         : {};
-      meta.provenance = {
-        originalCertificateHash: originalCertificateHash ?? null,
-        kind: 'redacted_export',
-        redactedAt: new Date().toISOString(),
-      };
+      if (!meta.provenance) {
+        meta.provenance = {
+          originalCertificateHash: payloadObj.certificateHash ?? null,
+          kind: 'redacted_export',
+          redactedAt: new Date().toISOString(),
+        };
+      }
       payloadObj.meta = meta;
-
-      console.info(`Redacted certificateHash recomputed: ${redactedCertificateHash} (original: ${originalCertificateHash})`);
     }
 
-    // Validate required top-level fields before sending to node
+    // ── Validate required top-level fields ──
     const requiredFields = ['version', 'createdAt', 'snapshot'] as const;
     const missingFields = requiredFields.filter(f => payloadObj[f] == null);
     if (missingFields.length > 0) {
-      console.error(`Bundle ${usageEventId} missing required fields: ${missingFields.join(', ')}. Keys present: ${JSON.stringify(Object.keys(payloadObj))}`);
+      console.error(`Bundle ${usageEventId} missing required fields: ${missingFields.join(', ')}. Keys: ${JSON.stringify(Object.keys(payloadObj))}`);
       return jsonResp({
         ok: false,
         error: 'INVALID_BUNDLE',
-        message: `Stored bundle is missing required fields for re-attestation: ${missingFields.join(', ')}. This record may have been stored in an older format that cannot be re-attested.`,
+        message: `Bundle missing required fields: ${missingFields.join(', ')}. Cannot send to node.`,
         missingFields,
         presentKeys: Object.keys(payloadObj),
       }, 422);
     }
 
-    // Ensure JSON-safe
     const payload = JSON.parse(JSON.stringify(payloadObj));
     const payloadJson = JSON.stringify(payload);
     const payloadByteSize = new TextEncoder().encode(payloadJson).byteLength;
 
-    console.info(`Re-attesting bundle ${usageEventId} via ${nodeUrl}${endpoint} (isRedacted=${isRedacted})`);
+    console.info(`Re-attesting bundle ${usageEventId} via ${nodeUrl}${endpoint} (isRedacted=${isRedacted}, legacyWrapped=${legacyWrapped})`);
     console.info(`bundleType=${payload.bundleType} certificateHash=${payload.certificateHash}`);
     console.info(`payloadByteSize=${payloadByteSize}`);
 
+    // ── Call node ──
     const nodeResp = await fetch(`${nodeUrl}${endpoint}`, {
       method: 'POST',
       headers: {
@@ -219,7 +172,6 @@ Deno.serve(async (req) => {
 
       console.error(`Node ${endpoint} failed: HTTP ${nodeResp.status}`, errBody.slice(0, 2000));
 
-      // Propagate upstream status faithfully (400 → 400, not 502)
       const clientStatus = nodeResp.status >= 400 && nodeResp.status < 500 ? nodeResp.status : 502;
 
       return jsonResp({
@@ -235,20 +187,15 @@ Deno.serve(async (req) => {
 
     const result = await nodeResp.json() as Record<string, unknown>;
 
-    // Debug: log node response shape (no secrets)
+    // ── Extract attestation fields ──
     console.info(`Node response keys: ${JSON.stringify(Object.keys(result))}`);
-    console.info(`receipt type: ${typeof result.receipt}, keys: ${result.receipt && typeof result.receipt === 'object' ? JSON.stringify(Object.keys(result.receipt as Record<string, unknown>)) : String(result.receipt)}`);
-    console.info(`signatureB64Url present: ${!!result.signatureB64Url}, attestorKeyId present: ${!!result.attestorKeyId}, kid present: ${!!result.kid}`);
-    // Check if fields are nested inside an attestation/stamp wrapper
     const nested = (result.attestation ?? result.stamp ?? result.data ?? null) as Record<string, unknown> | null;
     if (nested && typeof nested === 'object') {
       console.info(`Nested object keys: ${JSON.stringify(Object.keys(nested))}`);
     }
 
-    // Extract fields — check top-level first, then nested wrapper
     const src = { ...result, ...(nested ?? {}) };
 
-    // Normalize signed receipt — include all fields the node may return
     const signedAttestation: Record<string, unknown> = {
       mode: isRedacted ? 'stamp' : 'attest',
       attestationId: src.attestationId ?? (row.attestation_json as Record<string, unknown>)?.attestationId ?? null,
@@ -263,8 +210,7 @@ Deno.serve(async (req) => {
       checks: src.checks ?? null,
     };
 
-    // Persist signed receipt in attestation_json AND inside bundle.meta.attestation
-    // Start from the payload we sent (which has recomputed hash + provenance for redacted)
+    // ── Persist: attestation_json + updated bundle with meta.attestation ──
     const updatedBundle = JSON.parse(JSON.stringify(payload)) as Record<string, unknown>;
     const meta = (updatedBundle.meta && typeof updatedBundle.meta === 'object')
       ? { ...(updatedBundle.meta as Record<string, unknown>) }
@@ -289,10 +235,6 @@ Deno.serve(async (req) => {
       attestation_json: signedAttestation,
       cer_bundle_redacted: updatedBundle,
     };
-    // Also update the certificate_hash column if we recomputed it
-    if (isRedacted && updatedBundle.certificateHash) {
-      updateFields.certificate_hash = updatedBundle.certificateHash;
-    }
 
     const { error: updateErr } = await supabaseAdmin
       .from('cer_bundles')
@@ -313,6 +255,7 @@ Deno.serve(async (req) => {
       attestation: signedAttestation,
       stamp: hasSigned ? 'signed' : 'legacy',
       endpoint,
+      legacyWrapped,
       nodeResponseKeys: Object.keys(result),
     }, 200);
   } catch (err) {
