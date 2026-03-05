@@ -321,6 +321,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
     newCertificateHash?: string;
     originalCertificateHash?: string;
   } | null>(null);
+  const [hashOnlyUnsupported, setHashOnlyUnsupported] = useState(false);
 
   const n = event?.normalized;
   const hasBundle = n?.rawBundleJson !== null && n?.rawBundleJson !== undefined;
