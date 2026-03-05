@@ -1,5 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import postgres from "https://deno.land/x/postgresjs@v3.4.4/mod.js";
+import { computeCertificateHash } from "../_shared/cer-hash.ts";
+import { classifyCERBundle, hasSignedReceipt } from "../_shared/cer-classifier.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,7 +26,6 @@ function deepSanitize(val: unknown): unknown {
 function redactAndSanitize(bundle: Record<string, unknown>, bundleType: string): Record<string, unknown> {
   const copy = JSON.parse(JSON.stringify(bundle));
   if (bundleType === 'cer.ai.execution.v1') {
-    // Redact AI-specific sensitive fields
     if (copy.snapshot && typeof copy.snapshot === 'object') {
       const snap = copy.snapshot as Record<string, unknown>;
       delete snap.input;
@@ -32,7 +33,6 @@ function redactAndSanitize(bundle: Record<string, unknown>, bundleType: string):
       delete snap.prompt;
     }
   }
-  // For render bundles, no redaction needed (no sensitive payloads)
   return deepSanitize(copy) as Record<string, unknown>;
 }
 
@@ -58,8 +58,7 @@ async function sha256Hex(data: string): Promise<string> {
 }
 
 /** Compute certificate hash for render bundles that don't have one */
-async function computeCertificateHash(bundle: Record<string, unknown>): Promise<string> {
-  // Remove meta fields that shouldn't be part of the hash
+async function computeCertificateHashLocal(bundle: Record<string, unknown>): Promise<string> {
   const { createdAt, certificateHash, ...hashable } = bundle;
   const canonical = canonicalJson(hashable);
   const hex = await sha256Hex(canonical);
@@ -80,6 +79,256 @@ function getDbConnection() {
     ssl: false,
     connection: { application_name: 'nexart-store-cer-bundle' },
   });
+}
+
+// ── Local verify helper ──────────────────────────────────────────────
+
+async function localVerifyCertificateHash(bundle: Record<string, unknown>): Promise<boolean> {
+  const recordedHash = bundle.certificateHash as string | undefined;
+  if (!recordedHash || !recordedHash.startsWith('sha256:')) return false;
+  if (!bundle.snapshot || typeof bundle.snapshot !== 'object') return false;
+  try {
+    const computedHash = await computeCertificateHash({
+      bundleType: bundle.bundleType,
+      version: bundle.version,
+      createdAt: bundle.createdAt,
+      snapshot: bundle.snapshot,
+    });
+    return computedHash === recordedHash;
+  } catch {
+    return false;
+  }
+}
+
+// ── Auto-stamp types ─────────────────────────────────────────────────
+
+type AutoStampStatus =
+  | 'already_signed'
+  | 'signed_full'
+  | 'signed_redacted_reseal'
+  | 'skipped_legacy_code'
+  | 'skipped_unverifiable_ai'
+  | 'skipped_unknown'
+  | 'failed';
+
+interface AutoStampResult {
+  autoStampStatus: AutoStampStatus;
+  autoStampError: string | null;
+  autoStampedAt: string | null;
+  attestation: Record<string, unknown> | null;
+  newCertificateHash: string | null;
+}
+
+// ── Auto-stamp logic ─────────────────────────────────────────────────
+
+async function autoStamp(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  eventIdNum: number,
+  ownerId: string,
+  redactedBundle: Record<string, unknown>,
+  originalBundle: Record<string, unknown>,
+  bundleType: string,
+  certificateHash: string,
+  existingAttestation: Record<string, unknown> | null,
+): Promise<AutoStampResult> {
+  const now = new Date().toISOString();
+
+  // 1) Already signed? Skip.
+  if (hasSignedReceipt(existingAttestation)) {
+    return { autoStampStatus: 'already_signed', autoStampError: null, autoStampedAt: null, attestation: null, newCertificateHash: null };
+  }
+
+  const nodeApiKey = Deno.env.get('NEXART_NODE_API_KEY');
+  if (!nodeApiKey) {
+    return { autoStampStatus: 'failed', autoStampError: 'NEXART_NODE_API_KEY not configured', autoStampedAt: now, attestation: null, newCertificateHash: null };
+  }
+
+  let nodeUrl = (Deno.env.get('NEXART_NODE_URL') || 'https://nexart-canonical-renderer-production.up.railway.app').trim();
+  if (!nodeUrl.startsWith('http://') && !nodeUrl.startsWith('https://')) nodeUrl = `https://${nodeUrl}`;
+  nodeUrl = nodeUrl.replace(/\/+$/, '');
+
+  // Classify using the ORIGINAL (pre-redaction) bundle for AI, redacted for stored
+  const classification = classifyCERBundle(redactedBundle, bundleType, certificateHash, null);
+
+  // 2) AI Execution
+  if (classification.surface === 'ai') {
+    if (classification.category === 'FULL_CER_VERIFIABLE' || classification.category === 'FULL_CER_MISMATCH') {
+      // For AI, the stored bundle is always redacted during ingestion.
+      // So even "FULL_CER_VERIFIABLE" on the REDACTED copy won't pass local verify
+      // against the ORIGINAL hash. We need to check the original bundle.
+      const origVerifyOk = await localVerifyCertificateHash(originalBundle);
+      if (origVerifyOk) {
+        return await callNodeAttest(supabaseAdmin, eventIdNum, ownerId, originalBundle, certificateHash, nodeUrl, nodeApiKey, 'full', now);
+      }
+      // Falls through to redacted reseal
+    }
+
+    if (classification.category === 'REDACTED_DERIVATIVE' || classification.category === 'FULL_CER_MISMATCH') {
+      // Reseal the redacted snapshot with a NEW certificateHash
+      return await resealAndAttest(supabaseAdmin, eventIdNum, ownerId, redactedBundle, bundleType, certificateHash, nodeUrl, nodeApiKey, now);
+    }
+
+    if (classification.category === 'LEGACY_INCOMPLETE_RECORD') {
+      return { autoStampStatus: 'skipped_unverifiable_ai', autoStampError: classification.reason, autoStampedAt: now, attestation: null, newCertificateHash: null };
+    }
+
+    return { autoStampStatus: 'skipped_unknown', autoStampError: classification.reason, autoStampedAt: now, attestation: null, newCertificateHash: null };
+  }
+
+  // 3) Code Mode
+  if (classification.surface === 'codemode') {
+    if (classification.category === 'LEGACY_INCOMPLETE_RECORD') {
+      return { autoStampStatus: 'skipped_legacy_code', autoStampError: classification.reason, autoStampedAt: now, attestation: null, newCertificateHash: null };
+    }
+
+    if (classification.category === 'FULL_CER_VERIFIABLE') {
+      const localOk = await localVerifyCertificateHash(redactedBundle);
+      if (localOk) {
+        return await callNodeAttest(supabaseAdmin, eventIdNum, ownerId, redactedBundle, certificateHash, nodeUrl, nodeApiKey, 'full', now);
+      }
+      return { autoStampStatus: 'failed', autoStampError: 'Local verify failed on Code Mode bundle', autoStampedAt: now, attestation: null, newCertificateHash: null };
+    }
+
+    return { autoStampStatus: 'skipped_unknown', autoStampError: classification.reason, autoStampedAt: now, attestation: null, newCertificateHash: null };
+  }
+
+  return { autoStampStatus: 'skipped_unknown', autoStampError: 'Unrecognized surface', autoStampedAt: now, attestation: null, newCertificateHash: null };
+}
+
+async function callNodeAttest(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  eventIdNum: number,
+  ownerId: string,
+  bundle: Record<string, unknown>,
+  certificateHash: string,
+  nodeUrl: string,
+  nodeApiKey: string,
+  mode: 'full' | 'redacted_reseal',
+  now: string,
+): Promise<AutoStampResult> {
+  try {
+    // Strip existing attestation from payload
+    const payloadObj = JSON.parse(JSON.stringify(bundle));
+    delete payloadObj.attestation;
+    if (payloadObj.meta && typeof payloadObj.meta === 'object') {
+      const meta = { ...payloadObj.meta };
+      delete meta.attestation;
+      payloadObj.meta = meta;
+    }
+
+    const nodeResp = await fetch(`${nodeUrl}/api/stamp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${nodeApiKey}`,
+      },
+      body: JSON.stringify(payloadObj),
+    });
+
+    if (!nodeResp.ok) {
+      const errText = await nodeResp.text();
+      console.error(`Auto-stamp node error (${mode}): HTTP ${nodeResp.status}`, errText.slice(0, 500));
+      return { autoStampStatus: 'failed', autoStampError: `Node HTTP ${nodeResp.status}`, autoStampedAt: now, attestation: null, newCertificateHash: null };
+    }
+
+    const result = await nodeResp.json() as Record<string, unknown>;
+    const nested = (result.attestation ?? result.stamp ?? result.data ?? null) as Record<string, unknown> | null;
+    const src = { ...result, ...(nested ?? {}) };
+
+    const signedAttestation: Record<string, unknown> = {
+      mode,
+      autoStamped: true,
+      attestationId: src.attestationId ?? null,
+      hash: payloadObj.certificateHash ?? certificateHash,
+      nodeRuntimeHash: src.nodeRuntimeHash ?? null,
+      receipt: src.receipt ?? null,
+      signatureB64Url: src.signatureB64Url ?? src.signature ?? null,
+      attestorKeyId: src.attestorKeyId ?? src.kid ?? null,
+      attestedAt: src.attestedAt ?? src.timestamp ?? now,
+      nodeUrl,
+      protocolVersion: src.protocolVersion ?? null,
+    };
+
+    const hasSigned = !!(signedAttestation.receipt && signedAttestation.signatureB64Url);
+    const stampStatus: AutoStampStatus = hasSigned
+      ? (mode === 'redacted_reseal' ? 'signed_redacted_reseal' : 'signed_full')
+      : 'failed';
+
+    // Persist attestation
+    const { error: updateErr } = await supabaseAdmin
+      .from('cer_bundles')
+      .update({ attestation_json: signedAttestation })
+      .eq('usage_event_id', eventIdNum)
+      .eq('user_id', ownerId);
+
+    if (updateErr) {
+      console.error('Auto-stamp: failed to persist attestation', updateErr.message);
+      return { autoStampStatus: 'failed', autoStampError: 'DB update failed after node call', autoStampedAt: now, attestation: signedAttestation, newCertificateHash: null };
+    }
+
+    return { autoStampStatus: stampStatus, autoStampError: null, autoStampedAt: now, attestation: signedAttestation, newCertificateHash: null };
+  } catch (err) {
+    const e = err as Error;
+    console.error('Auto-stamp node call error:', e.message);
+    return { autoStampStatus: 'failed', autoStampError: e.message.slice(0, 200), autoStampedAt: now, attestation: null, newCertificateHash: null };
+  }
+}
+
+async function resealAndAttest(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  eventIdNum: number,
+  ownerId: string,
+  redactedBundle: Record<string, unknown>,
+  bundleType: string,
+  originalCertificateHash: string,
+  nodeUrl: string,
+  nodeApiKey: string,
+  now: string,
+): Promise<AutoStampResult> {
+  try {
+    const snap = redactedBundle.snapshot as Record<string, unknown> | undefined;
+    if (!snap) {
+      return { autoStampStatus: 'failed', autoStampError: 'No snapshot for reseal', autoStampedAt: now, attestation: null, newCertificateHash: null };
+    }
+
+    const version = (redactedBundle.version as string) ?? '0.1';
+    const createdAt = (redactedBundle.createdAt as string) ?? now;
+
+    const resealedBundle: Record<string, unknown> = {
+      bundleType,
+      version,
+      createdAt,
+      snapshot: JSON.parse(JSON.stringify(snap)),
+    };
+
+    const newCertificateHash = await computeCertificateHash(resealedBundle);
+    resealedBundle.certificateHash = newCertificateHash;
+    resealedBundle.meta = {
+      provenance: {
+        kind: 'redacted_reseal',
+        originalCertificateHash,
+        redactedAt: now,
+        redactionPolicy: 'Snapshot fields (input, output, prompt) removed during ingestion. New certificateHash computed over redacted payload.',
+      },
+    };
+
+    const result = await callNodeAttest(supabaseAdmin, eventIdNum, ownerId, resealedBundle, newCertificateHash, nodeUrl, nodeApiKey, 'redacted_reseal', now);
+
+    // Also update certificate_hash to the new resealed one
+    if (result.autoStampStatus === 'signed_redacted_reseal') {
+      await supabaseAdmin
+        .from('cer_bundles')
+        .update({ certificate_hash: newCertificateHash })
+        .eq('usage_event_id', eventIdNum)
+        .eq('user_id', ownerId);
+    }
+
+    return { ...result, newCertificateHash };
+  } catch (err) {
+    const e = err as Error;
+    console.error('Auto-stamp reseal error:', e.message);
+    return { autoStampStatus: 'failed', autoStampError: e.message.slice(0, 200), autoStampedAt: now, attestation: null, newCertificateHash: null };
+  }
 }
 
 // ── handler ──────────────────────────────────────────────────────────
@@ -146,7 +395,7 @@ Deno.serve(async (req) => {
     // ── Certificate hash: use provided or compute for render bundles ──
     let certificateHash = bundle.certificateHash as string | null ?? null;
     if (!certificateHash && bundleType === 'cer.codemode.render.v1') {
-      certificateHash = await computeCertificateHash(bundle);
+      certificateHash = await computeCertificateHashLocal(bundle);
     }
     if (!certificateHash) {
       return jsonResp({
@@ -221,6 +470,7 @@ Deno.serve(async (req) => {
     }
 
     // ── Redact + sanitize ──
+    const existingAttestation = (attestation ?? bundle.attestation ?? null) as Record<string, unknown> | null;
     const redacted = redactAndSanitize(bundle, bundleType);
 
     // ── Upsert into cer_bundles ──
@@ -232,7 +482,7 @@ Deno.serve(async (req) => {
           user_id: ownerId,
           certificate_hash: certificateHash,
           bundle_type: bundleType,
-          attestation_json: attestation ?? bundle.attestation ?? null,
+          attestation_json: existingAttestation,
           cer_bundle_redacted: redacted,
           artifact_path: artifactPath,
           artifact_mime: artifactMime ?? null,
@@ -248,9 +498,51 @@ Deno.serve(async (req) => {
       }, 500);
     }
 
+    // ── AUTO-STAMP (best-effort, non-blocking for the ingest response) ──
+    let autoStampResult: AutoStampResult = {
+      autoStampStatus: 'skipped_unknown',
+      autoStampError: null,
+      autoStampedAt: null,
+      attestation: null,
+      newCertificateHash: null,
+    };
+
+    try {
+      autoStampResult = await autoStamp(
+        supabaseAdmin,
+        eventIdNum,
+        ownerId,
+        redacted,
+        bundle, // original pre-redaction bundle for AI verify
+        bundleType,
+        certificateHash,
+        existingAttestation,
+      );
+      console.info(JSON.stringify({
+        action: 'auto_stamp_complete',
+        usageEventId: eventIdNum,
+        status: autoStampResult.autoStampStatus,
+        error: autoStampResult.autoStampError,
+      }));
+    } catch (autoErr) {
+      const e = autoErr as Error;
+      console.error('Auto-stamp unexpected error:', e.message);
+      autoStampResult = {
+        autoStampStatus: 'failed',
+        autoStampError: e.message.slice(0, 200),
+        autoStampedAt: new Date().toISOString(),
+        attestation: null,
+        newCertificateHash: null,
+      };
+    }
+
     return jsonResp({
       ok: true, usageEventId, bundleType, certificateHash,
       upserted: true, artifactPath: artifactPath ?? null,
+      autoStampStatus: autoStampResult.autoStampStatus,
+      autoStampError: autoStampResult.autoStampError,
+      autoStampedAt: autoStampResult.autoStampedAt,
+      newCertificateHash: autoStampResult.newCertificateHash,
     }, 200);
   } catch (err) {
     const e = err as Error;

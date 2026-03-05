@@ -66,6 +66,12 @@ function deriveStampStatus(n: NormalizedCER): StampStatus {
   return "not_attested";
 }
 
+function isAutoStamped(n: NormalizedCER): boolean {
+  const meta = n.rawBundleJson?.meta as Record<string, unknown> | undefined;
+  const att = (meta?.attestation ?? null) as Record<string, unknown> | null;
+  return att?.autoStamped === true;
+}
+
 // ── Detect if this is a legacy Code Mode record (not a full CER) ──
 function isLegacyCodeModeRecord(n: NormalizedCER): boolean {
   if (n.surface !== "code") return false;
@@ -720,8 +726,13 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
                 <span className="text-xs text-blue-600 font-mono">Redacted reseal — new hash attested, original preserved</span>
               </div>
             )}
+            {n && isAutoStamped(n) && (
+              <div className="flex items-center gap-1.5 py-1">
+                <Stamp className="h-3 w-3 text-muted-foreground" />
+                <span className="text-[10px] text-muted-foreground font-mono">Auto-stamped during ingestion</span>
+              </div>
+            )}
 
-            {/* Three action buttons */}
             {!isActioning && (canFullReattest || canReseal || canHashOnly) && (
               <div className="flex flex-col gap-2 mt-3">
                 {canFullReattest && (
