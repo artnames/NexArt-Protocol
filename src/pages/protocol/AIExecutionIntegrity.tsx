@@ -351,7 +351,7 @@ inputHash = "sha256:" + sha256(utf8Bytes(canonicalJson({ locale: "en-US", text: 
                     <td>Local integrity only — no signature to verify</td>
                   </tr>
                   <tr>
-                    <td><strong>Signed receipt</strong> (v0.5.0+)</td>
+                    <td><strong>Signed receipt</strong> (v0.5.0+, recommended)</td>
                     <td><code>receipt</code>, <code>signature</code>, <code>attestorKeyId</code></td>
                     <td>Local integrity + offline Ed25519 signature verification</td>
                   </tr>
