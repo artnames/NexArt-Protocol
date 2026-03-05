@@ -116,7 +116,7 @@ function StampStatusBadge({ status }: { status: StampStatus }) {
 const stampExplanations: Record<StampStatus, string> = {
   not_attested: "This record has no attestation from the node.",
   legacy_record_not_verifiable: "Has attestationId/nodeRuntimeHash but no cryptographic signature. Cannot be verified offline.",
-  signed_full: "Has a signed receipt from the node with full bundle verification. Verifiable offline.",
+  signed_full: "Signed receipt from the node (offline-verifiable). Stamping does not re-run execution; it signs integrity evidence.",
   signed_redacted_reseal: "Redacted snapshot was resealed with a new certificateHash and attested. Original hash preserved in provenance.",
   hash_only_timestamp: "Node signed the certificateHash as a timestamp observation. Does NOT attest snapshot contents.",
 };
