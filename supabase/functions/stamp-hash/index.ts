@@ -77,18 +77,9 @@ Deno.serve(async (req) => {
     const surface = bundleType === 'cer.codemode.render.v1' ? 'codemode' : 'ai';
 
     // ── Build hash-only stamp payload ──
-    // This sends ONLY the certificateHash + metadata to the node's /api/stamp.
-    // No snapshot, no content. The node signs the hash as an observation.
-    const protocolVersion = (storedBundle.version ?? (storedBundle.snapshot as Record<string, unknown> | undefined)?.protocolVersion ?? null) as string | null;
-    const stampPayload: Record<string, unknown> = {
-      certificateHash,
-      bundleType,
-      surface,
-      mode: 'hash-only',
-    };
-    if (protocolVersion) {
-      stampPayload.protocolVersion = protocolVersion;
-    }
+    // Send ONLY the certificateHash to the node's /api/stamp-hash endpoint.
+    // No snapshot, no bundleType metadata. The node signs the hash as an observation.
+    const stampPayload = { certificateHash };
 
     console.info(JSON.stringify({
       action: 'stamp_hash',
@@ -98,16 +89,14 @@ Deno.serve(async (req) => {
       usageEventId,
     }));
 
-    const payloadJson = JSON.stringify(stampPayload);
-
-    // ── Call node /api/stamp ──
-    const nodeResp = await fetch(`${nodeUrl}/api/stamp`, {
+    // ── Call node /api/stamp-hash ──
+    const nodeResp = await fetch(`${nodeUrl}/api/stamp-hash`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${nodeApiKey}`,
       },
-      body: payloadJson,
+      body: JSON.stringify(stampPayload),
     });
 
     if (!nodeResp.ok) {
@@ -121,21 +110,14 @@ Deno.serve(async (req) => {
       const upstreamMessage = (errJson?.message || errJson?.error || errBody || 'Unknown') as string;
       const requestId = (errJson?.requestId || nodeResp.headers.get('x-request-id') || null) as string | null;
 
-      console.error(`Node /api/stamp hash-only failed: HTTP ${nodeResp.status}`, errBody.slice(0, 2000));
+      console.error(`Node /api/stamp-hash failed: HTTP ${nodeResp.status}`, errBody.slice(0, 2000));
 
-      // If the node doesn't support hash-only mode or this bundleType
-      if (nodeResp.status === 400 || nodeResp.status === 422) {
-        // Detect if error is bundleType-specific
-        const isBundleTypeIssue = upstreamMessage.toLowerCase().includes('bundle') ||
-          upstreamMessage.toLowerCase().includes('unsupported') ||
-          upstreamMessage.toLowerCase().includes('type');
-
+      // If the node doesn't support this endpoint yet
+      if (nodeResp.status === 400 || nodeResp.status === 404 || nodeResp.status === 422) {
         return jsonResp({
           ok: false,
-          error: isBundleTypeIssue ? 'NODE_HASH_ONLY_UNSUPPORTED_FOR_BUNDLETYPE' : 'NODE_HASH_ONLY_UNSUPPORTED',
-          message: isBundleTypeIssue
-            ? `Hash-only timestamp is not supported for bundleType "${bundleType}" by the node.`
-            : 'Node does not yet support hash-only stamp mode.',
+          error: 'NODE_HASH_ONLY_UNSUPPORTED',
+          message: 'Node does not yet support /api/stamp-hash endpoint.',
           bundleType,
           hint: 'Node hash-only stamp support is required. Contact the node operator.',
           upstreamStatus: nodeResp.status,
@@ -160,17 +142,18 @@ Deno.serve(async (req) => {
     const src = { ...result, ...(nested ?? {}) };
 
     const signedAttestation: Record<string, unknown> = {
+      autoStamped: false,
       mode: 'hash-only',
-      attestationId: src.attestationId ?? null,
+      status: 'ok',
       hash: certificateHash,
-      nodeRuntimeHash: src.nodeRuntimeHash ?? null,
       receipt: src.receipt ?? null,
       signatureB64Url: src.signatureB64Url ?? src.signature ?? null,
       attestorKeyId: src.attestorKeyId ?? src.kid ?? null,
       attestedAt: src.attestedAt ?? src.timestamp ?? new Date().toISOString(),
+      attestationId: src.attestationId ?? null,
+      nodeRuntimeHash: src.nodeRuntimeHash ?? null,
       nodeUrl,
       protocolVersion: src.protocolVersion ?? null,
-      checks: src.checks ?? null,
     };
 
     // ── Persist attestation_json ──

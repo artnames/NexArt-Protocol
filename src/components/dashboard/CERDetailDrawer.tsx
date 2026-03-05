@@ -103,7 +103,7 @@ function StampStatusBadge({ status }: { status: StampStatus }) {
       return (
         <Badge className="font-mono text-xs bg-muted text-muted-foreground border-border gap-1">
           <Clock className="h-3 w-3" />
-          Hash-only timestamp
+          Hash-only timestamp (signed)
         </Badge>
       );
     case "legacy_record_not_verifiable":
