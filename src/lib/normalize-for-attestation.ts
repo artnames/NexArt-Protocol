@@ -3,6 +3,7 @@
  *
  * CRITICAL: This function MUST NOT import or call any hashing/canonicalization.
  * It is a shape adapter only. All certificate hashes are preserved as-is.
+ * It MUST NOT mutate the input record.
  */
 
 const CODEMODE_BUNDLE_TYPE = 'cer.codemode.render.v1';
@@ -11,6 +12,7 @@ export interface NormalizeResult {
   ok: true;
   bundle: Record<string, unknown>;
   legacyWrapped: boolean;
+  wrapReason?: string;
   surface: 'codemode' | 'ai';
   certificateHash: string;
 }
@@ -24,9 +26,10 @@ export interface NormalizeError {
 function isEnveloped(record: Record<string, unknown>): boolean {
   return (
     typeof record.bundleType === 'string' &&
+    typeof record.certificateHash === 'string' &&
+    typeof record.createdAt === 'string' &&
     record.snapshot != null &&
-    typeof record.snapshot === 'object' &&
-    typeof record.certificateHash === 'string'
+    typeof record.snapshot === 'object'
   );
 }
 
@@ -55,24 +58,34 @@ export function normalizeForAttestation(
   dbBundleType?: string | null,
 ): NormalizeResult | NormalizeError {
   if (isEnveloped(record)) {
-    const certHash = record.certificateHash as string;
-    return { ok: true, bundle: record, legacyWrapped: false, surface, certificateHash: certHash };
+    return {
+      ok: true,
+      bundle: record,
+      legacyWrapped: false,
+      surface,
+      certificateHash: record.certificateHash as string,
+    };
   }
 
   if (surface === 'codemode') {
-    const bundleType = (record.bundleType as string) ?? (dbBundleType as string) ?? CODEMODE_BUNDLE_TYPE;
-    if (!bundleType) {
-      return { ok: false, error: 'UNSUPPORTED_LEGACY_FORMAT', message: 'Cannot determine bundleType for legacy Code Mode record.' };
+    const bundleType = (record.bundleType as string | undefined) ?? (dbBundleType as string | undefined) ?? CODEMODE_BUNDLE_TYPE;
+
+    const certificateHash = deriveCertificateHash(record, dbHash);
+    if (!certificateHash) {
+      return {
+        ok: false,
+        error: 'MISSING_CERTIFICATE_HASH',
+        message: 'Cannot re-attest legacy record: missing certificateHash (would require reseal).',
+      };
     }
 
     const createdAt = deriveCreatedAt(record);
     if (!createdAt) {
-      return { ok: false, error: 'UNSUPPORTED_LEGACY_FORMAT', message: 'Cannot re-attest legacy record: no timestamp field found (createdAt, timestamp, issuedAt, created_at). Will not fabricate a timestamp.' };
-    }
-
-    const certificateHash = deriveCertificateHash(record, dbHash);
-    if (!certificateHash) {
-      return { ok: false, error: 'UNSUPPORTED_LEGACY_FORMAT', message: 'Cannot re-attest legacy record: missing certificateHash (would require reseal).' };
+      return {
+        ok: false,
+        error: 'MISSING_CREATED_AT',
+        message: 'Cannot re-attest legacy record: no timestamp field found (createdAt, timestamp, issuedAt, created_at). Will not fabricate a timestamp.',
+      };
     }
 
     const snapshot = JSON.parse(JSON.stringify(record));
@@ -81,16 +94,21 @@ export function normalizeForAttestation(
       ok: true,
       bundle: {
         bundleType,
-        version: (record.protocolVersion as string) ?? (record.version as string) ?? '0.1',
+        version: (record.version as string | undefined) ?? (record.protocolVersion as string | undefined) ?? '0.1',
         createdAt,
         certificateHash,
         snapshot,
       },
       legacyWrapped: true,
+      wrapReason: 'LEGACY_FLAT_CODEMODE',
       surface,
       certificateHash,
     };
   }
 
-  return { ok: false, error: 'UNSUPPORTED_LEGACY_FORMAT', message: `Unsupported legacy format for surface "${surface}". Cannot normalize without risking data integrity.` };
+  return {
+    ok: false,
+    error: 'UNSUPPORTED_LEGACY_FORMAT',
+    message: `Unsupported legacy format for surface "${surface}". Cannot normalize without risking data integrity.`,
+  };
 }

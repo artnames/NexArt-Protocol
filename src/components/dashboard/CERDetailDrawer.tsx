@@ -206,7 +206,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
     reason: null,
   });
   const [reAttesting, setReAttesting] = useState(false);
-  const [reAttestResult, setReAttestResult] = useState<{ stamp: StampStatus; offlineOk?: boolean; legacyWrapped?: boolean } | null>(null);
+  const [reAttestResult, setReAttestResult] = useState<{ stamp: StampStatus; offlineOk?: boolean; legacyWrapped?: boolean; wrapReason?: string } | null>(null);
 
   const n = event?.normalized;
   const hasBundle = n?.rawBundleJson !== null && n?.rawBundleJson !== undefined;
@@ -317,7 +317,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
       }
 
       const newStamp: StampStatus = data.stamp === "signed" ? "signed" : "legacy";
-      setReAttestResult({ stamp: newStamp, offlineOk: newStamp === "signed", legacyWrapped: !!data.legacyWrapped });
+      setReAttestResult({ stamp: newStamp, offlineOk: newStamp === "signed", legacyWrapped: !!data.legacyWrapped, wrapReason: data.wrapReason ?? undefined });
 
       toast({
         title: newStamp === "signed" ? "Signed Receipt Obtained" : "Re-attestation Complete",
@@ -373,9 +373,9 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
           {reAttestResult?.legacyWrapped && (
             <Alert className="border-yellow-600/30 bg-yellow-600/5">
               <Info className="h-4 w-4 text-yellow-600" />
-              <AlertTitle className="font-mono text-xs text-yellow-600">Legacy Format Wrapped</AlertTitle>
+              <AlertTitle className="font-mono text-xs text-yellow-600">Legacy record wrapped for attestation</AlertTitle>
               <AlertDescription className="text-xs text-muted-foreground leading-relaxed">
-                Legacy format wrapped for transport. Hash preserved. No reseal performed.
+                We preserved the original certificate hash and timestamp. No reseal was performed. The stamp verifies the submitted hash (not a regenerated seal).
               </AlertDescription>
             </Alert>
           )}
