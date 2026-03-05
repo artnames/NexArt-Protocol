@@ -127,6 +127,34 @@ Deno.serve(async (req) => {
       }, 422);
     }
 
+    // ── For redacted AI bundles, recompute certificateHash to match redacted content ──
+    // The stored bundle may have had input/output/prompt stripped during ingestion,
+    // but certificateHash still refers to the original unredacted content.
+    // The node's /api/stamp endpoint recomputes the hash and compares — so we must
+    // send a consistent hash matching the actual payload.
+    if (isRedacted && !isCodeMode && payloadObj.snapshot != null) {
+      const originalHash = payloadObj.certificateHash as string;
+      const recomputedHash = await computeCertificateHash(payloadObj);
+      if (originalHash !== recomputedHash) {
+        console.info(`Redacted AI bundle: certificateHash updated from ${originalHash} to ${recomputedHash} (content was redacted during ingestion)`);
+        payloadObj.certificateHash = recomputedHash;
+        // Preserve original hash in meta.provenance for audit trail
+        if (!payloadObj.meta || typeof payloadObj.meta !== 'object') {
+          payloadObj.meta = {};
+        }
+        const meta = payloadObj.meta as Record<string, unknown>;
+        if (!meta.provenance || typeof meta.provenance !== 'object') {
+          meta.provenance = {};
+        }
+        const provenance = meta.provenance as Record<string, unknown>;
+        if (!provenance.originalCertificateHash) {
+          provenance.originalCertificateHash = originalHash;
+          provenance.kind = provenance.kind ?? 'redacted_export';
+          provenance.redactedAt = provenance.redactedAt ?? new Date().toISOString();
+        }
+      }
+    }
+
     const payloadJson = JSON.stringify(payloadObj);
     const payloadByteSize = new TextEncoder().encode(payloadJson).byteLength;
 
