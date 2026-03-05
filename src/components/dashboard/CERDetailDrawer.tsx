@@ -784,6 +784,11 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
                     </p>
                   </div>
                 )}
+                {hashOnlyUnsupported && (
+                  <p className="text-[9px] font-mono text-muted-foreground/60 px-1">
+                    Hash-only timestamp not supported for this record type yet.
+                  </p>
+                )}
               </div>
             )}
             {isActioning && (

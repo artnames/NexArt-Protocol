@@ -123,12 +123,20 @@ Deno.serve(async (req) => {
 
       console.error(`Node /api/stamp hash-only failed: HTTP ${nodeResp.status}`, errBody.slice(0, 2000));
 
-      // If the node doesn't support hash-only mode, return a clear 501
+      // If the node doesn't support hash-only mode or this bundleType
       if (nodeResp.status === 400 || nodeResp.status === 422) {
+        // Detect if error is bundleType-specific
+        const isBundleTypeIssue = upstreamMessage.toLowerCase().includes('bundle') ||
+          upstreamMessage.toLowerCase().includes('unsupported') ||
+          upstreamMessage.toLowerCase().includes('type');
+
         return jsonResp({
           ok: false,
-          error: 'NODE_HASH_ONLY_UNSUPPORTED',
-          message: 'Node does not yet support hash-only stamp mode. The node repo needs to be updated to accept certificateHash-only payloads without snapshot.',
+          error: isBundleTypeIssue ? 'NODE_HASH_ONLY_UNSUPPORTED_FOR_BUNDLETYPE' : 'NODE_HASH_ONLY_UNSUPPORTED',
+          message: isBundleTypeIssue
+            ? `Hash-only timestamp is not supported for bundleType "${bundleType}" by the node.`
+            : 'Node does not yet support hash-only stamp mode.',
+          bundleType,
           hint: 'Node hash-only stamp support is required. Contact the node operator.',
           upstreamStatus: nodeResp.status,
           upstreamMessage: upstreamMessage.slice(0, 500),
