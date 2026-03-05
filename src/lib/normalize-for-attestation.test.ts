@@ -372,27 +372,47 @@ describe("stamp-hash invariants (source-level)", () => {
     "utf-8",
   );
 
-  it("includes bundleType in the stamp payload", () => {
-    expect(source).toContain("bundleType,");
-    expect(source).toContain("bundleType");
+  it("calls /api/stamp-hash endpoint (not /api/stamp)", () => {
+    expect(source).toContain("/api/stamp-hash");
+    expect(source).not.toContain('`${nodeUrl}/api/stamp`');
   });
 
-  it("includes protocolVersion in stamp payload when available", () => {
-    expect(source).toContain("protocolVersion");
-    expect(source).toContain("stampPayload.protocolVersion");
+  it("sends only certificateHash in the payload (no bundleType, surface, mode)", () => {
+    expect(source).toContain("const stampPayload = { certificateHash }");
   });
 
-  it("returns NODE_HASH_ONLY_UNSUPPORTED_FOR_BUNDLETYPE for bundleType-specific errors", () => {
-    expect(source).toContain("NODE_HASH_ONLY_UNSUPPORTED_FOR_BUNDLETYPE");
+  it("persists attestation with autoStamped: false", () => {
+    expect(source).toContain("autoStamped: false");
   });
 
-  it("still returns NODE_HASH_ONLY_UNSUPPORTED for generic 400/422", () => {
+  it("persists attestation with mode: 'hash-only' and status: 'ok'", () => {
+    expect(source).toContain("mode: 'hash-only'");
+    expect(source).toContain("status: 'ok'");
+  });
+
+  it("stores receipt, signatureB64Url, and attestorKeyId from node response", () => {
+    expect(source).toContain("receipt: src.receipt");
+    expect(source).toContain("signatureB64Url: src.signatureB64Url");
+    expect(source).toContain("attestorKeyId: src.attestorKeyId");
+  });
+
+  it("returns NODE_HASH_ONLY_UNSUPPORTED for 400/404/422 errors", () => {
     expect(source).toContain("NODE_HASH_ONLY_UNSUPPORTED");
+    expect(source).toContain("nodeResp.status === 404");
   });
 
   it("never modifies bundle content (no computeCertificateHash)", () => {
     expect(source).not.toContain("computeCertificateHash");
     expect(source).not.toContain("cer-hash");
+  });
+
+  it("legacy Code Mode record can get hash-only stamp without snapshot fields", () => {
+    // The stamp-hash function only reads certificateHash from the stored bundle,
+    // it never requires snapshot, inputHash, outputHash, protocolVersion, or sdkVersion
+    expect(source).not.toContain("snapshot");
+    expect(source).not.toContain("inputHash");
+    expect(source).not.toContain("outputHash");
+    expect(source).not.toContain("sdkVersion");
   });
 });
 
@@ -403,9 +423,7 @@ describe("classifier: legacy codemode stays LEGACY not MISMATCH", () => {
     const bundle = {
       bundleType: "cer.codemode.render.v1",
       seed: 42,
-      // no snapshot, no inputHash, etc
     };
-    // Even with localVerifyOk = false, should NOT be MISMATCH
     const result = classifyCERBundle(bundle, "cer.codemode.render.v1", "sha256:x", false);
     expect(result.category).toBe("LEGACY_INCOMPLETE_RECORD");
     expect(result.category).not.toBe("FULL_CER_MISMATCH");
