@@ -69,7 +69,7 @@ function StampStatusBadge({ status, offlineVerifiable }: { status: StampStatus; 
     return (
       <Badge className="font-mono text-xs bg-yellow-600/15 text-yellow-600 border-yellow-600/30 gap-1">
         <Stamp className="h-3 w-3" />
-        Stamped (legacy)
+        Stamped (legacy — not offline verifiable)
       </Badge>
     );
   }
