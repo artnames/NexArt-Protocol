@@ -611,6 +611,9 @@ Deno.serve(async (req) => {
       newCertificateHash: null,
     };
 
+    // Resolve project_id from the bundle or body if provided
+    const projectId: string | null = (body.project_id ?? body.projectId ?? bundle.project_id ?? null) as string | null;
+
     try {
       autoStampResult = await autoStamp(
         supabaseAdmin,
@@ -621,6 +624,7 @@ Deno.serve(async (req) => {
         bundleType,
         certificateHash,
         existingAttestation,
+        projectId,
       );
       console.info(JSON.stringify({
         action: 'auto_stamp_complete',

@@ -129,7 +129,43 @@ export default function ProjectDetail() {
               </DialogContent>
             </Dialog>
           </div>
-        </div>
+      </div>
+
+        {/* Auto-stamp setting */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Settings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-start gap-4">
+              <Switch
+                id="auto-stamp-toggle"
+                checked={autoStampEnabled}
+                onCheckedChange={async (checked) => {
+                  setAutoStampEnabled(checked);
+                  try {
+                    await supabase
+                      .from("projects")
+                      .update({ auto_stamp_enabled: checked, updated_at: new Date().toISOString() })
+                      .eq("id", projectId!);
+                    toast({ title: checked ? "Auto-stamp enabled" : "Auto-stamp disabled" });
+                  } catch {
+                    setAutoStampEnabled(!checked);
+                    toast({ variant: "destructive", title: "Error", description: "Failed to update setting." });
+                  }
+                }}
+              />
+              <div className="space-y-1">
+                <Label htmlFor="auto-stamp-toggle" className="cursor-pointer">
+                  Auto-stamp CERs during ingestion
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  When enabled, NexArt automatically requests a signed node receipt for each new record in this project. This improves offline verifiability but uses additional node attestations.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
