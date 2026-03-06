@@ -331,6 +331,7 @@ export async function verifyStamp(
   const dataBuffer = new Uint8Array(receiptBytes).buffer as ArrayBuffer;
 
   const keyFormat = keyEntry.publicKeyJwk ? "jwk" : keyEntry.publicKeySpkiB64 ? "spki" : "unknown";
+  const serializationMode = typeof receiptRaw === "string" ? "original-string" : "canonical-json";
   const debug = {
     receiptType: typeof receiptRaw,
     receiptPreview: receiptString.slice(0, 80) + (receiptString.length > 80 ? "…" : ""),
@@ -338,6 +339,7 @@ export async function verifyStamp(
     kidUsed: keyEntry.kid,
     nodeUrlUsed: nodeUrl,
     keyFormat,
+    serializationMode,
   };
 
   try {
