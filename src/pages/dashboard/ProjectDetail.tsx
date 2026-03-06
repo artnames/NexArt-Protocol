@@ -26,6 +26,7 @@ export default function ProjectDetail() {
   const { toast } = useToast();
   const [projectName, setProjectName] = useState<string>("");
   const [autoStampEnabled, setAutoStampEnabled] = useState(true);
+  const [retentionPolicy, setRetentionPolicy] = useState<RetentionPolicy>('forever');
   const [apps, setApps] = useState<App[]>([]);
   const [loading, setLoading] = useState(true);
 
