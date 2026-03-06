@@ -311,6 +311,7 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
   const { toast } = useToast();
   const [snapshotOpen, setSnapshotOpen] = useState(false);
   const [techDetailsOpen, setTechDetailsOpen] = useState(false);
+  const [liveVerification, setLiveVerification] = useState<{ status: NormalizedCER["verificationStatus"]; reason: string | null }>({
     status: "unavailable",
     reason: null,
   });
