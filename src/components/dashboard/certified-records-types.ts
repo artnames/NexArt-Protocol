@@ -337,6 +337,18 @@ export async function enrichEventWithStoredBundle(
     // Actual verification: recompute hash over the export payload and compare
     normalized.verificationStatus = "pass"; // Hash was just computed, so it matches by construction
     normalized.verificationReason = null;
+  } else if (attestation) {
+    // Legacy/incomplete records that skipped buildVerifiableExportBundle:
+    // Merge attestation into exported JSON under meta.attestation so downloads include signed receipts
+    const existing = (normalized.rawBundleJson ?? {}) as Record<string, unknown>;
+    const existingMeta = (existing.meta as Record<string, unknown>) ?? {};
+    normalized.rawBundleJson = {
+      ...existing,
+      meta: {
+        ...existingMeta,
+        attestation,
+      },
+    };
   }
 
   // For render bundles with a stored bundle, update the endpoint note

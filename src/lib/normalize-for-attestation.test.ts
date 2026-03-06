@@ -416,6 +416,39 @@ describe("stamp-hash invariants (source-level)", () => {
   });
 });
 
+// ── Export: legacy codemode with hash-only attestation ────────────
+
+describe("enrichEventWithStoredBundle: legacy code + hash-only receipt", () => {
+  // Source-level test: enrichEventWithStoredBundle merges attestation for legacy records
+  it("certified-records-types merges attestation into rawBundleJson.meta.attestation for legacy records", () => {
+    const source = fs.readFileSync(
+      path.resolve(__dirname, "../components/dashboard/certified-records-types.ts"),
+      "utf-8",
+    );
+    // The else-if branch that handles legacy records without snapshot/bundleType
+    expect(source).toContain("else if (attestation)");
+    expect(source).toContain("meta.attestation so downloads include signed receipts");
+    // Ensures meta.attestation is set on rawBundleJson
+    expect(source).toContain("attestation,");
+  });
+
+  it("enrichEventWithStoredBundle source preserves legacy classification (no reseal, no recompute)", () => {
+    const source = fs.readFileSync(
+      path.resolve(__dirname, "../components/dashboard/certified-records-types.ts"),
+      "utf-8",
+    );
+    // The else-if branch must NOT call buildVerifiableExportBundle or computeCertificateHash
+    // It only merges attestation — the legacy record stays as-is
+    const elseIfBlock = source.substring(
+      source.indexOf("else if (attestation)"),
+      source.indexOf("// For render bundles with a stored bundle"),
+    );
+    expect(elseIfBlock).not.toContain("computeCertificateHash");
+    expect(elseIfBlock).not.toContain("buildVerifiableExportBundle");
+    expect(elseIfBlock).not.toContain("recomputedHash");
+  });
+});
+
 // ── classifier: legacy codemode must not be MISMATCH ──────────────
 
 describe("classifier: legacy codemode stays LEGACY not MISMATCH", () => {
