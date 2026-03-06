@@ -310,7 +310,7 @@ function InfoRow({ label, value }: { label: string; value: string | number | nul
 export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetailDrawerProps) {
   const { toast } = useToast();
   const [snapshotOpen, setSnapshotOpen] = useState(false);
-  const [liveVerification, setLiveVerification] = useState<{ status: NormalizedCER["verificationStatus"]; reason: string | null }>({
+  const [techDetailsOpen, setTechDetailsOpen] = useState(false);
     status: "unavailable",
     reason: null,
   });
