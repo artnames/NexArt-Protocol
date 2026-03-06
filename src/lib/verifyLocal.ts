@@ -314,13 +314,14 @@ export async function verifyStamp(
 
   // Verify signature
   // Receipt may be a string (as signed) or an object (JSONB deserialized it).
-  // The node signs the receipt as a compact JSON string, so if we get an object,
-  // we must re-serialize it to match what was originally signed.
+  // The node signs the receipt using canonical JSON (sorted keys, no whitespace).
+  // If the receipt is already a string, it should already be canonical from the node.
+  // If it's an object (JSONB deserialized), we must re-canonicalize it.
   const receiptRaw = attestation.receipt;
   const receiptString: string =
     typeof receiptRaw === "string"
       ? receiptRaw
-      : JSON.stringify(receiptRaw);
+      : canonicalize(receiptRaw);
 
   const sigRaw = (attestation.signatureB64Url ?? attestation.signature) as string;
   const signatureBytes = base64UrlToBytes(sigRaw);
