@@ -23,6 +23,15 @@ interface CheckResult {
   detail?: string;
 }
 
+export interface SignatureDebugInfo {
+  receiptType: string;
+  receiptPreview: string;
+  signaturePreview: string;
+  kidUsed: string;
+  nodeUrlUsed: string;
+  keyFormat: string;
+}
+
 export interface VerificationReportData {
   verdict: OverallVerdict;
   partialReason?: string;
@@ -33,6 +42,7 @@ export interface VerificationReportData {
   sdkVersion: string | null;
   executionTimestamp: string | null;
   nodeUrl: string | null;
+  signatureDebug: SignatureDebugInfo | null;
 }
 
 // ── Compute report ──────────────────────────────────────────────────
@@ -52,13 +62,14 @@ export async function computeVerificationReport(
     (attestation?.nodeUrl as string | undefined) ??
     undefined;
 
-  const base: Omit<VerificationReportData, "verdict" | "checks"> = {
+  const base: Omit<VerificationReportData, "verdict" | "checks" | "partialReason"> = {
     certificateHash: n.certificateHash,
     attestorKeyId: (attestation?.attestorKeyId as string) ?? null,
     protocolVersion: n.protocolVersion,
     sdkVersion: n.sdkVersion,
     executionTimestamp: n.timestamp,
     nodeUrl: resolvedNodeUrl ?? null,
+    signatureDebug: null,
   };
 
   if (!bundle) {
@@ -103,6 +114,9 @@ export async function computeVerificationReport(
       });
     } else {
       const stampResult = await verifyStamp(bundle, resolvedNodeUrl);
+      if (stampResult.debug) {
+        base.signatureDebug = stampResult.debug;
+      }
       if (stampResult.ok) {
         signaturePass = true;
         checks.push({ label: "Node Signature", status: "PASS", detail: stampResult.detail ?? "Ed25519 signature verified" });
@@ -243,7 +257,9 @@ export default function VerificationReport({ normalized, isLegacy, nodeUrl }: Ve
   const { toast } = useToast();
   const [report, setReport] = useState<VerificationReportData | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [debugOpen, setDebugOpen] = useState(false);
 
+  const isDev = import.meta.env.DEV;
   useEffect(() => {
     if (isLegacy || !normalized.rawBundleJson) {
       setReport(null);
@@ -286,6 +302,24 @@ export default function VerificationReport({ normalized, isLegacy, nodeUrl }: Ve
           <FieldRow label="Execution Timestamp" value={report.executionTimestamp} />
         </CollapsibleContent>
       </Collapsible>
+
+      {/* Signature debug (dev only) */}
+      {isDev && report.signatureDebug && (
+        <Collapsible open={debugOpen} onOpenChange={setDebugOpen}>
+          <CollapsibleTrigger className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-mono w-full">
+            <ChevronDown className={`h-3 w-3 transition-transform ${debugOpen ? "rotate-180" : ""}`} />
+            Signature debug
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-2 space-y-0.5 border border-border rounded-md px-3 py-2 bg-muted/20">
+            <FieldRow label="Receipt type" value={report.signatureDebug.receiptType} />
+            <FieldRow label="Receipt preview" value={report.signatureDebug.receiptPreview} />
+            <FieldRow label="Signature" value={report.signatureDebug.signaturePreview} />
+            <FieldRow label="Key ID used" value={report.signatureDebug.kidUsed} />
+            <FieldRow label="Node URL used" value={report.signatureDebug.nodeUrlUsed} />
+            <FieldRow label="Key format" value={report.signatureDebug.keyFormat} />
+          </CollapsibleContent>
+        </Collapsible>
+      )}
     </div>
   );
 }

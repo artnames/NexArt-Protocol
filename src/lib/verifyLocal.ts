@@ -52,6 +52,15 @@ export interface StampVerifyResult {
   reason: ReasonCode;
   explanation: string;
   detail: string | null;
+  /** Debug info for signature verification diagnostics */
+  debug?: {
+    receiptType: string;
+    receiptPreview: string;
+    signaturePreview: string;
+    kidUsed: string;
+    nodeUrlUsed: string;
+    keyFormat: string;
+  };
 }
 
 const SUPPORTED_BUNDLE_TYPES = [
@@ -304,11 +313,31 @@ export async function verifyStamp(
   }
 
   // Verify signature
-  const signatureBytes = base64UrlToBytes(attestation.signatureB64Url as string);
-  const receiptBytes = new TextEncoder().encode(attestation.receipt as string);
+  // Receipt may be a string (as signed) or an object (JSONB deserialized it).
+  // The node signs the receipt as a compact JSON string, so if we get an object,
+  // we must re-serialize it to match what was originally signed.
+  const receiptRaw = attestation.receipt;
+  const receiptString: string =
+    typeof receiptRaw === "string"
+      ? receiptRaw
+      : JSON.stringify(receiptRaw);
+
+  const sigRaw = (attestation.signatureB64Url ?? attestation.signature) as string;
+  const signatureBytes = base64UrlToBytes(sigRaw);
+  const receiptBytes = new TextEncoder().encode(receiptString);
   // Create ArrayBuffer views compatible with WebCrypto
   const sigBuffer = new Uint8Array(signatureBytes).buffer as ArrayBuffer;
   const dataBuffer = new Uint8Array(receiptBytes).buffer as ArrayBuffer;
+
+  const keyFormat = keyEntry.publicKeyJwk ? "jwk" : keyEntry.publicKeySpkiB64 ? "spki" : "unknown";
+  const debug = {
+    receiptType: typeof receiptRaw,
+    receiptPreview: receiptString.slice(0, 80) + (receiptString.length > 80 ? "…" : ""),
+    signaturePreview: sigRaw ? `${sigRaw.slice(0, 8)}…${sigRaw.slice(-8)}` : "—",
+    kidUsed: keyEntry.kid,
+    nodeUrlUsed: nodeUrl,
+    keyFormat,
+  };
 
   try {
     const valid = await crypto.subtle.verify(
@@ -323,18 +352,21 @@ export async function verifyStamp(
         ok: true, reason: "STAMP_VERIFIED",
         explanation: "The node's digital signature on this record has been verified offline. The attestation is authentic.",
         detail: `kid="${kid}", signature valid.`,
+        debug,
       };
     }
     return {
       ok: false, reason: "STAMP_INVALID",
       explanation: "The node's digital signature does not match. The attestation may have been tampered with.",
       detail: `kid="${kid}", signature INVALID.`,
+      debug,
     };
   } catch (err) {
     return {
       ok: false, reason: "STAMP_INVALID",
       explanation: "Signature verification failed. This browser may not support the required cryptographic operations.",
       detail: (err as Error).message,
+      debug,
     };
   }
 }
