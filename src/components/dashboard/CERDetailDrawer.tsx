@@ -36,6 +36,7 @@ interface CERDetailDrawerProps {
   onOpenChange: (open: boolean) => void;
   projectName?: string | null;
   appName?: string | null;
+  projectRetentionPolicy?: string | null;
 }
 
 function copyToClipboard(text: string, label: string, toast: ReturnType<typeof useToast>["toast"]) {
