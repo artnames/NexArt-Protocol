@@ -107,6 +107,56 @@ export default function ProjectDetail() {
             <ArrowLeft className="h-3 w-3" /> Back to Projects
           </Link>
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                try {
+                  // Fetch CER bundles for this project
+                  const { data: bundles, error } = await supabase
+                    .from("cer_bundles")
+                    .select("usage_event_id, certificate_hash, bundle_type, cer_bundle_redacted, attestation_json, created_at, app_id")
+                    .eq("project_id", projectId!);
+                  if (error) throw error;
+                  if (!bundles || bundles.length === 0) {
+                    toast({ title: "No records", description: "No CER records found for this project." });
+                    return;
+                  }
+
+                  const appsById: Record<string, App> = {};
+                  for (const a of apps) appsById[a.id] = a;
+
+                  const rows: ProjectExportRow[] = (bundles as any[]).map((b) => {
+                    const rawBundle = b.cer_bundle_redacted as Record<string, unknown>;
+                    const fakeEvent = {
+                      id: String(b.usage_event_id),
+                      created_at: b.created_at,
+                      endpoint: rawBundle?.bundleType === "cer.ai.execution.v1" ? "/api/attest" : "/api/render",
+                      status_code: 200,
+                      duration_ms: 0,
+                      error_code: null,
+                      key_label: "",
+                    };
+                    const n = normalizeCertifiedRecord(fakeEvent, rawBundle as any);
+                    const appName = b.app_id ? (appsById[b.app_id]?.name ?? "") : "";
+                    return buildProjectExportRow(
+                      { ...fakeEvent, surface: n.surface, normalized: n },
+                      projectName,
+                      appName,
+                      n.verificationStatus === "pass" ? "VERIFIED" : n.verificationStatus === "fail" ? "INVALID" : "PARTIAL",
+                    );
+                  });
+
+                  const csv = rowsToCsv(rows);
+                  downloadCsv(csv, `${projectName.toLowerCase().replace(/\s+/g, "-")}-records.csv`);
+                  toast({ title: `Exported ${rows.length} records` });
+                } catch (e: any) {
+                  toast({ variant: "destructive", title: "Export failed", description: e.message || "Failed to export." });
+                }
+              }}
+            >
+              <FileDown className="h-4 w-4 mr-1" /> Export records (CSV)
+            </Button>
             <Link to={`/dashboard/usage?project=${projectId}`}>
               <Button variant="outline" size="sm">View Records</Button>
             </Link>

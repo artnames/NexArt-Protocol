@@ -656,6 +656,23 @@ export default function CERDetailDrawer({ event, open, onOpenChange, projectName
             />
           )}
 
+          {/* Export audit report button */}
+          {hasBundle && !isLegacyCode && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="font-mono text-xs w-full"
+              onClick={async () => {
+                const report = await buildSingleRecordAuditReport(n, projectName ?? null, appName ?? null);
+                downloadJson(report, `audit-report-${n.executionId || event.id}.json`);
+                toast({ title: "Audit report exported" });
+              }}
+            >
+              <FileText className="h-3.5 w-3.5 mr-1.5" />
+              Export audit report
+            </Button>
+          )}
+
           {/* ── Technical details (collapsible) ── */}
           <Collapsible open={techDetailsOpen} onOpenChange={setTechDetailsOpen}>
             <CollapsibleTrigger className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-mono w-full border border-border rounded px-3 py-2">
