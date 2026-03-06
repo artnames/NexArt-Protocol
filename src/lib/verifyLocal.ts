@@ -5,7 +5,7 @@
  * Shared by:  /verify page, dashboard CER drawer
  */
 
-import { computeCertificateHash } from "./cer-hash";
+import { computeCertificateHash, canonicalize } from "./cer-hash";
 
 // ── Reason codes (aligned with @nexart/ai-execution) ────────────────
 
