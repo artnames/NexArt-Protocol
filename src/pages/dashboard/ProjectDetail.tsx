@@ -24,6 +24,7 @@ export default function ProjectDetail() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [projectName, setProjectName] = useState<string>("");
+  const [autoStampEnabled, setAutoStampEnabled] = useState(true);
   const [apps, setApps] = useState<App[]>([]);
   const [loading, setLoading] = useState(true);
 
