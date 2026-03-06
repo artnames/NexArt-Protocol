@@ -143,15 +143,23 @@ export async function computeVerificationReport(
 
   // Derive verdict
   let verdict: OverallVerdict;
+  let partialReason: string | undefined;
   if (!integrityPass) {
     verdict = "INVALID";
   } else if (integrityPass && signaturePass) {
     verdict = "VERIFIED";
+  } else if (isSigned && !resolvedNodeUrl) {
+    // Signed receipt exists but we can't verify the key
+    verdict = "PARTIAL";
+    partialReason = "Signed receipt present, but node key lookup unavailable.";
+  } else if (isSigned) {
+    verdict = "PARTIAL";
+    partialReason = "Signed receipt present but signature verification failed.";
   } else {
     verdict = "PARTIAL";
   }
 
-  return { ...base, verdict, checks };
+  return { ...base, verdict, partialReason, checks };
 }
 
 // ── Component ───────────────────────────────────────────────────────
