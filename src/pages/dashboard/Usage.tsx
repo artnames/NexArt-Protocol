@@ -85,7 +85,11 @@ export default function Usage() {
 
       // Fetch stored CER bundles for attest AND render events
       const bundleEventIds = eventsData
-        .filter(e => (e.endpoint?.includes("attest") || e.endpoint?.includes("render")) && e.status_code >= 200 && e.status_code < 300)
+        .filter(e => {
+          if (e.status_code < 200 || e.status_code >= 300) return false;
+          const ep = e.endpoint ?? "";
+          return ep.includes("attest") || ep.includes("render") || ep.includes("/v1/cer/ai/") || ep.includes("stamp-hash");
+        })
         .map(e => Number(e.id))
         .filter(n => !isNaN(n));
 
