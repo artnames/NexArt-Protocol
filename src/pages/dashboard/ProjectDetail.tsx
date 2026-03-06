@@ -14,8 +14,9 @@ import {
 import { Plus, Box, Pencil, Trash2, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { listApps, createApp, updateApp, deleteApp, type App } from "@/lib/projects-api";
+import { listApps, createApp, updateApp, deleteApp, type App, type RetentionPolicy, RETENTION_LABELS } from "@/lib/projects-api";
 import { supabase } from "@/integrations/supabase/client";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
