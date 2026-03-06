@@ -118,6 +118,10 @@ export async function buildSingleRecordAuditReport(
     sdk_version: n.sdkVersion,
     execution_timestamp: n.timestamp,
     auto_stamp_status: deriveAutoStampStatus(n),
+    verification_url: getVerificationUrl({
+      executionId: n.executionId,
+      certificateHash: n.certificateHash,
+    }),
   };
 }
 
