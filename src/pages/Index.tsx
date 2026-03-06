@@ -210,6 +210,20 @@ const Index = () => {
             </div>
           </div>
 
+          {/* API Integration */}
+          <h2>API Integration</h2>
+
+          <p>
+            NexArt can be integrated via API to create and certify execution records programmatically.
+            The API is under active development.
+          </p>
+
+          <div className="flex flex-wrap gap-3 my-6">
+            <Button asChild variant="outline">
+              <Link to="/docs/api/overview">API Overview</Link>
+            </Button>
+          </div>
+
           {/* For Builders */}
           <h2>For Builders</h2>
 

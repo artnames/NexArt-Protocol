@@ -51,6 +51,14 @@ const navGroups = [
     ],
   },
   {
+    label: "API",
+    items: [
+      { href: "/docs/api/overview", label: "Overview" },
+      { href: "/docs/api/ai-cer-creation", label: "AI CER Creation" },
+      { href: "/docs/api/certification", label: "Certification" },
+    ],
+  },
+  {
     label: "Reference",
     items: [
       { href: "/faq", label: "FAQ" },
