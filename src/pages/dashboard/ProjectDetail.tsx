@@ -19,6 +19,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { buildProjectExportRow, rowsToCsv, downloadCsv, type ProjectExportRow } from "@/lib/audit-export";
+import { normalizeCertifiedRecord } from "@/components/dashboard/certified-records-types";
 
 export default function ProjectDetail() {
   const { projectId } = useParams<{ projectId: string }>();
