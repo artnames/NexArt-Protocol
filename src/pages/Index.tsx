@@ -227,6 +227,28 @@ const Index = () => {
             </Button>
           </div>
 
+          {/* Documentation */}
+          <h2>Documentation</h2>
+
+          <p>
+            Developers can integrate NexArt to create verifiable execution records, generate Certified Execution Records (CERs), and independently verify results.
+          </p>
+
+          <p>
+            Full technical documentation is available at{" "}
+            <a href="https://docs.nexart.io" className="text-link hover:text-link-hover underline underline-offset-2" target="_blank" rel="noopener noreferrer">
+              docs.nexart.io
+            </a>
+          </p>
+
+          <div className="my-6">
+            <Button asChild>
+              <a href="https://docs.nexart.io" target="_blank" rel="noopener noreferrer">
+                Read the Docs →
+              </a>
+            </Button>
+          </div>
+
           {/* Protocol Status */}
           <h2>Protocol Status</h2>
 
