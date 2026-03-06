@@ -70,6 +70,9 @@ export async function updateProject(id: string, fields: { name?: string; auto_st
   if (fields.auto_stamp_enabled !== undefined) {
     updates.auto_stamp_enabled = fields.auto_stamp_enabled;
   }
+  if (fields.retention_policy !== undefined) {
+    updates.retention_policy = fields.retention_policy;
+  }
   const { data, error } = await supabase
     .from("projects")
     .update(updates)

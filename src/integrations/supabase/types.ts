@@ -115,6 +115,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          retention_policy: string
           slug: string
           updated_at: string
           user_id: string
@@ -124,6 +125,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          retention_policy?: string
           slug: string
           updated_at?: string
           user_id: string
@@ -133,6 +135,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          retention_policy?: string
           slug?: string
           updated_at?: string
           user_id?: string
