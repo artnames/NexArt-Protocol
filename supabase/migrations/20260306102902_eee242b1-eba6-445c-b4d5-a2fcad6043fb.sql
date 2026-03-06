@@ -1,0 +1,1 @@
+ALTER TABLE projects ADD COLUMN auto_stamp_enabled boolean NOT NULL DEFAULT true;
