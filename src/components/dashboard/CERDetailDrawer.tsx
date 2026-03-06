@@ -649,7 +649,6 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
             <VerificationReport
               normalized={n}
               isLegacy={isLegacyCode}
-              nodeUrl="https://node.nexart.io"
             />
           )}
 

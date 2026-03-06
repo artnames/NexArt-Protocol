@@ -188,7 +188,7 @@ function VerdictBanner({ verdict }: { verdict: OverallVerdict }) {
           <ShieldQuestion className="h-5 w-5 text-yellow-600 shrink-0" />
           <div>
             <p className="font-mono text-sm font-semibold text-yellow-600">PARTIAL</p>
-            <p className="text-xs text-muted-foreground">Bundle integrity passes but no signed receipt for offline verification.</p>
+            <p className="text-xs text-muted-foreground">{partialReason ?? "Bundle integrity passes but no signed receipt for offline verification."}</p>
           </div>
         </div>
       );
