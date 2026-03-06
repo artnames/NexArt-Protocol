@@ -11,6 +11,8 @@ const Dashboard = lazy(() => import("@/pages/dashboard/Dashboard"));
 const ApiKeys = lazy(() => import("@/pages/dashboard/ApiKeys"));
 const Usage = lazy(() => import("@/pages/dashboard/Usage"));
 const Billing = lazy(() => import("@/pages/dashboard/Billing"));
+const Projects = lazy(() => import("@/pages/dashboard/Projects"));
+const ProjectDetail = lazy(() => import("@/pages/dashboard/ProjectDetail"));
 
 const Fallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
