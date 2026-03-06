@@ -66,13 +66,22 @@ export default function Usage() {
     setLoadError(null);
     setLoading(true);
     try {
-      const [todayData, monthData, eventsData] = await Promise.all([
+      const [todayData, monthData, eventsData, pMap] = await Promise.all([
         getUsageSummaryByPeriod("today"),
         getUsageSummaryByPeriod("month"),
         getRecentUsage(),
+        getProjectsMap(),
       ]);
       setUsageToday(todayData);
       setUsageMonth(monthData);
+      setProjectsMap(pMap);
+
+      // Fetch apps map
+      const projectIds = Object.keys(pMap);
+      if (projectIds.length > 0) {
+        const aMap = await getAppsMapForProjects(projectIds);
+        setAppsMap(aMap);
+      }
 
       // Fetch stored CER bundles for attest AND render events
       const bundleEventIds = eventsData
@@ -87,6 +96,21 @@ export default function Usage() {
         } catch (e) {
           console.warn("Failed to fetch CER bundles:", e);
         }
+      }
+
+      // Fetch project/app assignments for CER bundles
+      if (bundleEventIds.length > 0) {
+        try {
+          const { data: assignments } = await supabase
+            .from("cer_bundles")
+            .select("usage_event_id, project_id, app_id")
+            .in("usage_event_id", bundleEventIds);
+          const assignMap: Record<string, { project_id: string | null; app_id: string | null }> = {};
+          for (const a of (assignments ?? []) as any[]) {
+            assignMap[String(a.usage_event_id)] = { project_id: a.project_id, app_id: a.app_id };
+          }
+          setBundleAssignments(assignMap);
+        } catch { /* ignore */ }
       }
 
       // Enrich events with stored bundles where available
