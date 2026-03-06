@@ -256,6 +256,7 @@ interface VerificationReportProps {
 export default function VerificationReport({ normalized, isLegacy, nodeUrl }: VerificationReportProps) {
   const { toast } = useToast();
   const [report, setReport] = useState<VerificationReportData | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [debugOpen, setDebugOpen] = useState(false);
 
   const isDev = import.meta.env.DEV;
