@@ -119,4 +119,116 @@ describe("VerificationReport.computeVerificationReport", () => {
     expect(report.verdict).toBe("UNAVAILABLE");
     expect(report.checks).toHaveLength(0);
   });
+
+  it("reads attestation from meta.attestation for signed_redacted_reseal records", async () => {
+    const snapshot = { provider: "openai", model: "gpt-4" };
+    const bundle = {
+      bundleType: "cer.ai.execution.v1",
+      version: "0.1",
+      createdAt: "2025-01-01T00:00:00Z",
+      snapshot,
+    };
+    const hash = await computeCertificateHash(bundle);
+
+    // Simulate a signed redacted reseal with attestation under meta.attestation
+    const receiptObj = { certificateHash: hash, timestamp: "2025-01-01T00:00:00Z" };
+    const n = makeNormalized({
+      certificateHash: hash,
+      rawBundleJson: {
+        ...bundle,
+        certificateHash: hash,
+        meta: {
+          attestation: {
+            receipt: JSON.stringify(receiptObj),
+            signatureB64Url: "fakeSigBase64Url",
+            attestorKeyId: "kid-test-123",
+            mode: "redacted_reseal",
+            nodeUrl: "https://custom-node.example.com",
+            autoStamped: true,
+          },
+        },
+      },
+    });
+
+    const report = await computeVerificationReport(n);
+
+    // Should find the attestation under meta.attestation
+    expect(report.attestorKeyId).toBe("kid-test-123");
+    expect(report.nodeUrl).toBe("https://custom-node.example.com");
+
+    // Bundle integrity should pass
+    expect(report.checks.find(c => c.label === "Bundle Integrity")?.status).toBe("PASS");
+
+    // Receipt consistency should pass (receipt hash matches current bundle hash)
+    expect(report.checks.find(c => c.label === "Receipt Consistency")?.status).toBe("PASS");
+
+    // Node Signature will FAIL (can't actually verify Ed25519 with fake sig),
+    // so overall verdict won't be VERIFIED in this test — but it should NOT be N/A
+    const sigCheck = report.checks.find(c => c.label === "Node Signature");
+    expect(sigCheck?.status).not.toBe("N/A");
+  });
+
+  it("handles receipt as object (not just string)", async () => {
+    const snapshot = { provider: "openai", model: "gpt-4" };
+    const bundle = {
+      bundleType: "cer.ai.execution.v1",
+      version: "0.1",
+      createdAt: "2025-01-01T00:00:00Z",
+      snapshot,
+    };
+    const hash = await computeCertificateHash(bundle);
+
+    // Receipt is already an object, not a JSON string
+    const n = makeNormalized({
+      certificateHash: hash,
+      rawBundleJson: {
+        ...bundle,
+        certificateHash: hash,
+        meta: {
+          attestation: {
+            receipt: { certificateHash: hash, timestamp: "2025-01-01T00:00:00Z" },
+            signatureB64Url: "fakeSig",
+            attestorKeyId: "kid-1",
+            nodeUrl: "https://node.example.com",
+          },
+        },
+      },
+    });
+
+    const report = await computeVerificationReport(n);
+    // Receipt consistency should PASS even when receipt is an object
+    expect(report.checks.find(c => c.label === "Receipt Consistency")?.status).toBe("PASS");
+  });
+
+  it("reports missing nodeUrl instead of fetch failure", async () => {
+    const snapshot = { provider: "openai", model: "gpt-4" };
+    const bundle = {
+      bundleType: "cer.ai.execution.v1",
+      version: "0.1",
+      createdAt: "2025-01-01T00:00:00Z",
+      snapshot,
+    };
+    const hash = await computeCertificateHash(bundle);
+
+    const n = makeNormalized({
+      certificateHash: hash,
+      rawBundleJson: {
+        ...bundle,
+        certificateHash: hash,
+        meta: {
+          attestation: {
+            receipt: JSON.stringify({ certificateHash: hash }),
+            signatureB64Url: "fakeSig",
+            attestorKeyId: "kid-1",
+            // no nodeUrl
+          },
+        },
+      },
+    });
+
+    const report = await computeVerificationReport(n);
+    const sigCheck = report.checks.find(c => c.label === "Node Signature");
+    expect(sigCheck?.status).toBe("FAIL");
+    expect(sigCheck?.detail).toContain("Node URL unavailable");
+  });
 });
