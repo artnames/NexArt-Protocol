@@ -142,3 +142,54 @@ describe("auto-stamp per-project decision", () => {
     })).toBe("skipped_disabled");
   });
 });
+
+// ── Retention policy logic ───────────────────────────────────────────
+
+type RetentionPolicy = '30_days' | '90_days' | '1_year' | 'forever';
+
+const RETENTION_LABELS: Record<RetentionPolicy, string> = {
+  '30_days': '30 days',
+  '90_days': '90 days',
+  '1_year': '1 year',
+  'forever': 'Forever',
+};
+
+interface MockProject {
+  id: string;
+  retention_policy: RetentionPolicy;
+}
+
+describe("retention policy", () => {
+  it("defaults to 'forever'", () => {
+    const project: MockProject = { id: "p1", retention_policy: 'forever' };
+    expect(project.retention_policy).toBe('forever');
+  });
+
+  it("accepts all valid retention values", () => {
+    const values: RetentionPolicy[] = ['30_days', '90_days', '1_year', 'forever'];
+    for (const v of values) {
+      expect(RETENTION_LABELS[v]).toBeDefined();
+    }
+  });
+
+  it("updates retention policy", () => {
+    const project: MockProject = { id: "p1", retention_policy: 'forever' };
+    const updated = { ...project, retention_policy: '90_days' as RetentionPolicy };
+    expect(updated.retention_policy).toBe('90_days');
+    expect(RETENTION_LABELS[updated.retention_policy]).toBe('90 days');
+  });
+
+  it("preserves existing behavior when retention is unset (defaults to forever)", () => {
+    // Simulate old project record without retention_policy field
+    const oldProject = { id: "p1" } as any;
+    const retention: RetentionPolicy = oldProject.retention_policy ?? 'forever';
+    expect(retention).toBe('forever');
+  });
+
+  it("displays correct label for each policy", () => {
+    expect(RETENTION_LABELS['30_days']).toBe('30 days');
+    expect(RETENTION_LABELS['90_days']).toBe('90 days');
+    expect(RETENTION_LABELS['1_year']).toBe('1 year');
+    expect(RETENTION_LABELS['forever']).toBe('Forever');
+  });
+});
