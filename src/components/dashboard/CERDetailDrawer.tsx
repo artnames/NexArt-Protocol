@@ -28,6 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { CertifiedUsageEvent, NormalizedCER } from "./certified-records-types";
 import { verifyExportBundle } from "./certified-records-types";
+import VerificationReport from "./VerificationReport";
 
 interface CERDetailDrawerProps {
   event: CertifiedUsageEvent | null;
@@ -309,6 +310,7 @@ function InfoRow({ label, value }: { label: string; value: string | number | nul
 export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetailDrawerProps) {
   const { toast } = useToast();
   const [snapshotOpen, setSnapshotOpen] = useState(false);
+  const [techDetailsOpen, setTechDetailsOpen] = useState(false);
   const [liveVerification, setLiveVerification] = useState<{ status: NormalizedCER["verificationStatus"]; reason: string | null }>({
     status: "unavailable",
     reason: null,
@@ -642,6 +644,23 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
             </>
           )}
 
+          {/* ── Verification Report (above all detail sections) ── */}
+          {hasBundle && !isLegacyCode && (
+            <VerificationReport
+              normalized={n}
+              isLegacy={isLegacyCode}
+              nodeUrl="https://node.nexart.io"
+            />
+          )}
+
+          {/* ── Technical details (collapsible) ── */}
+          <Collapsible open={techDetailsOpen} onOpenChange={setTechDetailsOpen}>
+            <CollapsibleTrigger className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-mono w-full border border-border rounded px-3 py-2">
+              <ChevronDown className={`h-3 w-3 transition-transform ${techDetailsOpen ? "rotate-180" : ""}`} />
+              View technical details
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-3 space-y-6">
+
           {/* Debug lookup line */}
           <Collapsible className="border border-border rounded px-3 py-1.5">
             <CollapsibleTrigger className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors font-mono w-full">
@@ -874,6 +893,9 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
               </Button>
             </Section>
           )}
+
+            </CollapsibleContent>
+          </Collapsible>
 
           {/* Section — Actions */}
           <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
