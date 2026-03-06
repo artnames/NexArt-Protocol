@@ -22,13 +22,14 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Copy, Download, ChevronDown, RotateCcw, Image as ImageIcon,
   ShieldCheck, ShieldAlert, ShieldQuestion, Stamp, Info, Ban, Hash,
-  RefreshCw, Clock,
+  RefreshCw, Clock, FileText,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { CertifiedUsageEvent, NormalizedCER } from "./certified-records-types";
 import { verifyExportBundle } from "./certified-records-types";
 import VerificationReport from "./VerificationReport";
+import { buildSingleRecordAuditReport, downloadJson } from "@/lib/audit-export";
 
 interface CERDetailDrawerProps {
   event: CertifiedUsageEvent | null;
@@ -653,6 +654,23 @@ export default function CERDetailDrawer({ event, open, onOpenChange, projectName
               normalized={n}
               isLegacy={isLegacyCode}
             />
+          )}
+
+          {/* Export audit report button */}
+          {hasBundle && !isLegacyCode && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="font-mono text-xs w-full"
+              onClick={async () => {
+                const report = await buildSingleRecordAuditReport(n, projectName ?? null, appName ?? null);
+                downloadJson(report, `audit-report-${n.executionId || event.id}.json`);
+                toast({ title: "Audit report exported" });
+              }}
+            >
+              <FileText className="h-3.5 w-3.5 mr-1.5" />
+              Export audit report
+            </Button>
           )}
 
           {/* ── Technical details (collapsible) ── */}
