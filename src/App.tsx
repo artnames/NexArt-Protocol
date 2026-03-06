@@ -105,6 +105,8 @@ const App = () => (
               <Route path="/docs/certification/verify" element={<VerifyIndependently />} />
               <Route path="/docs/certification/node-stamps" element={<NodeStampsKeys />} />
               <Route path="/verify" element={<Verify />} />
+              <Route path="/e/:executionId" element={<VerifyPublic />} />
+              <Route path="/c/:certificateHash" element={<VerifyPublic />} />
               <Route path="/reference/standards" element={<StandardsAlignment />} />
               <Route path="/legal/cer-retention-policy" element={<CERRetentionPolicy />} />
 
