@@ -34,6 +34,8 @@ interface CERDetailDrawerProps {
   event: CertifiedUsageEvent | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  projectName?: string | null;
+  appName?: string | null;
 }
 
 function copyToClipboard(text: string, label: string, toast: ReturnType<typeof useToast>["toast"]) {
@@ -307,7 +309,7 @@ function InfoRow({ label, value }: { label: string; value: string | number | nul
   );
 }
 
-export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetailDrawerProps) {
+export default function CERDetailDrawer({ event, open, onOpenChange, projectName, appName }: CERDetailDrawerProps) {
   const { toast } = useToast();
   const [snapshotOpen, setSnapshotOpen] = useState(false);
   const [techDetailsOpen, setTechDetailsOpen] = useState(false);
@@ -699,6 +701,14 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
                   note="Original hash cannot be verified from this redacted export."
                 />
               )}
+            </Section>
+          )}
+
+          {/* Section — Project / App */}
+          {(projectName || appName) && (
+            <Section title="Project / App">
+              {projectName && <InfoRow label="Project" value={projectName} />}
+              {appName && <InfoRow label="App" value={appName} />}
             </Section>
           )}
 

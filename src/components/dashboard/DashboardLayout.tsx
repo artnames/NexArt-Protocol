@@ -8,6 +8,7 @@ import {
   Key, 
   BarChart3, 
   CreditCard, 
+  FolderOpen,
   LogOut,
   Menu,
   X
@@ -21,6 +22,7 @@ interface DashboardLayoutProps {
 
 const navItems = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+  { href: "/dashboard/projects", label: "Projects", icon: FolderOpen },
   { href: "/dashboard/api-keys", label: "API Keys", icon: Key },
   { href: "/dashboard/usage", label: "Usage & Records", icon: BarChart3 },
   { href: "/dashboard/billing", label: "Billing", icon: CreditCard },

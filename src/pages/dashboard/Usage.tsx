@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate, Link, useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,14 +18,18 @@ import { useToast } from "@/hooks/use-toast";
 import CERDetailDrawer from "@/components/dashboard/CERDetailDrawer";
 import CertificationSummary from "@/components/dashboard/CertificationSummary";
 import RecordsFilters, { type FiltersState } from "@/components/dashboard/RecordsFilters";
+import ProjectAppFilter from "@/components/dashboard/ProjectAppFilter";
 import {
   enrichEventWithCER, enrichEventWithStoredBundle, computeCertificationSummary,
   type CertifiedUsageEvent,
 } from "@/components/dashboard/certified-records-types";
+import { supabase } from "@/integrations/supabase/client";
+import { getProjectsMap, getAppsMapForProjects, type Project, type App } from "@/lib/projects-api";
 
 export default function Usage() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [usageToday, setUsageToday] = useState<UsageSummary | null>(null);
   const [usageMonth, setUsageMonth] = useState<UsageSummary | null>(null);
   const [recentEvents, setRecentEvents] = useState<CertifiedUsageEvent[]>([]);
@@ -42,6 +46,17 @@ export default function Usage() {
     status: "all", surface: "all", endpoint: "all", search: "",
   });
 
+  // Project/app filter from URL params or local state
+  const [selectedProject, setSelectedProject] = useState<string | null>(searchParams.get("project"));
+  const [selectedApp, setSelectedApp] = useState<string | null>(searchParams.get("app"));
+
+  // Project/app lookup maps for display
+  const [projectsMap, setProjectsMap] = useState<Record<string, Project>>({});
+  const [appsMap, setAppsMap] = useState<Record<string, App>>({});
+
+  // CER bundle project/app assignments
+  const [bundleAssignments, setBundleAssignments] = useState<Record<string, { project_id: string | null; app_id: string | null }>>({});
+
   useEffect(() => {
     if (!user) return;
     loadData();
@@ -51,13 +66,22 @@ export default function Usage() {
     setLoadError(null);
     setLoading(true);
     try {
-      const [todayData, monthData, eventsData] = await Promise.all([
+      const [todayData, monthData, eventsData, pMap] = await Promise.all([
         getUsageSummaryByPeriod("today"),
         getUsageSummaryByPeriod("month"),
         getRecentUsage(),
+        getProjectsMap(),
       ]);
       setUsageToday(todayData);
       setUsageMonth(monthData);
+      setProjectsMap(pMap);
+
+      // Fetch apps map
+      const projectIds = Object.keys(pMap);
+      if (projectIds.length > 0) {
+        const aMap = await getAppsMapForProjects(projectIds);
+        setAppsMap(aMap);
+      }
 
       // Fetch stored CER bundles for attest AND render events
       const bundleEventIds = eventsData
@@ -72,6 +96,21 @@ export default function Usage() {
         } catch (e) {
           console.warn("Failed to fetch CER bundles:", e);
         }
+      }
+
+      // Fetch project/app assignments for CER bundles
+      if (bundleEventIds.length > 0) {
+        try {
+          const { data: assignments } = await supabase
+            .from("cer_bundles")
+            .select("usage_event_id, project_id, app_id")
+            .in("usage_event_id", bundleEventIds);
+          const assignMap: Record<string, { project_id: string | null; app_id: string | null }> = {};
+          for (const a of (assignments ?? []) as any[]) {
+            assignMap[String(a.usage_event_id)] = { project_id: a.project_id, app_id: a.app_id };
+          }
+          setBundleAssignments(assignMap);
+        } catch { /* ignore */ }
       }
 
       // Enrich events with stored bundles where available
@@ -115,9 +154,17 @@ export default function Usage() {
         const matchId = e.normalized.executionId?.toLowerCase().includes(q) || String(e.id).toLowerCase().includes(q);
         if (!matchHash && !matchId) return false;
       }
+      // Project/app filter
+      const assign = bundleAssignments[String(e.id)];
+      if (selectedProject === "unassigned") {
+        if (assign?.project_id) return false;
+      } else if (selectedProject) {
+        if (assign?.project_id !== selectedProject) return false;
+        if (selectedApp && assign?.app_id !== selectedApp) return false;
+      }
       return true;
     });
-  }, [certifiedEvents, filters]);
+  }, [certifiedEvents, filters, selectedProject, selectedApp, bundleAssignments]);
 
   function formatDate(dateStr: string) {
     return new Date(dateStr).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -235,12 +282,21 @@ export default function Usage() {
                 </div>
               ) : (
                 <>
-                  <RecordsFilters filters={filters} onChange={setFilters} />
+                  <div className="flex flex-wrap items-center gap-3">
+                    <ProjectAppFilter
+                      projectId={selectedProject}
+                      appId={selectedApp}
+                      onChangeProject={setSelectedProject}
+                      onChangeApp={setSelectedApp}
+                    />
+                    <RecordsFilters filters={filters} onChange={setFilters} />
+                  </div>
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead>Time</TableHead>
+                          <TableHead>Project / App</TableHead>
                           <TableHead>Surface</TableHead>
                           <TableHead>Endpoint</TableHead>
                           <TableHead>Key</TableHead>
@@ -254,7 +310,7 @@ export default function Usage() {
                       <TableBody>
                         {filteredEvents.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+                            <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
                               No records match filters.
                             </TableCell>
                           </TableRow>
@@ -263,6 +319,19 @@ export default function Usage() {
                             <TableRow key={event.id}>
                               <TableCell className="text-muted-foreground text-xs whitespace-nowrap">
                                 {formatDate(event.created_at)}
+                              </TableCell>
+                              <TableCell className="text-xs">
+                                {(() => {
+                                  const assign = bundleAssignments[String(event.id)];
+                                  const proj = assign?.project_id ? projectsMap[assign.project_id] : null;
+                                  const app = assign?.app_id ? appsMap[assign.app_id] : null;
+                                  if (!proj) return <span className="text-muted-foreground">—</span>;
+                                  return (
+                                    <span className="font-mono">
+                                      {proj.name}{app ? ` / ${app.name}` : ""}
+                                    </span>
+                                  );
+                                })()}
                               </TableCell>
                               <TableCell>
                                 <Badge variant="outline" className="font-mono text-[10px]">
@@ -316,7 +385,13 @@ export default function Usage() {
         </div>
       )}
 
-      <CERDetailDrawer event={drawerEvent} open={drawerOpen} onOpenChange={setDrawerOpen} />
+      <CERDetailDrawer
+        event={drawerEvent}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        projectName={drawerEvent ? (bundleAssignments[String(drawerEvent.id)]?.project_id ? projectsMap[bundleAssignments[String(drawerEvent.id)]!.project_id!]?.name : null) : null}
+        appName={drawerEvent ? (bundleAssignments[String(drawerEvent.id)]?.app_id ? appsMap[bundleAssignments[String(drawerEvent.id)]!.app_id!]?.name : null) : null}
+      />
     </DashboardLayout>
   );
 }

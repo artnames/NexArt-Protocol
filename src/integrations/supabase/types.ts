@@ -14,8 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      apps: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          project_id: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          project_id: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          project_id?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apps_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cer_bundles: {
         Row: {
+          app_id: string | null
           artifact_mime: string | null
           artifact_path: string | null
           attestation_json: Json | null
@@ -24,10 +60,12 @@ export type Database = {
           certificate_hash: string | null
           created_at: string
           id: string
+          project_id: string | null
           usage_event_id: number
           user_id: string
         }
         Insert: {
+          app_id?: string | null
           artifact_mime?: string | null
           artifact_path?: string | null
           attestation_json?: Json | null
@@ -36,10 +74,12 @@ export type Database = {
           certificate_hash?: string | null
           created_at?: string
           id?: string
+          project_id?: string | null
           usage_event_id: number
           user_id: string
         }
         Update: {
+          app_id?: string | null
           artifact_mime?: string | null
           artifact_path?: string | null
           attestation_json?: Json | null
@@ -48,7 +88,50 @@ export type Database = {
           certificate_hash?: string | null
           created_at?: string
           id?: string
+          project_id?: string | null
           usage_event_id?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cer_bundles_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "apps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cer_bundles_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
