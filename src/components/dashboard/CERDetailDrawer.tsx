@@ -644,6 +644,23 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
             </>
           )}
 
+          {/* ── Verification Report (above all detail sections) ── */}
+          {hasBundle && !isLegacyCode && (
+            <VerificationReport
+              normalized={n}
+              isLegacy={isLegacyCode}
+              nodeUrl="https://node.nexart.io"
+            />
+          )}
+
+          {/* ── Technical details (collapsible) ── */}
+          <Collapsible open={techDetailsOpen} onOpenChange={setTechDetailsOpen}>
+            <CollapsibleTrigger className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-mono w-full border border-border rounded px-3 py-2">
+              <ChevronDown className={`h-3 w-3 transition-transform ${techDetailsOpen ? "rotate-180" : ""}`} />
+              View technical details
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-3 space-y-6">
+
           {/* Debug lookup line */}
           <Collapsible className="border border-border rounded px-3 py-1.5">
             <CollapsibleTrigger className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors font-mono w-full">
