@@ -154,9 +154,17 @@ export default function Usage() {
         const matchId = e.normalized.executionId?.toLowerCase().includes(q) || String(e.id).toLowerCase().includes(q);
         if (!matchHash && !matchId) return false;
       }
+      // Project/app filter
+      const assign = bundleAssignments[String(e.id)];
+      if (selectedProject === "unassigned") {
+        if (assign?.project_id) return false;
+      } else if (selectedProject) {
+        if (assign?.project_id !== selectedProject) return false;
+        if (selectedApp && assign?.app_id !== selectedApp) return false;
+      }
       return true;
     });
-  }, [certifiedEvents, filters]);
+  }, [certifiedEvents, filters, selectedProject, selectedApp, bundleAssignments]);
 
   function formatDate(dateStr: string) {
     return new Date(dateStr).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
