@@ -114,6 +114,9 @@ export async function computeVerificationReport(
       });
     } else {
       const stampResult = await verifyStamp(bundle, resolvedNodeUrl);
+      if (stampResult.debug) {
+        base.signatureDebug = stampResult.debug;
+      }
       if (stampResult.ok) {
         signaturePass = true;
         checks.push({ label: "Node Signature", status: "PASS", detail: stampResult.detail ?? "Ed25519 signature verified" });
