@@ -41,13 +41,14 @@ export default function ProjectDetail() {
   async function loadData() {
     setLoading(true);
     try {
-      // Fetch project name
+      // Fetch project details
       const { data: proj } = await supabase
         .from("projects")
-        .select("name")
+        .select("name, auto_stamp_enabled")
         .eq("id", projectId!)
         .single();
       setProjectName((proj as any)?.name ?? "Project");
+      setAutoStampEnabled((proj as any)?.auto_stamp_enabled ?? true);
       setApps(await listApps(projectId!));
     } catch {
       toast({ variant: "destructive", title: "Error", description: "Failed to load project." });
