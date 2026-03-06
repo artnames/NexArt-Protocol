@@ -309,7 +309,7 @@ function InfoRow({ label, value }: { label: string; value: string | number | nul
   );
 }
 
-export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetailDrawerProps) {
+export default function CERDetailDrawer({ event, open, onOpenChange, projectName, appName }: CERDetailDrawerProps) {
   const { toast } = useToast();
   const [snapshotOpen, setSnapshotOpen] = useState(false);
   const [techDetailsOpen, setTechDetailsOpen] = useState(false);
