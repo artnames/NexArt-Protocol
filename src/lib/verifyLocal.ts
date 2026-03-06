@@ -60,6 +60,7 @@ export interface StampVerifyResult {
     kidUsed: string;
     nodeUrlUsed: string;
     keyFormat: string;
+    serializationMode: string;
   };
 }
 
