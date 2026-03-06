@@ -11,7 +11,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Plus, Box, Pencil, Trash2, ArrowLeft } from "lucide-react";
+import { Plus, Box, Pencil, Trash2, ArrowLeft, FileDown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { listApps, createApp, updateApp, deleteApp, type App, type RetentionPolicy, RETENTION_LABELS } from "@/lib/projects-api";
