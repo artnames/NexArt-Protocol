@@ -88,9 +88,6 @@ const App = () => (
               <Route path="/common-code-mode-mistakes" element={<CommonCodeModeMistakes />} />
               <Route path="/code-mode-quick-reference" element={<CodeModeQuickReference />} />
               <Route path="/canonical-renderer" element={<CanonicalRenderer />} />
-              <Route path="/docs/get-started" element={<GetStarted />} />
-              <Route path="/docs/cli" element={<CLI />} />
-              <Route path="/docs/renderer-api" element={<RendererAPI />} />
               <Route path="/docs/ai-agent-contract" element={<AIAgentContract />} />
               <Route path="/builders/cli" element={<BuildersCLI />} />
               <Route path="/builders/quickstart" element={<BuildersQuickstart />} />
