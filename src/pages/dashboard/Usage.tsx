@@ -282,12 +282,21 @@ export default function Usage() {
                 </div>
               ) : (
                 <>
-                  <RecordsFilters filters={filters} onChange={setFilters} />
+                  <div className="flex flex-wrap items-center gap-3">
+                    <ProjectAppFilter
+                      projectId={selectedProject}
+                      appId={selectedApp}
+                      onChangeProject={setSelectedProject}
+                      onChangeApp={setSelectedApp}
+                    />
+                    <RecordsFilters filters={filters} onChange={setFilters} />
+                  </div>
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead>Time</TableHead>
+                          <TableHead>Project / App</TableHead>
                           <TableHead>Surface</TableHead>
                           <TableHead>Endpoint</TableHead>
                           <TableHead>Key</TableHead>
@@ -301,7 +310,7 @@ export default function Usage() {
                       <TableBody>
                         {filteredEvents.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+                            <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
                               No records match filters.
                             </TableCell>
                           </TableRow>
