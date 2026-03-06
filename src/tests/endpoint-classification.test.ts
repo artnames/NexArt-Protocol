@@ -29,6 +29,10 @@ describe("deriveSurface", () => {
     expect(deriveSurface(undefined)).toBe("code");
   });
 
+  it("classifies /api/stamp-hash as ai", () => {
+    expect(deriveSurface("/api/stamp-hash")).toBe("ai");
+  });
+
   it("does not classify random endpoints as ai", () => {
     expect(deriveSurface("/api/health")).toBe("code");
   });

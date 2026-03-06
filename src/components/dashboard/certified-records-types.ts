@@ -95,6 +95,7 @@ function deriveSurface(endpoint: string | undefined): "ai" | "code" {
   if (endpoint.includes("/v1/cer/ai/")) return "ai";
   if (endpoint.includes("cer/ai/create")) return "ai";
   if (endpoint.includes("cer/ai/certify")) return "ai";
+  if (endpoint.includes("stamp-hash")) return "ai";
   return "code";
 }
 
