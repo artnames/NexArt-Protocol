@@ -14,7 +14,7 @@ import {
 import { Plus, FolderOpen, Pencil, Trash2, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { listProjects, createProject, updateProject, deleteProject, type Project } from "@/lib/projects-api";
+import { listProjects, createProject, updateProject, deleteProject, type Project, RETENTION_LABELS, type RetentionPolicy } from "@/lib/projects-api";
 
 export default function Projects() {
   const { user, loading: authLoading } = useAuth();
