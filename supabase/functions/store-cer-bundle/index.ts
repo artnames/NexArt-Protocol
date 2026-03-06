@@ -179,6 +179,7 @@ async function autoStamp(
   bundleType: string,
   certificateHash: string,
   existingAttestation: Record<string, unknown> | null,
+  projectId: string | null,
 ): Promise<AutoStampResult> {
   const now = new Date().toISOString();
 
