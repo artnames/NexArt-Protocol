@@ -136,6 +136,7 @@ export default function Projects() {
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Slug</TableHead>
+                    <TableHead>Retention</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="w-[140px]">Actions</TableHead>
                   </TableRow>
