@@ -170,7 +170,7 @@ function copyText(text: string, label: string, toast: ReturnType<typeof useToast
   toast({ title: "Copied", description: `${label} copied to clipboard.` });
 }
 
-function VerdictBanner({ verdict }: { verdict: OverallVerdict }) {
+function VerdictBanner({ verdict, partialReason }: { verdict: OverallVerdict; partialReason?: string }) {
   switch (verdict) {
     case "VERIFIED":
       return (
