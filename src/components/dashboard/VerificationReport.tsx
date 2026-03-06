@@ -260,7 +260,7 @@ export default function VerificationReport({ normalized, isLegacy, nodeUrl }: Ve
 
   return (
     <div className="space-y-3">
-      <VerdictBanner verdict={report.verdict} />
+      <VerdictBanner verdict={report.verdict} partialReason={report.partialReason} />
 
       {/* Checks */}
       <div className="space-y-0.5 border border-border rounded-md px-3 py-2">
