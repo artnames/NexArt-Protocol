@@ -52,6 +52,15 @@ export interface StampVerifyResult {
   reason: ReasonCode;
   explanation: string;
   detail: string | null;
+  /** Debug info for signature verification diagnostics */
+  debug?: {
+    receiptType: string;
+    receiptPreview: string;
+    signaturePreview: string;
+    kidUsed: string;
+    nodeUrlUsed: string;
+    keyFormat: string;
+  };
 }
 
 const SUPPORTED_BUNDLE_TYPES = [
