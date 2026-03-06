@@ -301,6 +301,24 @@ export default function VerificationReport({ normalized, isLegacy, nodeUrl }: Ve
           <FieldRow label="Execution Timestamp" value={report.executionTimestamp} />
         </CollapsibleContent>
       </Collapsible>
+
+      {/* Signature debug (dev only) */}
+      {isDev && report.signatureDebug && (
+        <Collapsible open={debugOpen} onOpenChange={setDebugOpen}>
+          <CollapsibleTrigger className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-mono w-full">
+            <ChevronDown className={`h-3 w-3 transition-transform ${debugOpen ? "rotate-180" : ""}`} />
+            Signature debug
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-2 space-y-0.5 border border-border rounded-md px-3 py-2 bg-muted/20">
+            <FieldRow label="Receipt type" value={report.signatureDebug.receiptType} />
+            <FieldRow label="Receipt preview" value={report.signatureDebug.receiptPreview} />
+            <FieldRow label="Signature" value={report.signatureDebug.signaturePreview} />
+            <FieldRow label="Key ID used" value={report.signatureDebug.kidUsed} />
+            <FieldRow label="Node URL used" value={report.signatureDebug.nodeUrlUsed} />
+            <FieldRow label="Key format" value={report.signatureDebug.keyFormat} />
+          </CollapsibleContent>
+        </Collapsible>
+      )}
     </div>
   );
 }
