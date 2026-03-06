@@ -660,19 +660,58 @@ export default function CERDetailDrawer({ event, open, onOpenChange, projectName
 
           {/* Export audit report button */}
           {hasBundle && !isLegacyCode && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="font-mono text-xs w-full"
-              onClick={async () => {
-                const report = await buildSingleRecordAuditReport(n, projectName ?? null, appName ?? null);
-                downloadJson(report, `audit-report-${n.executionId || event.id}.json`);
-                toast({ title: "Audit report exported" });
-              }}
-            >
-              <FileText className="h-3.5 w-3.5 mr-1.5" />
-              Export audit report
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="font-mono text-xs"
+                onClick={async () => {
+                  const report = await buildSingleRecordAuditReport(n, projectName ?? null, appName ?? null);
+                  downloadJson(report, `audit-report-${n.executionId || event.id}.json`);
+                  toast({ title: "Audit report exported" });
+                }}
+              >
+                <FileText className="h-3.5 w-3.5 mr-1.5" />
+                Export audit report
+              </Button>
+              {(() => {
+                const vUrl = getVerificationUrl({
+                  executionId: n.executionId,
+                  certificateHash: n.certificateHash,
+                });
+                const vPath = getVerificationPath({
+                  executionId: n.executionId,
+                  certificateHash: n.certificateHash,
+                });
+                if (!vUrl) return null;
+                return (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="font-mono text-xs"
+                      onClick={() => copyToClipboard(vUrl, "Verification URL", toast)}
+                    >
+                      <LinkIcon className="h-3.5 w-3.5 mr-1.5" />
+                      Copy verification link
+                    </Button>
+                    {vPath && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="font-mono text-xs"
+                        asChild
+                      >
+                        <a href={vPath} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                          Open verification page
+                        </a>
+                      </Button>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
           )}
 
           {/* ── Technical details (collapsible) ── */}
