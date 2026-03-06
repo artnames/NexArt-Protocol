@@ -29,6 +29,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { CertifiedUsageEvent, NormalizedCER } from "./certified-records-types";
 import { verifyExportBundle } from "./certified-records-types";
 import VerificationReport from "./VerificationReport";
+import { buildSingleRecordAuditReport, downloadJson } from "@/lib/audit-export";
 
 interface CERDetailDrawerProps {
   event: CertifiedUsageEvent | null;
