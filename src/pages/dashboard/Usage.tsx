@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate, Link, useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,10 +18,13 @@ import { useToast } from "@/hooks/use-toast";
 import CERDetailDrawer from "@/components/dashboard/CERDetailDrawer";
 import CertificationSummary from "@/components/dashboard/CertificationSummary";
 import RecordsFilters, { type FiltersState } from "@/components/dashboard/RecordsFilters";
+import ProjectAppFilter from "@/components/dashboard/ProjectAppFilter";
 import {
   enrichEventWithCER, enrichEventWithStoredBundle, computeCertificationSummary,
   type CertifiedUsageEvent,
 } from "@/components/dashboard/certified-records-types";
+import { supabase } from "@/integrations/supabase/client";
+import { getProjectsMap, getAppsMapForProjects, type Project, type App } from "@/lib/projects-api";
 
 export default function Usage() {
   const { user, loading: authLoading } = useAuth();
