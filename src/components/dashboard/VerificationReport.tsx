@@ -41,13 +41,23 @@ export async function computeVerificationReport(
   nodeUrl?: string,
 ): Promise<VerificationReportData> {
   const bundle = n.rawBundleJson as Record<string, unknown> | null;
+
+  // Extract attestation using the same path as the drawer (meta.attestation first)
+  const { isSigned, attestation } = getStampFields(bundle ?? {});
+
+  // Resolve nodeUrl: explicit prop > attestation metadata > undefined (let verifyStamp skip)
+  const resolvedNodeUrl =
+    nodeUrl ??
+    (attestation?.nodeUrl as string | undefined) ??
+    undefined;
+
   const base: Omit<VerificationReportData, "verdict" | "checks"> = {
     certificateHash: n.certificateHash,
-    attestorKeyId: null,
+    attestorKeyId: (attestation?.attestorKeyId as string) ?? null,
     protocolVersion: n.protocolVersion,
     sdkVersion: n.sdkVersion,
     executionTimestamp: n.timestamp,
-    nodeUrl: nodeUrl ?? null,
+    nodeUrl: resolvedNodeUrl ?? null,
   };
 
   if (!bundle) {
@@ -81,29 +91,40 @@ export async function computeVerificationReport(
   }
 
   // 2) Node Signature
-  const { isSigned, attestation } = getStampFields(bundle);
   let signaturePass = false;
 
   if (isSigned && attestation) {
-    base.attestorKeyId = (attestation.attestorKeyId as string) ?? null;
-    const stampResult = await verifyStamp(bundle, nodeUrl);
-    if (stampResult.ok) {
-      signaturePass = true;
-      checks.push({ label: "Node Signature", status: "PASS", detail: stampResult.detail ?? "Ed25519 signature verified" });
+    if (!resolvedNodeUrl) {
+      checks.push({
+        label: "Node Signature",
+        status: "FAIL",
+        detail: "Node URL unavailable for offline signature verification",
+      });
     } else {
-      checks.push({ label: "Node Signature", status: "FAIL", detail: stampResult.detail ?? stampResult.explanation });
+      const stampResult = await verifyStamp(bundle, resolvedNodeUrl);
+      if (stampResult.ok) {
+        signaturePass = true;
+        checks.push({ label: "Node Signature", status: "PASS", detail: stampResult.detail ?? "Ed25519 signature verified" });
+      } else {
+        checks.push({ label: "Node Signature", status: "FAIL", detail: stampResult.detail ?? stampResult.explanation });
+      }
     }
   } else {
-    base.attestorKeyId = (attestation?.attestorKeyId as string) ?? null;
     checks.push({ label: "Node Signature", status: "N/A", detail: "No signed receipt present" });
   }
 
   // 3) Receipt Consistency — receipt.certificateHash vs bundle.certificateHash
   if (isSigned && attestation?.receipt) {
     try {
-      const receiptStr = attestation.receipt as string;
-      const receiptObj = JSON.parse(receiptStr) as Record<string, unknown>;
+      // Receipt may be a JSON string or already an object
+      const receiptRaw = attestation.receipt;
+      const receiptObj: Record<string, unknown> =
+        typeof receiptRaw === "string"
+          ? JSON.parse(receiptRaw)
+          : (receiptRaw as Record<string, unknown>);
+
       const receiptCertHash = receiptObj.certificateHash as string | undefined;
+      // Compare against the current bundle hash (which is the redacted/signed hash for reseal records)
       if (receiptCertHash && recordedHash) {
         if (receiptCertHash === recordedHash) {
           checks.push({ label: "Receipt Consistency", status: "PASS", detail: "Receipt certificateHash matches bundle" });
@@ -114,7 +135,6 @@ export async function computeVerificationReport(
         checks.push({ label: "Receipt Consistency", status: "N/A", detail: "Receipt missing certificateHash field" });
       }
     } catch {
-      // Receipt might not be JSON (could be opaque string)
       checks.push({ label: "Receipt Consistency", status: "N/A", detail: "Receipt is not parseable JSON" });
     }
   } else {
