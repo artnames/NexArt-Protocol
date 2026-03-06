@@ -23,6 +23,15 @@ interface CheckResult {
   detail?: string;
 }
 
+export interface SignatureDebugInfo {
+  receiptType: string;
+  receiptPreview: string;
+  signaturePreview: string;
+  kidUsed: string;
+  nodeUrlUsed: string;
+  keyFormat: string;
+}
+
 export interface VerificationReportData {
   verdict: OverallVerdict;
   partialReason?: string;
@@ -33,6 +42,7 @@ export interface VerificationReportData {
   sdkVersion: string | null;
   executionTimestamp: string | null;
   nodeUrl: string | null;
+  signatureDebug: SignatureDebugInfo | null;
 }
 
 // ── Compute report ──────────────────────────────────────────────────
