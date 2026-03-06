@@ -710,6 +710,15 @@ export default function CERDetailDrawer({ event, open, onOpenChange, projectName
             <Section title="Project / App">
               {projectName && <InfoRow label="Project" value={projectName} />}
               {appName && <InfoRow label="App" value={appName} />}
+              {projectRetentionPolicy && (
+                <InfoRow label="Retention" value={
+                  projectRetentionPolicy === '30_days' ? '30 days' :
+                  projectRetentionPolicy === '90_days' ? '90 days' :
+                  projectRetentionPolicy === '1_year' ? '1 year' :
+                  projectRetentionPolicy === 'forever' ? 'Forever' :
+                  projectRetentionPolicy
+                } />
+              )}
             </Section>
           )}
 

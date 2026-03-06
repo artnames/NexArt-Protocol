@@ -167,6 +167,45 @@ export default function ProjectDetail() {
                 </p>
               </div>
             </div>
+
+            {/* Retention policy */}
+            <div className="flex items-start gap-4 pt-4 border-t border-border">
+              <div className="space-y-1 flex-1">
+                <Label htmlFor="retention-select" className="cursor-pointer">
+                  Retention policy
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Controls how long NexArt-hosted CER records are retained for this project. Exported CERs remain portable artifacts and are not affected.
+                </p>
+                {/* TODO: Enforcement is future work. Current behavior is display/config only. */}
+              </div>
+              <Select
+                value={retentionPolicy}
+                onValueChange={async (val: RetentionPolicy) => {
+                  const prev = retentionPolicy;
+                  setRetentionPolicy(val);
+                  try {
+                    await supabase
+                      .from("projects")
+                      .update({ retention_policy: val, updated_at: new Date().toISOString() })
+                      .eq("id", projectId!);
+                    toast({ title: `Retention set to ${RETENTION_LABELS[val]}` });
+                  } catch {
+                    setRetentionPolicy(prev);
+                    toast({ variant: "destructive", title: "Error", description: "Failed to update retention policy." });
+                  }
+                }}
+              >
+                <SelectTrigger id="retention-select" className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.entries(RETENTION_LABELS) as [RetentionPolicy, string][]).map(([val, label]) => (
+                    <SelectItem key={val} value={val}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
 

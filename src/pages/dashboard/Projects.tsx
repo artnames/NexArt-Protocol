@@ -151,6 +151,11 @@ export default function Projects() {
                         </Link>
                       </TableCell>
                       <TableCell><Badge variant="outline" className="font-mono text-xs">{p.slug}</Badge></TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="font-mono text-xs">
+                          {RETENTION_LABELS[p.retention_policy as RetentionPolicy] ?? p.retention_policy}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">
