@@ -90,9 +90,16 @@ const EMPTY_NEW_FIELDS = {
 // ── Normalization logic ─────────────────────────────────────────────
 
 function deriveSurface(endpoint: string | undefined): "ai" | "code" {
-  if (endpoint?.includes("attest")) return "ai";
+  if (!endpoint) return "code";
+  if (endpoint.includes("attest")) return "ai";
+  if (endpoint.includes("/v1/cer/ai/")) return "ai";
+  if (endpoint.includes("cer/ai/create")) return "ai";
+  if (endpoint.includes("cer/ai/certify")) return "ai";
   return "code";
 }
+
+/** Exported for testing */
+export { deriveSurface as _deriveSurface };
 
 /**
  * Normalize a raw usage event + optional CER bundle into a single
