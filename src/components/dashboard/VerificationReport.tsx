@@ -30,6 +30,7 @@ export interface SignatureDebugInfo {
   kidUsed: string;
   nodeUrlUsed: string;
   keyFormat: string;
+  serializationMode?: string;
 }
 
 export interface VerificationReportData {
