@@ -35,6 +35,7 @@ export interface SingleRecordAuditReport {
   sdk_version: string | null;
   execution_timestamp: string | null;
   auto_stamp_status: string | null;
+  verification_url: string | null;
 }
 
 export interface ProjectExportRow {
