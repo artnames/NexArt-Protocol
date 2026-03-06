@@ -8,6 +8,7 @@ import {
   Key, 
   BarChart3, 
   CreditCard, 
+  FolderOpen,
   LogOut,
   Menu,
   X
