@@ -35,6 +35,8 @@ export default function AuthGatedRoutes() {
     if (location.pathname === "/dashboard/api-keys") return <ApiKeys />;
     if (location.pathname === "/dashboard/usage") return <Usage />;
     if (location.pathname === "/dashboard/billing") return <Billing />;
+    if (location.pathname === "/dashboard/projects") return <Projects />;
+    if (location.pathname.startsWith("/dashboard/projects/")) return <ProjectDetail />;
     return <Dashboard />;
   };
 
