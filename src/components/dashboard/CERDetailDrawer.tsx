@@ -704,6 +704,14 @@ export default function CERDetailDrawer({ event, open, onOpenChange, projectName
             </Section>
           )}
 
+          {/* Section — Project / App */}
+          {(projectName || appName) && (
+            <Section title="Project / App">
+              {projectName && <InfoRow label="Project" value={projectName} />}
+              {appName && <InfoRow label="App" value={appName} />}
+            </Section>
+          )}
+
           {/* Section — Identity */}
           <Section title="Identity">
             <InfoRow label="Execution ID" value={n.executionId} />
