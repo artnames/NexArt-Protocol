@@ -8,14 +8,6 @@ const MobileMenu = lazy(() => import("./MobileMenu"));
 // Grouped navigation
 const navGroups = [
   {
-    label: "Docs",
-    items: [
-      { href: "/docs/get-started", label: "Get Started" },
-      { href: "/docs/cli", label: "CLI" },
-      { href: "/docs/renderer-api", label: "Renderer API" },
-    ],
-  },
-  {
     label: "Certification",
     items: [
       { href: "/docs/certification/code-mode", label: "Code Mode" },
