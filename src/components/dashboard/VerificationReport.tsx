@@ -62,13 +62,14 @@ export async function computeVerificationReport(
     (attestation?.nodeUrl as string | undefined) ??
     undefined;
 
-  const base: Omit<VerificationReportData, "verdict" | "checks"> = {
+  const base: Omit<VerificationReportData, "verdict" | "checks" | "partialReason"> = {
     certificateHash: n.certificateHash,
     attestorKeyId: (attestation?.attestorKeyId as string) ?? null,
     protocolVersion: n.protocolVersion,
     sdkVersion: n.sdkVersion,
     executionTimestamp: n.timestamp,
     nodeUrl: resolvedNodeUrl ?? null,
+    signatureDebug: null,
   };
 
   if (!bundle) {
