@@ -894,6 +894,9 @@ export default function CERDetailDrawer({ event, open, onOpenChange }: CERDetail
             </Section>
           )}
 
+            </CollapsibleContent>
+          </Collapsible>
+
           {/* Section — Actions */}
           <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
             <TooltipProvider>
