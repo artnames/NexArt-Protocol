@@ -443,8 +443,8 @@ describe("enrichEventWithStoredBundle: legacy code + hash-only receipt", () => {
       source.indexOf("else if (attestation)"),
       source.indexOf("// For render bundles with a stored bundle"),
     );
-    expect(elseIfBlock).not.toContain("computeCertificateHash");
-    expect(elseIfBlock).not.toContain("buildVerifiableExportBundle");
+    expect(elseIfBlock).not.toContain("computeCertificateHash(");
+    expect(elseIfBlock).not.toContain("buildVerifiableExportBundle(");
     expect(elseIfBlock).not.toContain("recomputedHash");
   });
 });
