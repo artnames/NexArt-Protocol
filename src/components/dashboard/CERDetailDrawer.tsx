@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Sheet,
   SheetContent,
@@ -22,7 +23,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Copy, Download, ChevronDown, RotateCcw, Image as ImageIcon,
   ShieldCheck, ShieldAlert, ShieldQuestion, Stamp, Info, Ban, Hash,
-  RefreshCw, Clock, FileText,
+  RefreshCw, Clock, FileText, ExternalLink, Link as LinkIcon,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +31,7 @@ import type { CertifiedUsageEvent, NormalizedCER } from "./certified-records-typ
 import { verifyExportBundle } from "./certified-records-types";
 import VerificationReport from "./VerificationReport";
 import { buildSingleRecordAuditReport, downloadJson } from "@/lib/audit-export";
+import { getVerificationUrl, getVerificationPath } from "@/lib/verification-url";
 
 interface CERDetailDrawerProps {
   event: CertifiedUsageEvent | null;
@@ -658,19 +660,58 @@ export default function CERDetailDrawer({ event, open, onOpenChange, projectName
 
           {/* Export audit report button */}
           {hasBundle && !isLegacyCode && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="font-mono text-xs w-full"
-              onClick={async () => {
-                const report = await buildSingleRecordAuditReport(n, projectName ?? null, appName ?? null);
-                downloadJson(report, `audit-report-${n.executionId || event.id}.json`);
-                toast({ title: "Audit report exported" });
-              }}
-            >
-              <FileText className="h-3.5 w-3.5 mr-1.5" />
-              Export audit report
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="font-mono text-xs"
+                onClick={async () => {
+                  const report = await buildSingleRecordAuditReport(n, projectName ?? null, appName ?? null);
+                  downloadJson(report, `audit-report-${n.executionId || event.id}.json`);
+                  toast({ title: "Audit report exported" });
+                }}
+              >
+                <FileText className="h-3.5 w-3.5 mr-1.5" />
+                Export audit report
+              </Button>
+              {(() => {
+                const vUrl = getVerificationUrl({
+                  executionId: n.executionId,
+                  certificateHash: n.certificateHash,
+                });
+                const vPath = getVerificationPath({
+                  executionId: n.executionId,
+                  certificateHash: n.certificateHash,
+                });
+                if (!vUrl) return null;
+                return (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="font-mono text-xs"
+                      onClick={() => copyToClipboard(vUrl, "Verification URL", toast)}
+                    >
+                      <LinkIcon className="h-3.5 w-3.5 mr-1.5" />
+                      Copy verification link
+                    </Button>
+                    {vPath && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="font-mono text-xs"
+                        asChild
+                      >
+                        <a href={vPath} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                          Open verification page
+                        </a>
+                      </Button>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
           )}
 
           {/* ── Technical details (collapsible) ── */}

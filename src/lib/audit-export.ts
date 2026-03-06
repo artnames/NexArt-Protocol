@@ -8,6 +8,7 @@
 
 import type { NormalizedCER, CertifiedUsageEvent } from "@/components/dashboard/certified-records-types";
 import { computeVerificationReport, type OverallVerdict, type VerificationReportData } from "@/components/dashboard/VerificationReport";
+import { getVerificationUrl } from "@/lib/verification-url";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -34,6 +35,7 @@ export interface SingleRecordAuditReport {
   sdk_version: string | null;
   execution_timestamp: string | null;
   auto_stamp_status: string | null;
+  verification_url: string | null;
 }
 
 export interface ProjectExportRow {
@@ -116,6 +118,10 @@ export async function buildSingleRecordAuditReport(
     sdk_version: n.sdkVersion,
     execution_timestamp: n.timestamp,
     auto_stamp_status: deriveAutoStampStatus(n),
+    verification_url: getVerificationUrl({
+      executionId: n.executionId,
+      certificateHash: n.certificateHash,
+    }),
   };
 }
 
