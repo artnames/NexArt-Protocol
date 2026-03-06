@@ -1,11 +1,21 @@
 import { supabase } from "@/integrations/supabase/client";
 
+export type RetentionPolicy = '30_days' | '90_days' | '1_year' | 'forever';
+
+export const RETENTION_LABELS: Record<RetentionPolicy, string> = {
+  '30_days': '30 days',
+  '90_days': '90 days',
+  '1_year': '1 year',
+  'forever': 'Forever',
+};
+
 export interface Project {
   id: string;
   user_id: string;
   name: string;
   slug: string;
   auto_stamp_enabled: boolean;
+  retention_policy: RetentionPolicy;
   created_at: string;
   updated_at: string;
 }
