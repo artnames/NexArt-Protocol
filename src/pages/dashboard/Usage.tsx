@@ -29,6 +29,7 @@ import { getProjectsMap, getAppsMapForProjects, type Project, type App } from "@
 export default function Usage() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [usageToday, setUsageToday] = useState<UsageSummary | null>(null);
   const [usageMonth, setUsageMonth] = useState<UsageSummary | null>(null);
   const [recentEvents, setRecentEvents] = useState<CertifiedUsageEvent[]>([]);
@@ -44,6 +45,17 @@ export default function Usage() {
   const [filters, setFilters] = useState<FiltersState>({
     status: "all", surface: "all", endpoint: "all", search: "",
   });
+
+  // Project/app filter from URL params or local state
+  const [selectedProject, setSelectedProject] = useState<string | null>(searchParams.get("project"));
+  const [selectedApp, setSelectedApp] = useState<string | null>(searchParams.get("app"));
+
+  // Project/app lookup maps for display
+  const [projectsMap, setProjectsMap] = useState<Record<string, Project>>({});
+  const [appsMap, setAppsMap] = useState<Record<string, App>>({});
+
+  // CER bundle project/app assignments
+  const [bundleAssignments, setBundleAssignments] = useState<Record<string, { project_id: string | null; app_id: string | null }>>({});
 
   useEffect(() => {
     if (!user) return;
