@@ -112,6 +112,9 @@ const App = () => (
               <Route path="/c/:certificateHash" element={<VerifyPublic />} />
               <Route path="/reference/standards" element={<StandardsAlignment />} />
               <Route path="/legal/cer-retention-policy" element={<CERRetentionPolicy />} />
+              <Route path="/docs/api/overview" element={<ApiOverview />} />
+              <Route path="/docs/api/ai-cer-creation" element={<ApiAiCerCreation />} />
+              <Route path="/docs/api/certification" element={<ApiCertification />} />
 
               {/* Auth-gated routes: AuthProvider only mounts here */}
               <Route path="/auth" element={<AuthGatedRoutes />} />
