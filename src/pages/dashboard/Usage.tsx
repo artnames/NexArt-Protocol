@@ -320,6 +320,19 @@ export default function Usage() {
                               <TableCell className="text-muted-foreground text-xs whitespace-nowrap">
                                 {formatDate(event.created_at)}
                               </TableCell>
+                              <TableCell className="text-xs">
+                                {(() => {
+                                  const assign = bundleAssignments[String(event.id)];
+                                  const proj = assign?.project_id ? projectsMap[assign.project_id] : null;
+                                  const app = assign?.app_id ? appsMap[assign.app_id] : null;
+                                  if (!proj) return <span className="text-muted-foreground">—</span>;
+                                  return (
+                                    <span className="font-mono">
+                                      {proj.name}{app ? ` / ${app.name}` : ""}
+                                    </span>
+                                  );
+                                })()}
+                              </TableCell>
                               <TableCell>
                                 <Badge variant="outline" className="font-mono text-[10px]">
                                   {event.surface === "ai" ? "AI" : "Code Mode"}
