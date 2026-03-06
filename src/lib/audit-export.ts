@@ -8,6 +8,7 @@
 
 import type { NormalizedCER, CertifiedUsageEvent } from "@/components/dashboard/certified-records-types";
 import { computeVerificationReport, type OverallVerdict, type VerificationReportData } from "@/components/dashboard/VerificationReport";
+import { getVerificationUrl } from "@/lib/verification-url";
 
 // ── Types ────────────────────────────────────────────────────────────
 
