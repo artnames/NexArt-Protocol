@@ -25,6 +25,7 @@ interface CheckResult {
 
 export interface VerificationReportData {
   verdict: OverallVerdict;
+  partialReason?: string;
   checks: CheckResult[];
   certificateHash: string | null;
   attestorKeyId: string | null;
