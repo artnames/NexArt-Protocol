@@ -385,7 +385,13 @@ export default function Usage() {
         </div>
       )}
 
-      <CERDetailDrawer event={drawerEvent} open={drawerOpen} onOpenChange={setDrawerOpen} />
+      <CERDetailDrawer
+        event={drawerEvent}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        projectName={drawerEvent ? (bundleAssignments[String(drawerEvent.id)]?.project_id ? projectsMap[bundleAssignments[String(drawerEvent.id)]!.project_id!]?.name : null) : null}
+        appName={drawerEvent ? (bundleAssignments[String(drawerEvent.id)]?.app_id ? appsMap[bundleAssignments[String(drawerEvent.id)]!.app_id!]?.name : null) : null}
+      />
     </DashboardLayout>
   );
 }
