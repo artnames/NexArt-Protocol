@@ -16,12 +16,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { listApps, createApp, updateApp, deleteApp, type App } from "@/lib/projects-api";
 import { supabase } from "@/integrations/supabase/client";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export default function ProjectDetail() {
   const { projectId } = useParams<{ projectId: string }>();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [projectName, setProjectName] = useState<string>("");
+  const [autoStampEnabled, setAutoStampEnabled] = useState(true);
   const [apps, setApps] = useState<App[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,13 +41,14 @@ export default function ProjectDetail() {
   async function loadData() {
     setLoading(true);
     try {
-      // Fetch project name
+      // Fetch project details
       const { data: proj } = await supabase
         .from("projects")
-        .select("name")
+        .select("name, auto_stamp_enabled")
         .eq("id", projectId!)
         .single();
       setProjectName((proj as any)?.name ?? "Project");
+      setAutoStampEnabled((proj as any)?.auto_stamp_enabled ?? true);
       setApps(await listApps(projectId!));
     } catch {
       toast({ variant: "destructive", title: "Error", description: "Failed to load project." });
@@ -125,7 +129,43 @@ export default function ProjectDetail() {
               </DialogContent>
             </Dialog>
           </div>
-        </div>
+      </div>
+
+        {/* Auto-stamp setting */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Settings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-start gap-4">
+              <Switch
+                id="auto-stamp-toggle"
+                checked={autoStampEnabled}
+                onCheckedChange={async (checked) => {
+                  setAutoStampEnabled(checked);
+                  try {
+                    await supabase
+                      .from("projects")
+                      .update({ auto_stamp_enabled: checked, updated_at: new Date().toISOString() })
+                      .eq("id", projectId!);
+                    toast({ title: checked ? "Auto-stamp enabled" : "Auto-stamp disabled" });
+                  } catch {
+                    setAutoStampEnabled(!checked);
+                    toast({ variant: "destructive", title: "Error", description: "Failed to update setting." });
+                  }
+                }}
+              />
+              <div className="space-y-1">
+                <Label htmlFor="auto-stamp-toggle" className="cursor-pointer">
+                  Auto-stamp CERs during ingestion
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  When enabled, NexArt automatically requests a signed node receipt for each new record in this project. This improves offline verifiability but uses additional node attestations.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>

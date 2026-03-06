@@ -111,6 +111,7 @@ export type Database = {
       }
       projects: {
         Row: {
+          auto_stamp_enabled: boolean
           created_at: string
           id: string
           name: string
@@ -119,6 +120,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          auto_stamp_enabled?: boolean
           created_at?: string
           id?: string
           name: string
@@ -127,6 +129,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          auto_stamp_enabled?: boolean
           created_at?: string
           id?: string
           name?: string

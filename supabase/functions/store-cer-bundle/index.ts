@@ -156,6 +156,7 @@ type AutoStampStatus =
   | 'skipped_unverifiable_ai'
   | 'skipped_unknown'
   | 'skipped_disabled'
+  | 'skipped_user_disabled'
   | 'skipped_rate_limited'
   | 'failed';
 
@@ -178,6 +179,7 @@ async function autoStamp(
   bundleType: string,
   certificateHash: string,
   existingAttestation: Record<string, unknown> | null,
+  projectId: string | null,
 ): Promise<AutoStampResult> {
   const now = new Date().toISOString();
 
@@ -195,9 +197,25 @@ async function autoStamp(
   // Classify first to determine surface before checking flag
   const classification = classifyCERBundle(redactedBundle, bundleType, certificateHash, null);
 
-  // 2) Check feature flag
+  // 2) Check global feature flag
   if (!isAutoStampEnabled(classification.surface)) {
     return { autoStampStatus: 'skipped_disabled', autoStampError: null, autoStampedAt: now, attestation: null, newCertificateHash: null };
+  }
+
+  // 2b) Check project-level auto-stamp setting (if record has a project)
+  if (projectId) {
+    try {
+      const { data: proj } = await supabaseAdmin
+        .from('projects')
+        .select('auto_stamp_enabled')
+        .eq('id', projectId)
+        .single();
+      if (proj && (proj as any).auto_stamp_enabled === false) {
+        return { autoStampStatus: 'skipped_user_disabled', autoStampError: 'Project auto-stamp disabled by user', autoStampedAt: now, attestation: null, newCertificateHash: null };
+      }
+    } catch {
+      // If lookup fails, fall through to global behavior
+    }
   }
 
   const nodeApiKey = Deno.env.get('NEXART_NODE_API_KEY');
@@ -593,6 +611,9 @@ Deno.serve(async (req) => {
       newCertificateHash: null,
     };
 
+    // Resolve project_id from the bundle or body if provided
+    const projectId: string | null = (body.project_id ?? body.projectId ?? bundle.project_id ?? null) as string | null;
+
     try {
       autoStampResult = await autoStamp(
         supabaseAdmin,
@@ -603,6 +624,7 @@ Deno.serve(async (req) => {
         bundleType,
         certificateHash,
         existingAttestation,
+        projectId,
       );
       console.info(JSON.stringify({
         action: 'auto_stamp_complete',

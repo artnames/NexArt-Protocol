@@ -5,6 +5,7 @@ export interface Project {
   user_id: string;
   name: string;
   slug: string;
+  auto_stamp_enabled: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -50,10 +51,18 @@ export async function createProject(name: string): Promise<Project> {
   return data as unknown as Project;
 }
 
-export async function updateProject(id: string, name: string): Promise<Project> {
+export async function updateProject(id: string, fields: { name?: string; auto_stamp_enabled?: boolean }): Promise<Project> {
+  const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (fields.name !== undefined) {
+    updates.name = fields.name;
+    updates.slug = slugify(fields.name);
+  }
+  if (fields.auto_stamp_enabled !== undefined) {
+    updates.auto_stamp_enabled = fields.auto_stamp_enabled;
+  }
   const { data, error } = await supabase
     .from("projects")
-    .update({ name, slug: slugify(name), updated_at: new Date().toISOString() })
+    .update(updates)
     .eq("id", id)
     .select()
     .single();

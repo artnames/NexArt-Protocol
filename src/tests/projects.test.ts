@@ -81,3 +81,64 @@ describe("filterByProjectApp", () => {
     expect(unassigned).toHaveLength(2);
   });
 });
+
+// ── Auto-stamp per-project decision logic ────────────────────────────
+
+interface AutoStampContext {
+  globalEnabled: boolean;
+  surfaceEnabled: boolean;
+  projectId: string | null;
+  projectAutoStampEnabled: boolean | null; // null = project not found or no project
+}
+
+type AutoStampDecision = 'proceed' | 'skipped_disabled' | 'skipped_user_disabled';
+
+function decideAutoStamp(ctx: AutoStampContext): AutoStampDecision {
+  if (!ctx.globalEnabled || !ctx.surfaceEnabled) return 'skipped_disabled';
+  if (ctx.projectId && ctx.projectAutoStampEnabled === false) return 'skipped_user_disabled';
+  return 'proceed';
+}
+
+describe("auto-stamp per-project decision", () => {
+  it("proceeds when project auto-stamp is enabled", () => {
+    expect(decideAutoStamp({
+      globalEnabled: true, surfaceEnabled: true,
+      projectId: "p1", projectAutoStampEnabled: true,
+    })).toBe("proceed");
+  });
+
+  it("returns skipped_user_disabled when project disables auto-stamp", () => {
+    expect(decideAutoStamp({
+      globalEnabled: true, surfaceEnabled: true,
+      projectId: "p1", projectAutoStampEnabled: false,
+    })).toBe("skipped_user_disabled");
+  });
+
+  it("unassigned records follow global flags (enabled)", () => {
+    expect(decideAutoStamp({
+      globalEnabled: true, surfaceEnabled: true,
+      projectId: null, projectAutoStampEnabled: null,
+    })).toBe("proceed");
+  });
+
+  it("unassigned records follow global flags (disabled)", () => {
+    expect(decideAutoStamp({
+      globalEnabled: false, surfaceEnabled: true,
+      projectId: null, projectAutoStampEnabled: null,
+    })).toBe("skipped_disabled");
+  });
+
+  it("global disabled overrides project enabled", () => {
+    expect(decideAutoStamp({
+      globalEnabled: false, surfaceEnabled: true,
+      projectId: "p1", projectAutoStampEnabled: true,
+    })).toBe("skipped_disabled");
+  });
+
+  it("surface disabled overrides project enabled", () => {
+    expect(decideAutoStamp({
+      globalEnabled: true, surfaceEnabled: false,
+      projectId: "p1", projectAutoStampEnabled: true,
+    })).toBe("skipped_disabled");
+  });
+});
