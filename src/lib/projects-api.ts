@@ -5,6 +5,7 @@ export interface Project {
   user_id: string;
   name: string;
   slug: string;
+  auto_stamp_enabled: boolean;
   created_at: string;
   updated_at: string;
 }
