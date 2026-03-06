@@ -30,6 +30,7 @@ export interface SignatureDebugInfo {
   kidUsed: string;
   nodeUrlUsed: string;
   keyFormat: string;
+  serializationMode?: string;
 }
 
 export interface VerificationReportData {
@@ -317,6 +318,7 @@ export default function VerificationReport({ normalized, isLegacy, nodeUrl }: Ve
             <FieldRow label="Key ID used" value={report.signatureDebug.kidUsed} />
             <FieldRow label="Node URL used" value={report.signatureDebug.nodeUrlUsed} />
             <FieldRow label="Key format" value={report.signatureDebug.keyFormat} />
+            <FieldRow label="Serialization" value={report.signatureDebug.serializationMode ?? "unknown"} />
           </CollapsibleContent>
         </Collapsible>
       )}

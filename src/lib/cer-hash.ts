@@ -3,7 +3,7 @@
  * Used to recompute hashes over redacted payloads for verifiable exports.
  */
 
-function canonicalize(value: unknown): string {
+export function canonicalize(value: unknown): string {
   if (value === null) return "null";
   if (typeof value === "boolean") return value ? "true" : "false";
   if (typeof value === "number") {
