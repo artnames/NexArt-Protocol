@@ -61,7 +61,7 @@ export async function createProject(name: string): Promise<Project> {
   return data as unknown as Project;
 }
 
-export async function updateProject(id: string, fields: { name?: string; auto_stamp_enabled?: boolean }): Promise<Project> {
+export async function updateProject(id: string, fields: { name?: string; auto_stamp_enabled?: boolean; retention_policy?: RetentionPolicy }): Promise<Project> {
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (fields.name !== undefined) {
     updates.name = fields.name;
