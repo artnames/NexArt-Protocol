@@ -25,7 +25,6 @@ import {
   type VerifyResult, type StampVerifyResult,
 } from "@/lib/verifyLocal";
 import { getVerificationUrl } from "@/lib/verification-url";
-import { supabase } from "@/integrations/supabase/client";
 
 function copyText(text: string, label: string, toast: ReturnType<typeof useToast>["toast"]) {
   navigator.clipboard.writeText(text);
