@@ -25,6 +25,7 @@ interface CheckResult {
 
 export interface VerificationReportData {
   verdict: OverallVerdict;
+  partialReason?: string;
   checks: CheckResult[];
   certificateHash: string | null;
   attestorKeyId: string | null;
@@ -143,15 +144,23 @@ export async function computeVerificationReport(
 
   // Derive verdict
   let verdict: OverallVerdict;
+  let partialReason: string | undefined;
   if (!integrityPass) {
     verdict = "INVALID";
   } else if (integrityPass && signaturePass) {
     verdict = "VERIFIED";
+  } else if (isSigned && !resolvedNodeUrl) {
+    // Signed receipt exists but we can't verify the key
+    verdict = "PARTIAL";
+    partialReason = "Signed receipt present, but node key lookup unavailable.";
+  } else if (isSigned) {
+    verdict = "PARTIAL";
+    partialReason = "Signed receipt present but signature verification failed.";
   } else {
     verdict = "PARTIAL";
   }
 
-  return { ...base, verdict, checks };
+  return { ...base, verdict, partialReason, checks };
 }
 
 // ── Component ───────────────────────────────────────────────────────
@@ -161,7 +170,7 @@ function copyText(text: string, label: string, toast: ReturnType<typeof useToast
   toast({ title: "Copied", description: `${label} copied to clipboard.` });
 }
 
-function VerdictBanner({ verdict }: { verdict: OverallVerdict }) {
+function VerdictBanner({ verdict, partialReason }: { verdict: OverallVerdict; partialReason?: string }) {
   switch (verdict) {
     case "VERIFIED":
       return (
@@ -179,7 +188,7 @@ function VerdictBanner({ verdict }: { verdict: OverallVerdict }) {
           <ShieldQuestion className="h-5 w-5 text-yellow-600 shrink-0" />
           <div>
             <p className="font-mono text-sm font-semibold text-yellow-600">PARTIAL</p>
-            <p className="text-xs text-muted-foreground">Bundle integrity passes but no signed receipt for offline verification.</p>
+            <p className="text-xs text-muted-foreground">{partialReason ?? "Bundle integrity passes but no signed receipt for offline verification."}</p>
           </div>
         </div>
       );
@@ -251,7 +260,7 @@ export default function VerificationReport({ normalized, isLegacy, nodeUrl }: Ve
 
   return (
     <div className="space-y-3">
-      <VerdictBanner verdict={report.verdict} />
+      <VerdictBanner verdict={report.verdict} partialReason={report.partialReason} />
 
       {/* Checks */}
       <div className="space-y-0.5 border border-border rounded-md px-3 py-2">
