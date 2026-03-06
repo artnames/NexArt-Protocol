@@ -61,7 +61,7 @@ export default function Projects() {
   async function handleUpdate() {
     if (!editProject || !editName.trim()) return;
     try {
-      await updateProject(editProject.id, editName.trim());
+      await updateProject(editProject.id, { name: editName.trim() });
       setEditProject(null);
       toast({ title: "Project renamed" });
       loadProjects();
