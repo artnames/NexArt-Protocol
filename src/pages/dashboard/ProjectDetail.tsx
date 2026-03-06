@@ -16,6 +16,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { listApps, createApp, updateApp, deleteApp, type App } from "@/lib/projects-api";
 import { supabase } from "@/integrations/supabase/client";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export default function ProjectDetail() {
   const { projectId } = useParams<{ projectId: string }>();
