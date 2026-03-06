@@ -14,7 +14,7 @@ import {
 import { Plus, FolderOpen, Pencil, Trash2, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { listProjects, createProject, updateProject, deleteProject, type Project } from "@/lib/projects-api";
+import { listProjects, createProject, updateProject, deleteProject, type Project, RETENTION_LABELS, type RetentionPolicy } from "@/lib/projects-api";
 
 export default function Projects() {
   const { user, loading: authLoading } = useAuth();
@@ -136,6 +136,7 @@ export default function Projects() {
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Slug</TableHead>
+                    <TableHead>Retention</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="w-[140px]">Actions</TableHead>
                   </TableRow>
@@ -150,6 +151,11 @@ export default function Projects() {
                         </Link>
                       </TableCell>
                       <TableCell><Badge variant="outline" className="font-mono text-xs">{p.slug}</Badge></TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="font-mono text-xs">
+                          {RETENTION_LABELS[p.retention_policy as RetentionPolicy] ?? p.retention_policy}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">

@@ -36,6 +36,7 @@ interface CERDetailDrawerProps {
   onOpenChange: (open: boolean) => void;
   projectName?: string | null;
   appName?: string | null;
+  projectRetentionPolicy?: string | null;
 }
 
 function copyToClipboard(text: string, label: string, toast: ReturnType<typeof useToast>["toast"]) {
@@ -309,7 +310,7 @@ function InfoRow({ label, value }: { label: string; value: string | number | nul
   );
 }
 
-export default function CERDetailDrawer({ event, open, onOpenChange, projectName, appName }: CERDetailDrawerProps) {
+export default function CERDetailDrawer({ event, open, onOpenChange, projectName, appName, projectRetentionPolicy }: CERDetailDrawerProps) {
   const { toast } = useToast();
   const [snapshotOpen, setSnapshotOpen] = useState(false);
   const [techDetailsOpen, setTechDetailsOpen] = useState(false);
@@ -709,6 +710,15 @@ export default function CERDetailDrawer({ event, open, onOpenChange, projectName
             <Section title="Project / App">
               {projectName && <InfoRow label="Project" value={projectName} />}
               {appName && <InfoRow label="App" value={appName} />}
+              {projectRetentionPolicy && (
+                <InfoRow label="Retention" value={
+                  projectRetentionPolicy === '30_days' ? '30 days' :
+                  projectRetentionPolicy === '90_days' ? '90 days' :
+                  projectRetentionPolicy === '1_year' ? '1 year' :
+                  projectRetentionPolicy === 'forever' ? 'Forever' :
+                  projectRetentionPolicy
+                } />
+              )}
             </Section>
           )}
 

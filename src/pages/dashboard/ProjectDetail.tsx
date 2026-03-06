@@ -14,8 +14,9 @@ import {
 import { Plus, Box, Pencil, Trash2, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { listApps, createApp, updateApp, deleteApp, type App } from "@/lib/projects-api";
+import { listApps, createApp, updateApp, deleteApp, type App, type RetentionPolicy, RETENTION_LABELS } from "@/lib/projects-api";
 import { supabase } from "@/integrations/supabase/client";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
@@ -25,6 +26,7 @@ export default function ProjectDetail() {
   const { toast } = useToast();
   const [projectName, setProjectName] = useState<string>("");
   const [autoStampEnabled, setAutoStampEnabled] = useState(true);
+  const [retentionPolicy, setRetentionPolicy] = useState<RetentionPolicy>('forever');
   const [apps, setApps] = useState<App[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,11 +46,12 @@ export default function ProjectDetail() {
       // Fetch project details
       const { data: proj } = await supabase
         .from("projects")
-        .select("name, auto_stamp_enabled")
+        .select("name, auto_stamp_enabled, retention_policy")
         .eq("id", projectId!)
         .single();
       setProjectName((proj as any)?.name ?? "Project");
       setAutoStampEnabled((proj as any)?.auto_stamp_enabled ?? true);
+      setRetentionPolicy((proj as any)?.retention_policy ?? 'forever');
       setApps(await listApps(projectId!));
     } catch {
       toast({ variant: "destructive", title: "Error", description: "Failed to load project." });
@@ -163,6 +166,45 @@ export default function ProjectDetail() {
                   When enabled, NexArt automatically requests a signed node receipt for each new record in this project. This improves offline verifiability but uses additional node attestations.
                 </p>
               </div>
+            </div>
+
+            {/* Retention policy */}
+            <div className="flex items-start gap-4 pt-4 border-t border-border">
+              <div className="space-y-1 flex-1">
+                <Label htmlFor="retention-select" className="cursor-pointer">
+                  Retention policy
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Controls how long NexArt-hosted CER records are retained for this project. Exported CERs remain portable artifacts and are not affected.
+                </p>
+                {/* TODO: Enforcement is future work. Current behavior is display/config only. */}
+              </div>
+              <Select
+                value={retentionPolicy}
+                onValueChange={async (val: RetentionPolicy) => {
+                  const prev = retentionPolicy;
+                  setRetentionPolicy(val);
+                  try {
+                    await supabase
+                      .from("projects")
+                      .update({ retention_policy: val, updated_at: new Date().toISOString() })
+                      .eq("id", projectId!);
+                    toast({ title: `Retention set to ${RETENTION_LABELS[val]}` });
+                  } catch {
+                    setRetentionPolicy(prev);
+                    toast({ variant: "destructive", title: "Error", description: "Failed to update retention policy." });
+                  }
+                }}
+              >
+                <SelectTrigger id="retention-select" className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.entries(RETENTION_LABELS) as [RetentionPolicy, string][]).map(([val, label]) => (
+                    <SelectItem key={val} value={val}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>

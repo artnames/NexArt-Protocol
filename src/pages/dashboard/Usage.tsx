@@ -391,6 +391,7 @@ export default function Usage() {
         onOpenChange={setDrawerOpen}
         projectName={drawerEvent ? (bundleAssignments[String(drawerEvent.id)]?.project_id ? projectsMap[bundleAssignments[String(drawerEvent.id)]!.project_id!]?.name : null) : null}
         appName={drawerEvent ? (bundleAssignments[String(drawerEvent.id)]?.app_id ? appsMap[bundleAssignments[String(drawerEvent.id)]!.app_id!]?.name : null) : null}
+        projectRetentionPolicy={drawerEvent ? (bundleAssignments[String(drawerEvent.id)]?.project_id ? (projectsMap[bundleAssignments[String(drawerEvent.id)]!.project_id!] as any)?.retention_policy : null) : null}
       />
     </DashboardLayout>
   );

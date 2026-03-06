@@ -1,0 +1,1 @@
+ALTER TABLE projects ADD COLUMN retention_policy text NOT NULL DEFAULT 'forever';

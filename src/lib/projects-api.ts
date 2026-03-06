@@ -1,11 +1,21 @@
 import { supabase } from "@/integrations/supabase/client";
 
+export type RetentionPolicy = '30_days' | '90_days' | '1_year' | 'forever';
+
+export const RETENTION_LABELS: Record<RetentionPolicy, string> = {
+  '30_days': '30 days',
+  '90_days': '90 days',
+  '1_year': '1 year',
+  'forever': 'Forever',
+};
+
 export interface Project {
   id: string;
   user_id: string;
   name: string;
   slug: string;
   auto_stamp_enabled: boolean;
+  retention_policy: RetentionPolicy;
   created_at: string;
   updated_at: string;
 }
@@ -51,7 +61,7 @@ export async function createProject(name: string): Promise<Project> {
   return data as unknown as Project;
 }
 
-export async function updateProject(id: string, fields: { name?: string; auto_stamp_enabled?: boolean }): Promise<Project> {
+export async function updateProject(id: string, fields: { name?: string; auto_stamp_enabled?: boolean; retention_policy?: RetentionPolicy }): Promise<Project> {
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (fields.name !== undefined) {
     updates.name = fields.name;
@@ -59,6 +69,9 @@ export async function updateProject(id: string, fields: { name?: string; auto_st
   }
   if (fields.auto_stamp_enabled !== undefined) {
     updates.auto_stamp_enabled = fields.auto_stamp_enabled;
+  }
+  if (fields.retention_policy !== undefined) {
+    updates.retention_policy = fields.retention_policy;
   }
   const { data, error } = await supabase
     .from("projects")
