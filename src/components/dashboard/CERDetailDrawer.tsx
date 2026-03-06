@@ -22,7 +22,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Copy, Download, ChevronDown, RotateCcw, Image as ImageIcon,
   ShieldCheck, ShieldAlert, ShieldQuestion, Stamp, Info, Ban, Hash,
-  RefreshCw, Clock,
+  RefreshCw, Clock, FileText,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
