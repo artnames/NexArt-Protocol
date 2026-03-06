@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.reseal-attest]
 verify_jwt = false
+
+[functions.public-cer-lookup]
+verify_jwt = false

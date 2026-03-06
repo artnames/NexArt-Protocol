@@ -25,7 +25,6 @@ import {
   type VerifyResult, type StampVerifyResult,
 } from "@/lib/verifyLocal";
 import { getVerificationUrl } from "@/lib/verification-url";
-import { supabase } from "@/integrations/supabase/client";
 
 function copyText(text: string, label: string, toast: ReturnType<typeof useToast>["toast"]) {
   navigator.clipboard.writeText(text);
@@ -78,14 +77,6 @@ export default function VerifyPublic() {
         if (mode === "executionId") params.set("executionId", lookupValue);
         else params.set("certificateHash", lookupValue);
 
-        const { data, error } = await supabase.functions.invoke("public-cer-lookup", {
-          body: null,
-          method: "GET",
-          headers: {},
-        });
-
-        // supabase.functions.invoke doesn't support query params well,
-        // so we use fetch directly
         const baseUrl = import.meta.env.VITE_SUPABASE_URL;
         const resp = await fetch(
           `${baseUrl}/functions/v1/public-cer-lookup?${params.toString()}`,

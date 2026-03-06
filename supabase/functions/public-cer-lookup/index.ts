@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 /**
@@ -12,6 +12,7 @@ const corsHeaders = {
  * GET ?executionId=xxx  or  GET ?certificateHash=sha256:xxx
  *
  * Returns only the redacted bundle (cer_bundle_redacted) — never raw data.
+ * No user_id, usage_event_id, or internal IDs are exposed.
  */
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -30,20 +31,29 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Use service role to bypass RLS — this is intentionally public
+    // Input validation: prevent excessively long lookup values
+    const lookupValue = executionId ?? certificateHash ?? '';
+    if (lookupValue.length > 256) {
+      return new Response(JSON.stringify({ error: 'INVALID_PARAM', message: 'Lookup value too long' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Use service role to bypass RLS — this is intentionally public.
+    // Only the redacted bundle representation is returned.
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
+    // Select only fields needed for public verification — no user_id or usage_event_id
     let query = supabase
       .from('cer_bundles')
-      .select('usage_event_id, certificate_hash, bundle_type, attestation_json, cer_bundle_redacted, created_at, app_id, project_id')
+      .select('certificate_hash, bundle_type, attestation_json, cer_bundle_redacted, created_at, app_id, project_id')
       .limit(1);
 
     if (executionId) {
-      // executionId lives inside cer_bundle_redacted->snapshot->executionId
-      // We need to use a JSON path filter
       query = query.filter('cer_bundle_redacted->snapshot->>executionId', 'eq', executionId);
     } else if (certificateHash) {
       query = query.eq('certificate_hash', certificateHash);
@@ -52,8 +62,8 @@ Deno.serve(async (req) => {
     const { data, error: fetchError } = await query;
 
     if (fetchError) {
-      console.error('Lookup error:', fetchError);
-      return new Response(JSON.stringify({ error: 'DB_FETCH', message: fetchError.message }), {
+      console.error('public-cer-lookup DB error:', fetchError);
+      return new Response(JSON.stringify({ error: 'LOOKUP_FAILED', message: 'Record lookup failed' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -68,7 +78,7 @@ Deno.serve(async (req) => {
 
     const row = data[0];
 
-    // Fetch project and app names if available
+    // Fetch project and app names if available (public metadata only)
     let projectName: string | null = null;
     let appName: string | null = null;
 
@@ -92,7 +102,7 @@ Deno.serve(async (req) => {
 
     const bundle = row.cer_bundle_redacted as Record<string, unknown>;
 
-    // Reconstruct a complete bundle for verification
+    // Reconstruct a verifiable bundle from redacted representation
     const result: Record<string, unknown> = {
       ...bundle,
       certificateHash: row.certificate_hash,
@@ -122,7 +132,8 @@ Deno.serve(async (req) => {
   } catch (err) {
     const error = err as Error;
     console.error('public-cer-lookup error:', error.message);
-    return new Response(JSON.stringify({ error: 'INTERNAL', message: error.message }), {
+    // Never leak internal error details to client
+    return new Response(JSON.stringify({ error: 'INTERNAL', message: 'An unexpected error occurred' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
