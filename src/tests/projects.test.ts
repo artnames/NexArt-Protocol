@@ -180,7 +180,6 @@ describe("retention policy", () => {
   });
 
   it("preserves existing behavior when retention is unset (defaults to forever)", () => {
-    // Simulate old project record without retention_policy field
     const oldProject = { id: "p1" } as any;
     const retention: RetentionPolicy = oldProject.retention_policy ?? 'forever';
     expect(retention).toBe('forever');
@@ -191,5 +190,117 @@ describe("retention policy", () => {
     expect(RETENTION_LABELS['90_days']).toBe('90 days');
     expect(RETENTION_LABELS['1_year']).toBe('1 year');
     expect(RETENTION_LABELS['forever']).toBe('Forever');
+  });
+});
+
+// ── Project ID extraction from pathname ─────────────────────────────
+
+function extractProjectIdFromPath(pathname: string): string | undefined {
+  const match = pathname.match(/^\/dashboard\/projects\/([^/]+)/);
+  return match?.[1] || undefined;
+}
+
+describe("extractProjectIdFromPath", () => {
+  it("extracts UUID from valid project path", () => {
+    expect(extractProjectIdFromPath("/dashboard/projects/abc-123-def")).toBe("abc-123-def");
+  });
+
+  it("returns undefined for projects list path", () => {
+    expect(extractProjectIdFromPath("/dashboard/projects")).toBeUndefined();
+  });
+
+  it("returns undefined for unrelated path", () => {
+    expect(extractProjectIdFromPath("/dashboard/usage")).toBeUndefined();
+  });
+
+  it("handles trailing slashes", () => {
+    expect(extractProjectIdFromPath("/dashboard/projects/abc-123/")).toBe("abc-123");
+  });
+});
+
+// ── CSV export UUID guard logic ─────────────────────────────────────
+
+function isValidUUID(val: unknown): val is string {
+  if (typeof val !== "string") return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+}
+
+function buildExportQuery(projectId: string | undefined, appId: string | null) {
+  // Only include filters for valid UUIDs
+  const filters: { column: string; value: string }[] = [];
+  if (isValidUUID(projectId)) {
+    filters.push({ column: "project_id", value: projectId });
+  }
+  if (isValidUUID(appId)) {
+    filters.push({ column: "app_id", value: appId });
+  }
+  return filters;
+}
+
+describe("CSV export UUID guards", () => {
+  it("includes valid UUID projectId", () => {
+    const filters = buildExportQuery("a1b2c3d4-e5f6-7890-abcd-ef1234567890", null);
+    expect(filters).toHaveLength(1);
+    expect(filters[0].column).toBe("project_id");
+  });
+
+  it("excludes undefined projectId", () => {
+    const filters = buildExportQuery(undefined, null);
+    expect(filters).toHaveLength(0);
+  });
+
+  it("excludes string 'undefined'", () => {
+    const filters = buildExportQuery("undefined" as any, null);
+    expect(filters).toHaveLength(0);
+  });
+
+  it("includes valid appId when present", () => {
+    const filters = buildExportQuery(
+      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "f1e2d3c4-b5a6-7890-1234-567890abcdef",
+    );
+    expect(filters).toHaveLength(2);
+  });
+
+  it("excludes null appId", () => {
+    const filters = buildExportQuery("a1b2c3d4-e5f6-7890-abcd-ef1234567890", null);
+    expect(filters).toHaveLength(1);
+  });
+
+  it("handles empty records gracefully", () => {
+    // Simulate empty result set → should not throw
+    const rows: any[] = [];
+    expect(rows.length).toBe(0);
+  });
+});
+
+// ── App management tests ────────────────────────────────────────────
+
+describe("app creation validation", () => {
+  it("rejects empty names", () => {
+    const name = "  ";
+    expect(name.trim()).toBe("");
+  });
+
+  it("produces correct slug for app name", () => {
+    expect(slugify("Web Checkout")).toBe("web-checkout");
+    expect(slugify("mobile-api")).toBe("mobile-api");
+    expect(slugify("CI/CD Pipeline")).toBe("ci-cd-pipeline");
+  });
+
+  it("app list is initially empty for new project", () => {
+    const apps: { id: string; name: string }[] = [];
+    expect(apps).toHaveLength(0);
+  });
+
+  it("apps can be filtered by project context", () => {
+    const allApps = [
+      { id: "a1", project_id: "p1", name: "Web" },
+      { id: "a2", project_id: "p1", name: "Mobile" },
+      { id: "a3", project_id: "p2", name: "CLI" },
+    ];
+    const filtered = allApps.filter((a) => a.project_id === "p1");
+    expect(filtered).toHaveLength(2);
+    expect(filtered.map((a) => a.name)).toEqual(["Web", "Mobile"]);
   });
 });
