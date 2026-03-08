@@ -9,9 +9,12 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Plus, Box, Pencil, Trash2, ArrowLeft, FileDown, Info } from "lucide-react";
+import { Plus, Box, Pencil, Trash2, ArrowLeft, FileDown, Info, ChevronDown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { listApps, createApp, updateApp, deleteApp, type App, type RetentionPolicy, RETENTION_LABELS } from "@/lib/projects-api";
@@ -19,7 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { buildProjectExportRow, rowsToCsv, downloadCsv, type ProjectExportRow } from "@/lib/audit-export";
+import { buildProjectExportRow, rowsToCsv, downloadCsv, downloadJson, type ProjectExportRow } from "@/lib/audit-export";
 import { normalizeCertifiedRecord } from "@/components/dashboard/certified-records-types";
 
 /** Extract projectId from pathname since AuthGatedRoutes uses manual path matching (not React Router params). */
@@ -105,47 +108,59 @@ export default function ProjectDetail() {
     }
   }
 
-  async function handleExportCsv() {
+  async function fetchExportRows(): Promise<ProjectExportRow[] | null> {
+    const { data: bundles, error } = await supabase
+      .from("cer_bundles")
+      .select("usage_event_id, certificate_hash, bundle_type, cer_bundle_redacted, attestation_json, created_at, app_id")
+      .eq("project_id", projectId!);
+    if (error) throw error;
+    if (!bundles || bundles.length === 0) {
+      toast({ title: "No records", description: "No CER records found for this project." });
+      return null;
+    }
+
+    const appsById: Record<string, App> = {};
+    for (const a of apps) appsById[a.id] = a;
+
+    return (bundles as any[]).map((b) => {
+      const rawBundle = b.cer_bundle_redacted as Record<string, unknown>;
+      const fakeEvent = {
+        id: String(b.usage_event_id),
+        created_at: b.created_at,
+        endpoint: rawBundle?.bundleType === "cer.ai.execution.v1" ? "/api/attest" : "/api/render",
+        status_code: 200,
+        duration_ms: 0,
+        error_code: null,
+        key_label: "",
+      };
+      const n = normalizeCertifiedRecord(fakeEvent, rawBundle as any);
+      const appName = b.app_id ? (appsById[b.app_id]?.name ?? "") : "";
+      return buildProjectExportRow(
+        { ...fakeEvent, surface: n.surface, normalized: n },
+        projectName,
+        appName,
+        n.verificationStatus === "pass" ? "VERIFIED" : n.verificationStatus === "fail" ? "INVALID" : "PARTIAL",
+      );
+    });
+  }
+
+  async function handleExport(format: "csv" | "json") {
     if (!projectId) return;
     setExporting(true);
     try {
-      const { data: bundles, error } = await supabase
-        .from("cer_bundles")
-        .select("usage_event_id, certificate_hash, bundle_type, cer_bundle_redacted, attestation_json, created_at, app_id")
-        .eq("project_id", projectId);
-      if (error) throw error;
-      if (!bundles || bundles.length === 0) {
-        toast({ title: "No records", description: "No CER records found for this project." });
-        return;
-      }
+      const rows = await fetchExportRows();
+      if (!rows) return;
 
-      const appsById: Record<string, App> = {};
-      for (const a of apps) appsById[a.id] = a;
-
-      const rows: ProjectExportRow[] = (bundles as any[]).map((b) => {
-        const rawBundle = b.cer_bundle_redacted as Record<string, unknown>;
-        const fakeEvent = {
-          id: String(b.usage_event_id),
-          created_at: b.created_at,
-          endpoint: rawBundle?.bundleType === "cer.ai.execution.v1" ? "/api/attest" : "/api/render",
-          status_code: 200,
-          duration_ms: 0,
-          error_code: null,
-          key_label: "",
-        };
-        const n = normalizeCertifiedRecord(fakeEvent, rawBundle as any);
-        const appName = b.app_id ? (appsById[b.app_id]?.name ?? "") : "";
-        return buildProjectExportRow(
-          { ...fakeEvent, surface: n.surface, normalized: n },
-          projectName,
-          appName,
-          n.verificationStatus === "pass" ? "VERIFIED" : n.verificationStatus === "fail" ? "INVALID" : "PARTIAL",
+      const slug = projectName.toLowerCase().replace(/\s+/g, "-");
+      if (format === "csv") {
+        downloadCsv(rowsToCsv(rows), `${slug}-records.csv`);
+      } else {
+        downloadJson(
+          { exportType: "nexart_project_export_v1", exportedAt: new Date().toISOString(), project: projectName, recordCount: rows.length, records: rows },
+          `${slug}-records.json`,
         );
-      });
-
-      const csv = rowsToCsv(rows);
-      downloadCsv(csv, `${projectName.toLowerCase().replace(/\s+/g, "-")}-records.csv`);
-      toast({ title: `Exported ${rows.length} records` });
+      }
+      toast({ title: `Exported ${rows.length} records (${format.toUpperCase()})` });
     } catch (e: any) {
       toast({ variant: "destructive", title: "Export failed", description: e.message || "Failed to export." });
     } finally {
@@ -165,14 +180,21 @@ export default function ProjectDetail() {
             <ArrowLeft className="h-3 w-3" /> Back to Projects
           </Link>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportCsv}
-              disabled={exporting}
-            >
-              <FileDown className="h-4 w-4 mr-1" /> {exporting ? "Exporting…" : "Export records (CSV)"}
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" disabled={exporting}>
+                  <FileDown className="h-4 w-4 mr-1" /> {exporting ? "Exporting…" : "Export records"} <ChevronDown className="h-3 w-3 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleExport("json")}>
+                  Export JSON
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport("csv")}>
+                  Export CSV
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Link to={`/dashboard/usage?project=${projectId}`}>
               <Button variant="outline" size="sm">View Records</Button>
             </Link>
