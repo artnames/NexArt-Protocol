@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, useParams, Link } from "react-router-dom";
+import { Navigate, useLocation, Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Plus, Box, Pencil, Trash2, ArrowLeft, FileDown } from "lucide-react";
+import { Plus, Box, Pencil, Trash2, ArrowLeft, FileDown, Info } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { listApps, createApp, updateApp, deleteApp, type App, type RetentionPolicy, RETENTION_LABELS } from "@/lib/projects-api";
@@ -22,8 +22,15 @@ import { Label } from "@/components/ui/label";
 import { buildProjectExportRow, rowsToCsv, downloadCsv, type ProjectExportRow } from "@/lib/audit-export";
 import { normalizeCertifiedRecord } from "@/components/dashboard/certified-records-types";
 
+/** Extract projectId from pathname since AuthGatedRoutes uses manual path matching (not React Router params). */
+function useProjectIdFromPath(): string | undefined {
+  const { pathname } = useLocation();
+  const match = pathname.match(/^\/dashboard\/projects\/([^/]+)/);
+  return match?.[1] || undefined;
+}
+
 export default function ProjectDetail() {
-  const { projectId } = useParams<{ projectId: string }>();
+  const projectId = useProjectIdFromPath();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [projectName, setProjectName] = useState<string>("");
@@ -31,6 +38,7 @@ export default function ProjectDetail() {
   const [retentionPolicy, setRetentionPolicy] = useState<RetentionPolicy>('forever');
   const [apps, setApps] = useState<App[]>([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [createName, setCreateName] = useState("");
@@ -45,7 +53,6 @@ export default function ProjectDetail() {
   async function loadData() {
     setLoading(true);
     try {
-      // Fetch project details
       const { data: proj } = await supabase
         .from("projects")
         .select("name, auto_stamp_enabled, retention_policy")
@@ -98,8 +105,57 @@ export default function ProjectDetail() {
     }
   }
 
+  async function handleExportCsv() {
+    if (!projectId) return;
+    setExporting(true);
+    try {
+      const { data: bundles, error } = await supabase
+        .from("cer_bundles")
+        .select("usage_event_id, certificate_hash, bundle_type, cer_bundle_redacted, attestation_json, created_at, app_id")
+        .eq("project_id", projectId);
+      if (error) throw error;
+      if (!bundles || bundles.length === 0) {
+        toast({ title: "No records", description: "No CER records found for this project." });
+        return;
+      }
+
+      const appsById: Record<string, App> = {};
+      for (const a of apps) appsById[a.id] = a;
+
+      const rows: ProjectExportRow[] = (bundles as any[]).map((b) => {
+        const rawBundle = b.cer_bundle_redacted as Record<string, unknown>;
+        const fakeEvent = {
+          id: String(b.usage_event_id),
+          created_at: b.created_at,
+          endpoint: rawBundle?.bundleType === "cer.ai.execution.v1" ? "/api/attest" : "/api/render",
+          status_code: 200,
+          duration_ms: 0,
+          error_code: null,
+          key_label: "",
+        };
+        const n = normalizeCertifiedRecord(fakeEvent, rawBundle as any);
+        const appName = b.app_id ? (appsById[b.app_id]?.name ?? "") : "";
+        return buildProjectExportRow(
+          { ...fakeEvent, surface: n.surface, normalized: n },
+          projectName,
+          appName,
+          n.verificationStatus === "pass" ? "VERIFIED" : n.verificationStatus === "fail" ? "INVALID" : "PARTIAL",
+        );
+      });
+
+      const csv = rowsToCsv(rows);
+      downloadCsv(csv, `${projectName.toLowerCase().replace(/\s+/g, "-")}-records.csv`);
+      toast({ title: `Exported ${rows.length} records` });
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Export failed", description: e.message || "Failed to export." });
+    } finally {
+      setExporting(false);
+    }
+  }
+
   if (authLoading) return <div className="flex items-center justify-center min-h-screen text-muted-foreground">Loading...</div>;
   if (!user) return <Navigate to="/auth" replace />;
+  if (!projectId) return <Navigate to="/dashboard/projects" replace />;
 
   return (
     <DashboardLayout title={projectName}>
@@ -112,52 +168,10 @@ export default function ProjectDetail() {
             <Button
               variant="outline"
               size="sm"
-              onClick={async () => {
-                try {
-                  // Fetch CER bundles for this project
-                  const { data: bundles, error } = await supabase
-                    .from("cer_bundles")
-                    .select("usage_event_id, certificate_hash, bundle_type, cer_bundle_redacted, attestation_json, created_at, app_id")
-                    .eq("project_id", projectId!);
-                  if (error) throw error;
-                  if (!bundles || bundles.length === 0) {
-                    toast({ title: "No records", description: "No CER records found for this project." });
-                    return;
-                  }
-
-                  const appsById: Record<string, App> = {};
-                  for (const a of apps) appsById[a.id] = a;
-
-                  const rows: ProjectExportRow[] = (bundles as any[]).map((b) => {
-                    const rawBundle = b.cer_bundle_redacted as Record<string, unknown>;
-                    const fakeEvent = {
-                      id: String(b.usage_event_id),
-                      created_at: b.created_at,
-                      endpoint: rawBundle?.bundleType === "cer.ai.execution.v1" ? "/api/attest" : "/api/render",
-                      status_code: 200,
-                      duration_ms: 0,
-                      error_code: null,
-                      key_label: "",
-                    };
-                    const n = normalizeCertifiedRecord(fakeEvent, rawBundle as any);
-                    const appName = b.app_id ? (appsById[b.app_id]?.name ?? "") : "";
-                    return buildProjectExportRow(
-                      { ...fakeEvent, surface: n.surface, normalized: n },
-                      projectName,
-                      appName,
-                      n.verificationStatus === "pass" ? "VERIFIED" : n.verificationStatus === "fail" ? "INVALID" : "PARTIAL",
-                    );
-                  });
-
-                  const csv = rowsToCsv(rows);
-                  downloadCsv(csv, `${projectName.toLowerCase().replace(/\s+/g, "-")}-records.csv`);
-                  toast({ title: `Exported ${rows.length} records` });
-                } catch (e: any) {
-                  toast({ variant: "destructive", title: "Export failed", description: e.message || "Failed to export." });
-                }
-              }}
+              onClick={handleExportCsv}
+              disabled={exporting}
             >
-              <FileDown className="h-4 w-4 mr-1" /> Export records (CSV)
+              <FileDown className="h-4 w-4 mr-1" /> {exporting ? "Exporting…" : "Export records (CSV)"}
             </Button>
             <Link to={`/dashboard/usage?project=${projectId}`}>
               <Button variant="outline" size="sm">View Records</Button>
@@ -172,12 +186,15 @@ export default function ProjectDetail() {
                   <DialogDescription>Add an app to "{projectName}".</DialogDescription>
                 </DialogHeader>
                 <Input
-                  placeholder="App name"
+                  placeholder="App name (e.g., web-checkout, mobile-api)"
                   value={createName}
                   onChange={(e) => setCreateName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleCreate()}
                   autoFocus
                 />
+                <p className="text-xs text-muted-foreground">
+                  Apps let you sub-group records within a project. You can assign API keys or usage streams to an app so records group correctly.
+                </p>
                 <DialogFooter>
                   <Button onClick={handleCreate} disabled={!createName.trim()}>Create</Button>
                 </DialogFooter>
@@ -185,6 +202,14 @@ export default function ProjectDetail() {
             </Dialog>
           </div>
       </div>
+
+        {/* How app grouping works */}
+        <div className="flex items-start gap-2 p-3 rounded-md border border-border bg-muted/30">
+          <Info className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            <strong>How app grouping works:</strong> Apps organize CER records within a project. When submitting executions via the API, include the <code className="bg-muted px-1 rounded text-[11px]">appId</code> field to associate records with an app. Records without an <code className="bg-muted px-1 rounded text-[11px]">appId</code> appear under "Unassigned" in the records view. You can also assign records to apps retroactively from the record detail drawer.
+          </p>
+        </div>
 
         {/* Auto-stamp setting */}
         <Card>
@@ -229,7 +254,6 @@ export default function ProjectDetail() {
                 <p className="text-xs text-muted-foreground">
                   Controls how long NexArt-hosted CER records are retained for this project. Exported CERs remain portable artifacts and are not affected.
                 </p>
-                {/* TODO: Enforcement is future work. Current behavior is display/config only. */}
               </div>
               <Select
                 value={retentionPolicy}
@@ -266,7 +290,9 @@ export default function ProjectDetail() {
             <CardTitle className="text-lg flex items-center gap-2">
               <Box className="h-5 w-5" /> Apps
             </CardTitle>
-            <CardDescription>Apps in this project</CardDescription>
+            <CardDescription>
+              Apps help organize records within a project. You can assign API keys or usage streams to an app so records group correctly.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -275,7 +301,9 @@ export default function ProjectDetail() {
               <div className="text-center py-8">
                 <Box className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <p className="text-lg font-medium mb-2">No apps yet</p>
-                <p className="text-muted-foreground text-sm mb-4">Add an app to start organizing CER records within this project.</p>
+                <p className="text-muted-foreground text-sm mb-4 max-w-md mx-auto">
+                  Create an app to sub-group CER records. When calling the certification API, pass <code className="bg-muted px-1 rounded text-xs">appId</code> to automatically assign records.
+                </p>
               </div>
             ) : (
               <Table>
