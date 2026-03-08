@@ -108,47 +108,59 @@ export default function ProjectDetail() {
     }
   }
 
-  async function handleExportCsv() {
+  async function fetchExportRows(): Promise<ProjectExportRow[] | null> {
+    const { data: bundles, error } = await supabase
+      .from("cer_bundles")
+      .select("usage_event_id, certificate_hash, bundle_type, cer_bundle_redacted, attestation_json, created_at, app_id")
+      .eq("project_id", projectId!);
+    if (error) throw error;
+    if (!bundles || bundles.length === 0) {
+      toast({ title: "No records", description: "No CER records found for this project." });
+      return null;
+    }
+
+    const appsById: Record<string, App> = {};
+    for (const a of apps) appsById[a.id] = a;
+
+    return (bundles as any[]).map((b) => {
+      const rawBundle = b.cer_bundle_redacted as Record<string, unknown>;
+      const fakeEvent = {
+        id: String(b.usage_event_id),
+        created_at: b.created_at,
+        endpoint: rawBundle?.bundleType === "cer.ai.execution.v1" ? "/api/attest" : "/api/render",
+        status_code: 200,
+        duration_ms: 0,
+        error_code: null,
+        key_label: "",
+      };
+      const n = normalizeCertifiedRecord(fakeEvent, rawBundle as any);
+      const appName = b.app_id ? (appsById[b.app_id]?.name ?? "") : "";
+      return buildProjectExportRow(
+        { ...fakeEvent, surface: n.surface, normalized: n },
+        projectName,
+        appName,
+        n.verificationStatus === "pass" ? "VERIFIED" : n.verificationStatus === "fail" ? "INVALID" : "PARTIAL",
+      );
+    });
+  }
+
+  async function handleExport(format: "csv" | "json") {
     if (!projectId) return;
     setExporting(true);
     try {
-      const { data: bundles, error } = await supabase
-        .from("cer_bundles")
-        .select("usage_event_id, certificate_hash, bundle_type, cer_bundle_redacted, attestation_json, created_at, app_id")
-        .eq("project_id", projectId);
-      if (error) throw error;
-      if (!bundles || bundles.length === 0) {
-        toast({ title: "No records", description: "No CER records found for this project." });
-        return;
-      }
+      const rows = await fetchExportRows();
+      if (!rows) return;
 
-      const appsById: Record<string, App> = {};
-      for (const a of apps) appsById[a.id] = a;
-
-      const rows: ProjectExportRow[] = (bundles as any[]).map((b) => {
-        const rawBundle = b.cer_bundle_redacted as Record<string, unknown>;
-        const fakeEvent = {
-          id: String(b.usage_event_id),
-          created_at: b.created_at,
-          endpoint: rawBundle?.bundleType === "cer.ai.execution.v1" ? "/api/attest" : "/api/render",
-          status_code: 200,
-          duration_ms: 0,
-          error_code: null,
-          key_label: "",
-        };
-        const n = normalizeCertifiedRecord(fakeEvent, rawBundle as any);
-        const appName = b.app_id ? (appsById[b.app_id]?.name ?? "") : "";
-        return buildProjectExportRow(
-          { ...fakeEvent, surface: n.surface, normalized: n },
-          projectName,
-          appName,
-          n.verificationStatus === "pass" ? "VERIFIED" : n.verificationStatus === "fail" ? "INVALID" : "PARTIAL",
+      const slug = projectName.toLowerCase().replace(/\s+/g, "-");
+      if (format === "csv") {
+        downloadCsv(rowsToCsv(rows), `${slug}-records.csv`);
+      } else {
+        downloadJson(
+          { exportType: "nexart_project_export_v1", exportedAt: new Date().toISOString(), project: projectName, recordCount: rows.length, records: rows },
+          `${slug}-records.json`,
         );
-      });
-
-      const csv = rowsToCsv(rows);
-      downloadCsv(csv, `${projectName.toLowerCase().replace(/\s+/g, "-")}-records.csv`);
-      toast({ title: `Exported ${rows.length} records` });
+      }
+      toast({ title: `Exported ${rows.length} records (${format.toUpperCase()})` });
     } catch (e: any) {
       toast({ variant: "destructive", title: "Export failed", description: e.message || "Failed to export." });
     } finally {
