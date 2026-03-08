@@ -180,14 +180,21 @@ export default function ProjectDetail() {
             <ArrowLeft className="h-3 w-3" /> Back to Projects
           </Link>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportCsv}
-              disabled={exporting}
-            >
-              <FileDown className="h-4 w-4 mr-1" /> {exporting ? "Exporting…" : "Export records (CSV)"}
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" disabled={exporting}>
+                  <FileDown className="h-4 w-4 mr-1" /> {exporting ? "Exporting…" : "Export records"} <ChevronDown className="h-3 w-3 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleExport("json")}>
+                  Export JSON
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport("csv")}>
+                  Export CSV
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Link to={`/dashboard/usage?project=${projectId}`}>
               <Button variant="outline" size="sm">View Records</Button>
             </Link>
