@@ -48,6 +48,7 @@ const Verify = lazy(() => import("./pages/Verify"));
 const VerifyPublic = lazy(() => import("./pages/VerifyPublic"));
 const StandardsAlignment = lazy(() => import("./pages/StandardsAlignment"));
 const CERRetentionPolicy = lazy(() => import("./pages/legal/CERRetentionPolicy"));
+const PrivacyDataHandling = lazy(() => import("./pages/compliance/PrivacyDataHandling"));
 const ApiOverview = lazy(() => import("./pages/docs/ApiOverview"));
 const ApiAiCerCreation = lazy(() => import("./pages/docs/ApiAiCerCreation"));
 const ApiCertification = lazy(() => import("./pages/docs/ApiCertification"));
