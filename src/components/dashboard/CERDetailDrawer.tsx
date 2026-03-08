@@ -23,7 +23,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Copy, Download, ChevronDown, RotateCcw, Image as ImageIcon,
   ShieldCheck, ShieldAlert, ShieldQuestion, Stamp, Info, Ban, Hash,
-  RefreshCw, Clock, FileText, ExternalLink, Link as LinkIcon,
+  RefreshCw, Clock, FileText, ExternalLink, Link as LinkIcon, PackageCheck,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +31,7 @@ import type { CertifiedUsageEvent, NormalizedCER } from "./certified-records-typ
 import { verifyExportBundle } from "./certified-records-types";
 import VerificationReport from "./VerificationReport";
 import { buildSingleRecordAuditReport, downloadJson } from "@/lib/audit-export";
+import { buildAuditPackageZip } from "@/lib/audit-package";
 import { getVerificationUrl, getVerificationPath } from "@/lib/verification-url";
 
 interface CERDetailDrawerProps {
@@ -658,9 +659,36 @@ export default function CERDetailDrawer({ event, open, onOpenChange, projectName
             />
           )}
 
-          {/* Export audit report button */}
+          {/* Export actions */}
           {hasBundle && !isLegacyCode && (
             <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="font-mono text-xs"
+                onClick={async () => {
+                  toast({ title: "Building audit package…", description: "This may take a moment." });
+                  try {
+                    const blob = await buildAuditPackageZip({
+                      normalized: n,
+                      projectName: projectName ?? null,
+                      appName: appName ?? null,
+                    });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `cer-audit-package-${n.executionId || event.id}.zip`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast({ title: "Audit package exported" });
+                  } catch (err) {
+                    toast({ variant: "destructive", title: "Export failed", description: (err as Error).message });
+                  }
+                }}
+              >
+                <PackageCheck className="h-3.5 w-3.5 mr-1.5" />
+                Export Audit Package
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
