@@ -120,6 +120,11 @@ const Footer = () => {
                   CER Retention Policy
                 </Link>
               </li>
+              <li>
+                <Link to="/compliance/privacy-data-handling" className="text-caption hover:text-foreground transition-colors">
+                  Privacy & Data Handling
+                </Link>
+              </li>
             </ul>
           </div>
 
