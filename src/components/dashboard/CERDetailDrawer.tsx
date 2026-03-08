@@ -31,6 +31,7 @@ import type { CertifiedUsageEvent, NormalizedCER } from "./certified-records-typ
 import { verifyExportBundle } from "./certified-records-types";
 import VerificationReport from "./VerificationReport";
 import { buildSingleRecordAuditReport, downloadJson } from "@/lib/audit-export";
+import { buildAuditPackageZip } from "@/lib/audit-package";
 import { getVerificationUrl, getVerificationPath } from "@/lib/verification-url";
 
 interface CERDetailDrawerProps {
