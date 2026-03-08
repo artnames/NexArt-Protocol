@@ -659,9 +659,36 @@ export default function CERDetailDrawer({ event, open, onOpenChange, projectName
             />
           )}
 
-          {/* Export audit report button */}
+          {/* Export actions */}
           {hasBundle && !isLegacyCode && (
             <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="font-mono text-xs"
+                onClick={async () => {
+                  toast({ title: "Building audit package…", description: "This may take a moment." });
+                  try {
+                    const blob = await buildAuditPackageZip({
+                      normalized: n,
+                      projectName: projectName ?? null,
+                      appName: appName ?? null,
+                    });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `cer-audit-package-${n.executionId || event.id}.zip`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast({ title: "Audit package exported" });
+                  } catch (err) {
+                    toast({ variant: "destructive", title: "Export failed", description: (err as Error).message });
+                  }
+                }}
+              >
+                <PackageCheck className="h-3.5 w-3.5 mr-1.5" />
+                Export Audit Package
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
