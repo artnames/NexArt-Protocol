@@ -88,6 +88,14 @@ const Privacy = () => {
             We use reasonable technical and organizational measures to protect data. No method of transmission or storage is 100% secure.
           </p>
 
+          <h2>Execution Data & Privacy</h2>
+
+          <p>
+            For detailed information on how NexArt handles execution data, cryptographic hashes, public verification records,
+            and the responsibilities of integrating applications, see{" "}
+            <a href="/compliance/privacy-data-handling" className="text-link hover:text-link-hover underline underline-offset-2">Privacy & Data Handling</a>.
+          </p>
+
           <h2>Contact</h2>
           
           <p>

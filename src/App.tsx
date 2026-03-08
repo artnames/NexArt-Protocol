@@ -48,6 +48,7 @@ const Verify = lazy(() => import("./pages/Verify"));
 const VerifyPublic = lazy(() => import("./pages/VerifyPublic"));
 const StandardsAlignment = lazy(() => import("./pages/StandardsAlignment"));
 const CERRetentionPolicy = lazy(() => import("./pages/legal/CERRetentionPolicy"));
+const PrivacyDataHandling = lazy(() => import("./pages/compliance/PrivacyDataHandling"));
 const ApiOverview = lazy(() => import("./pages/docs/ApiOverview"));
 const ApiAiCerCreation = lazy(() => import("./pages/docs/ApiAiCerCreation"));
 const ApiCertification = lazy(() => import("./pages/docs/ApiCertification"));
@@ -112,6 +113,7 @@ const App = () => (
               <Route path="/c/:certificateHash" element={<VerifyPublic />} />
               <Route path="/reference/standards" element={<StandardsAlignment />} />
               <Route path="/legal/cer-retention-policy" element={<CERRetentionPolicy />} />
+              <Route path="/compliance/privacy-data-handling" element={<PrivacyDataHandling />} />
               <Route path="/docs/api/overview" element={<ApiOverview />} />
               <Route path="/docs/api/ai-cer-creation" element={<ApiAiCerCreation />} />
               <Route path="/docs/api/certification" element={<ApiCertification />} />
