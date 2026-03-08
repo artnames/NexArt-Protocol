@@ -9,9 +9,12 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Plus, Box, Pencil, Trash2, ArrowLeft, FileDown, Info } from "lucide-react";
+import { Plus, Box, Pencil, Trash2, ArrowLeft, FileDown, Info, ChevronDown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { listApps, createApp, updateApp, deleteApp, type App, type RetentionPolicy, RETENTION_LABELS } from "@/lib/projects-api";
@@ -19,7 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { buildProjectExportRow, rowsToCsv, downloadCsv, type ProjectExportRow } from "@/lib/audit-export";
+import { buildProjectExportRow, rowsToCsv, downloadCsv, downloadJson, type ProjectExportRow } from "@/lib/audit-export";
 import { normalizeCertifiedRecord } from "@/components/dashboard/certified-records-types";
 
 /** Extract projectId from pathname since AuthGatedRoutes uses manual path matching (not React Router params). */
